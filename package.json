@@ -1,5 +1,5 @@
 {
-  "name": "ilostat-mcp-cloudflare",
+  "name": "ilostat-mcp",
   "private": true,
   "version": "0.1.0",
   "description": "Servidor MCP provenance-first para o ILOSTAT (estatísticas de trabalho da OIT) — Cloudflare Workers, SDMX REST, contrato de proveniência v1.0",
