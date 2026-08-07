@@ -46,8 +46,8 @@ export const SERVER_CONFIG = {
    * hostname workers.dev e os de dev local, além do domínio próprio.
    */
   extraAllowedHostnames: [
-    "ilostat.sidneybissoli.com",
-    "ilostat-mcp.sidneybissoli.workers.dev",
+    "ilo.sidneybissoli.com",
+    "ilo-mcp-server.sidneybissoli.workers.dev",
     "localhost",
     "127.0.0.1",
   ] as string[],

@@ -8,8 +8,8 @@ UIS vive no servidor irmão **`uis-mcp-server`** (decisão do decisor, 07/08/202
 servidor por fonte — segregação estrutural CC BY / CC BY-SA e convenção de naming do
 mcp-builder; tools com prefixo de serviço `ilo_`).
 
-Produção: **`https://ilostat.sidneybissoli.com`** (endpoint MCP em `/mcp`; padrão de
-URLs do portfólio). O hostname `ilostat-mcp.sidneybissoli.workers.dev` permanece
+Produção: **`https://ilo.sidneybissoli.com`** (endpoint MCP em `/mcp`; padrão de
+URLs do portfólio). O hostname `ilo-mcp-server.sidneybissoli.workers.dev` permanece
 servido como secundário.
 
 ## Tools
