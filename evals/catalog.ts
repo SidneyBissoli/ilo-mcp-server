@@ -8,6 +8,7 @@ import type { McpServer } from "@modelcontextprotocol/server";
 import { registerCatalogTools } from "../src/tools/catalog.js";
 import { registerDataTools } from "../src/tools/data.js";
 import { registerMetadataTools } from "../src/tools/metadata.js";
+import { registerUisTools } from "../src/tools/uis.js";
 import type { Env } from "../src/types.js";
 
 const ENV: Env = {}; // registro não executa handlers — bindings não são tocados
@@ -19,6 +20,7 @@ const GROUPS: CatalogGroup[] = [
   { area: "catalogo", register: (s) => registerCatalogTools(asServer(s), ENV, NOOP) },
   { area: "metadados", register: (s) => registerMetadataTools(asServer(s), ENV, NOOP) },
   { area: "dados", register: (s) => registerDataTools(asServer(s), ENV, NOOP) },
+  { area: "uis", register: (s) => registerUisTools(asServer(s), ENV, NOOP) },
 ];
 
 export const CATALOG = buildCatalog(GROUPS);

@@ -155,4 +155,52 @@ export const FIXTURES: EvalFixture[] = [
     expectedTools: ["search_indicators", "list_dimension_values"],
     note: "Painel amplo: achar o dataflow e/ou os códigos de área para paginar em lotes de 30.",
   },
+  {
+    id: "uis-search-01",
+    query: "Which UNESCO indicators track out-of-school children?",
+    expectedTools: ["uis_search_indicators"],
+    note: "Tema de educação = fonte UIS, descoberta de indicador.",
+  },
+  {
+    id: "uis-search-02",
+    query: "Does UNESCO publish statistics on R&D researchers per million inhabitants?",
+    expectedTools: ["uis_search_indicators"],
+    note: "Ciência/P&D é tema UIS, não OIT — a seleção entre fontes é o que se testa.",
+  },
+  {
+    id: "uis-search-03",
+    query: "Quero indicadores da UNESCO sobre patrimônio cultural e museus.",
+    expectedTools: ["uis_search_indicators"],
+    note: "Tema de cultura, persona lusófona.",
+  },
+  {
+    id: "uis-search-04",
+    query: "What education spending indicators are available from the UIS?",
+    expectedTools: ["uis_search_indicators"],
+    note: "Fonte nomeada (UIS) + descoberta temática.",
+  },
+  {
+    id: "uis-data-01",
+    query: "Get the UIS completion rate indicator CR.1 for Brazil since 2010.",
+    expectedTools: ["uis_get_data"],
+    note: "Código de indicador UIS em mãos — buscar o dado.",
+  },
+  {
+    id: "uis-data-02",
+    query: "Pull UNESCO literacy data for indicator LR.AG15T99 in Argentina and Chile, 2015-2023.",
+    expectedTools: ["uis_get_data"],
+    note: "Consulta de valores com códigos e recorte completos.",
+  },
+  {
+    id: "uis-geo-01",
+    query: "What geo unit code does the UNESCO UIS API use for the Ivory Coast?",
+    expectedTools: ["uis_list_geo_units"],
+    note: "Código de país do lado UIS (não confundir com REF_AREA do ILOSTAT).",
+  },
+  {
+    id: "uis-cross-01",
+    query: "How does youth unemployment relate to school completion in Brazil?",
+    expectedTools: ["search_indicators", "uis_search_indicators"],
+    note: "Pergunta cruzada OIT×UIS: qualquer uma das duas descobertas é primeiro passo válido.",
+  },
 ];

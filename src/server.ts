@@ -17,6 +17,7 @@ import { SERVER_CONFIG } from "./config.js";
 import { registerCatalogTools } from "./tools/catalog.js";
 import { registerDataTools } from "./tools/data.js";
 import { registerMetadataTools } from "./tools/metadata.js";
+import { registerUisTools } from "./tools/uis.js";
 import type { Env } from "./types.js";
 import type { RecordUsage } from "./usage-core.js";
 
@@ -32,6 +33,7 @@ export function buildServer(env: Env, record: RecordUsage = () => {}): McpServer
   registerCatalogTools(server, env, record);
   registerMetadataTools(server, env, record);
   registerDataTools(server, env, record);
+  registerUisTools(server, env, record);
 
   return server;
 }

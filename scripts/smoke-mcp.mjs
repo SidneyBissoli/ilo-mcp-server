@@ -1,6 +1,7 @@
 /**
  * Smoke manual do endpoint MCP em produção (Streamable HTTP, JSON-RPC):
- * initialize → tools/list → as 4 tools com consultas reais.
+ * initialize → tools/list → as 7 tools (4 ILOSTAT + 3 UIS) com consultas reais,
+ * incluindo a segregação de licenças (CC BY vs. CC BY-SA, um bloco por fonte).
  *
  * Uso: node scripts/smoke-mcp.mjs [base-url]
  */
@@ -99,5 +100,44 @@ const meta2 = await rpc("tools/call", {
   arguments: { dataflow: flowId, provenance_mode: "detailed" },
 });
 console.log("\nmetadata 2ª chamada served_from_cache:", meta2.structuredContent.provenance.served_from_cache);
+
+// ---- UIS (segunda fonte — bloco de proveniência próprio, CC BY-SA) ----
+
+const uisSearch = await rpc("tools/call", {
+  name: "uis_search_indicators",
+  arguments: { query: "completion rate primary", limit: 3, provenance_mode: "detailed" },
+});
+const uisSc = uisSearch.structuredContent;
+console.log("\nuis_search_indicators:", JSON.stringify(uisSc.indicators?.slice(0, 2)));
+console.log("license:", uisSc.provenance.license.id, "| citation:", uisSc.provenance.citation);
+if (uisSc.provenance.license.id !== "CC-BY-SA-4.0") throw new Error("licença UIS errada");
+
+const uisGeo = await rpc("tools/call", {
+  name: "uis_list_geo_units",
+  arguments: { search: "brazil" },
+});
+console.log("\nuis_list_geo_units brazil:", JSON.stringify(uisGeo.structuredContent.geo_units));
+
+const uisCode = uisSc.indicators[0].code;
+const uisData = await rpc("tools/call", {
+  name: "uis_get_data",
+  arguments: {
+    indicators: [uisCode],
+    geo_units: ["BRA"],
+    start_year: 2015,
+    include_footnotes: true,
+    provenance_mode: "detailed",
+  },
+});
+const uisDataSc = uisData.structuredContent;
+console.log("\nuis_get_data", uisCode, "rows:", uisDataSc.rows_count, "| sample:", JSON.stringify(uisDataSc.rows?.slice(0, 2)));
+console.log("provenance detailed:", JSON.stringify(uisDataSc.provenance, null, 1));
+console.log("footer:", uisData.content[uisData.content.length - 1].text);
+if (!uisDataSc.provenance.source_url.includes("version=")) throw new Error("consulta UIS sem release fixada");
+if (!uisDataSc.provenance.citation.includes("date of extraction")) throw new Error("atribuição UIS sem data de extração");
+
+// Segregação: a resposta ILOSTAT não menciona CC BY-SA; a UIS não menciona a OIT.
+if (JSON.stringify(sc.provenance).includes("BY-SA")) throw new Error("resposta ILOSTAT contaminada com CC BY-SA");
+if (JSON.stringify(uisDataSc.provenance).includes("ILOSTAT")) throw new Error("resposta UIS contaminada com fonte ILO");
 
 console.log("\nSMOKE OK");
