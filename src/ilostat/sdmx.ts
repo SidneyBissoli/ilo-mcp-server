@@ -62,7 +62,7 @@ function kvPut(env: Env, key: string, cached: Cached<unknown>, ttlSeconds: numbe
  * User-Agent identificável (política do portfólio: sysadmins upstream devem
  * conseguir chegar ao contato). Sem User-Agent, o gateway da OIT responde 500.
  */
-const USER_AGENT = "ilostat-mcp (https://ilostat-mcp.sidneybissoli.workers.dev; sbissoli76@gmail.com)";
+const USER_AGENT = "ilostat-mcp (https://ilostat.sidneybissoli.com; sbissoli76@gmail.com)";
 
 async function fetchJson(url: string, accept: string, context: string): Promise<unknown> {
   const res = await fetch(url, { headers: { Accept: accept, "User-Agent": USER_AGENT } });

@@ -7,6 +7,10 @@
   "compatibility_flags": ["nodejs_compat"],
   "workers_dev": true,
 
+  // Domínio próprio (padrão das URLs do portfólio). Hostname também listado em
+  // SERVER_CONFIG.extraAllowedHostnames — o createMcpHandler valida o header Host.
+  "routes": [{ "pattern": "ilostat.sidneybissoli.com", "custom_domain": true }],
+
   "vars": {
     "ALLOWED_ORIGIN": "*"
   },

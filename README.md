@@ -5,7 +5,9 @@ a base estatística da Organização Internacional do Trabalho, hospedado em Clo
 Workers. Fase 1 do projeto ilostat (`C:\dev\mcp\ilostat\roadmap.md`), instanciado do
 template da Fase 0 do portfólio (`mcp-br-commons/templates/cloudflare-worker`).
 
-Produção: `https://ilostat-mcp.sidneybissoli.workers.dev` (endpoint MCP em `/mcp`).
+Produção: **`https://ilostat.sidneybissoli.com`** (endpoint MCP em `/mcp`; padrão de
+URLs do portfólio). O hostname `ilostat-mcp.sidneybissoli.workers.dev` permanece
+servido como secundário.
 
 ## Tools (docs/01 do projeto, Fase 1)
 

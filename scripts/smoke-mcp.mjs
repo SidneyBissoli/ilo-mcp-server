@@ -5,7 +5,7 @@
  * Uso: node scripts/smoke-mcp.mjs [base-url]
  */
 
-const BASE = process.argv[2] ?? "https://ilostat-mcp.sidneybissoli.workers.dev";
+const BASE = process.argv[2] ?? "https://ilostat.sidneybissoli.com";
 let nextId = 1;
 let sessionId = null;
 

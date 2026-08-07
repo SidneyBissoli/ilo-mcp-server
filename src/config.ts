@@ -41,10 +41,16 @@ export const SERVER_CONFIG = {
     "Do not use this server for non-labour statistics (education, health, trade) or for " +
     "data not published by the ILO.",
   /**
-   * Hostnames extras aceitos no header Host além dos defaults (localhost e *.workers.dev).
-   * Obrigatório listar aqui o domínio próprio quando "routes" for ativado no wrangler.jsonc.
+   * Hostnames aceitos no header Host. A lista SUBSTITUI os defaults do
+   * createMcpHandler (localhost e *.workers.dev) — por isso inclui também o
+   * hostname workers.dev e os de dev local, além do domínio próprio.
    */
-  extraAllowedHostnames: [] as string[],
+  extraAllowedHostnames: [
+    "ilostat.sidneybissoli.com",
+    "ilostat-mcp.sidneybissoli.workers.dev",
+    "localhost",
+    "127.0.0.1",
+  ] as string[],
 } as const;
 
 /** Contexto de proveniência do servidor: namespace reverse-DNS próprio, inglês, UTC. */
