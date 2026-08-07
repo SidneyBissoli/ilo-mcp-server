@@ -19,7 +19,7 @@ describe("buildServer", () => {
 
   it("são exatamente as 4 tools do docs/01", () => {
     expect(TOOL_NAMES.sort()).toEqual(
-      ["get_data", "get_indicator_metadata", "list_dimension_values", "search_indicators"].sort(),
+      ["ilo_get_data", "ilo_get_indicator_metadata", "ilo_list_dimension_values", "ilo_search_indicators"].sort(),
     );
   });
 });

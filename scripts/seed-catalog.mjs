@@ -3,7 +3,7 @@
  *
  * Baixa o catálogo oficial completo (`/dataflow/ILO?detail=allstubs`, ~557 KB,
  * ~1.210 dataflows — medição do spike), registra o instante REAL da extração
- * (é o retrieved_at que o bloco de proveniência de search_indicators reporta) e
+ * (é o retrieved_at que o bloco de proveniência de ilo_search_indicators reporta) e
  * gera `scripts/seed-catalog.sql` para o `wrangler d1 execute`.
  *
  * Uso:

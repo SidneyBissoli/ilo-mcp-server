@@ -30,10 +30,8 @@ export function landingHtml(): string {
   <li><code>/status</code> — version and current build</li>
   <li><code>/metrics</code> — aggregated usage statistics</li>
 </ul>
-<p>Data: International Labour Organization (ILO), ILOSTAT — CC BY 4.0; UNESCO Institute for
-Statistics (UIS) — CC BY-SA 4.0. Each response carries the attribution block of its own
-source; the two licensing regimes are never mixed. This service is not endorsed by the ILO
-or by UNESCO.</p>
+<p>Data: International Labour Organization (ILO), ILOSTAT — CC BY 4.0. This service is not
+endorsed by the ILO. A sibling server covers UNESCO UIS statistics.</p>
 <p>Contact: <a href="mailto:${c.contactEmail}">${c.contactEmail}</a></p>
 </body>
 </html>`;

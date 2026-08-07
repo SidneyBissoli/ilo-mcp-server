@@ -7,7 +7,6 @@
 
 import { IlostatUserError } from "../ilostat/key.js";
 import { IlostatUpstreamError } from "../ilostat/sdmx.js";
-import { UisUpstreamError } from "../uis/api.js";
 
 // Type alias (não interface): CallToolResult do SDK tem index signature
 // `[x: string]: unknown`, e só aliases de objeto recebem index signature implícita.
@@ -28,19 +27,6 @@ export function toToolError(e: unknown): ToolErrorResult {
           text:
             `${e.message}\n` +
             "This is an upstream (ILO) failure, not an invalid query — retrying later may succeed.",
-        },
-      ],
-      isError: true,
-    };
-  }
-  if (e instanceof UisUpstreamError) {
-    return {
-      content: [
-        {
-          type: "text",
-          text:
-            `${e.message}\n` +
-            "This is an upstream (UNESCO UIS) failure, not an invalid query — retrying later may succeed.",
         },
       ],
       isError: true,

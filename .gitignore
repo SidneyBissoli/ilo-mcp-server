@@ -3,6 +3,5 @@ node_modules/
 .dev.vars
 
 scripts/seed-catalog.sql
-scripts/seed-uis-catalog.sql
 
 .env

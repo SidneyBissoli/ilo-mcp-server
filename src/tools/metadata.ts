@@ -1,5 +1,5 @@
 /**
- * get_indicator_metadata + list_dimension_values — estrutura e códigos válidos
+ * ilo_get_indicator_metadata + ilo_list_dimension_values — estrutura e códigos válidos
  * de um dataflow, servidos do cache KV (estrutura por dataflow; codelist POR
  * CODELIST — CL_MEASURE/CL_AREA são compartilhadas entre dataflows).
  */
@@ -15,8 +15,8 @@ import { withUsage } from "../usage-wrap.js";
 import { withToolErrors } from "./errors.js";
 import { PROVENANCE_MODE_SCHEMA, provenanceOutputShape } from "./shared.js";
 
-export const GET_INDICATOR_METADATA = "get_indicator_metadata";
-export const LIST_DIMENSION_VALUES = "list_dimension_values";
+export const GET_INDICATOR_METADATA = "ilo_get_indicator_metadata";
+export const LIST_DIMENSION_VALUES = "ilo_list_dimension_values";
 
 export function getIndicatorMetadataHandler(env: Env) {
   return withToolErrors(
@@ -35,8 +35,8 @@ export function getIndicatorMetadataHandler(env: Env) {
         time_dimension: structure.timeDimension,
         ...(structure.defaults ? { source_defaults: structure.defaults } : {}),
         hint:
-          "Filter get_data by these dimension ids; discover valid codes with " +
-          "list_dimension_values. The time dimension is filtered via start_period/end_period.",
+          "Filter ilo_get_data by these dimension ids; discover valid codes with " +
+          "ilo_list_dimension_values. The time dimension is filtered via start_period/end_period.",
       };
       const p = ilostatProvenance({
         dataset: { id: structure.id, version: structure.version, name: structure.name },
@@ -58,13 +58,14 @@ export function listDimensionValuesHandler(env: Env) {
       dimension: string;
       search?: string | undefined;
       limit?: number | undefined;
+      offset?: number | undefined;
       provenance_mode?: "concise" | "detailed" | undefined;
     }) => {
       const { structure } = await getDataflowStructure(env, args.dataflow);
       if (args.dimension === structure.timeDimension) {
         throw new IlostatUserError(
           `${args.dimension} is the time dimension — it has no codelist. ` +
-            "Filter it in get_data via start_period/end_period (e.g. \"2015\", \"2024\").",
+            "Filter it in ilo_get_data via start_period/end_period (e.g. \"2015\", \"2024\").",
         );
       }
       const dim = structure.dimensions.find((d) => d.id === args.dimension);
@@ -86,15 +87,23 @@ export function listDimensionValuesHandler(env: Env) {
           )
         : codelist.codes;
       const limit = args.limit ?? 200;
+      const offset = args.offset ?? 0;
+      const page = matching.slice(offset, offset + limit);
+      const hasMore = matching.length > offset + page.length;
       const data = {
         dataflow: structure.id,
         dimension: dim.id,
         codelist: codelist.id,
         total_codes: matching.length,
-        showing: Math.min(matching.length, limit),
-        values: matching.slice(0, limit).map((c) => ({ id: c.id, name: c.name })),
-        ...(matching.length > limit
-          ? { hint: `Showing ${limit} of ${matching.length} codes — use search to narrow.` }
+        showing: page.length,
+        offset,
+        values: page.map((c) => ({ id: c.id, name: c.name })),
+        has_more: hasMore,
+        ...(hasMore
+          ? {
+              next_offset: offset + page.length,
+              hint: `Showing ${page.length} of ${matching.length} codes — use search to narrow, or page with offset.`,
+            }
           : {}),
       };
       const p = ilostatProvenance({
@@ -117,10 +126,10 @@ export function registerMetadataTools(server: McpServer, env: Env, record: Recor
       description:
         "Structure of one ILOSTAT dataflow: dimensions (in SDMX key order), their codelists, the " +
         "time dimension, the source's default selection and the data vintage (last update at the " +
-        "ILO). Use before get_data to know which filters exist. Does not return statistical values " +
-        "and does not list the codes themselves (use list_dimension_values).",
+        "ILO). Use before ilo_get_data to know which filters exist. Does not return statistical values " +
+        "and does not list the codes themselves (use ilo_list_dimension_values).",
       inputSchema: z.object({
-        dataflow: z.string().min(1).describe('Dataflow id from search_indicators (e.g. "DF_UNE_DEAP_SEX_AGE_RT")'),
+        dataflow: z.string().min(1).describe('Dataflow id from ilo_search_indicators (e.g. "DF_UNE_DEAP_SEX_AGE_RT")'),
         provenance_mode: PROVENANCE_MODE_SCHEMA,
       }),
       outputSchema: z.looseObject({
@@ -143,14 +152,15 @@ export function registerMetadataTools(server: McpServer, env: Env, record: Recor
       title: "List valid codes of a dimension",
       description:
         "Valid codes (id + label) of one dimension of an ILOSTAT dataflow — e.g. the country/area " +
-        "codes of REF_AREA or the sex categories of SEX. Use to build correct get_data filters. " +
+        "codes of REF_AREA or the sex categories of SEX. Use to build correct ilo_get_data filters. " +
         "Does not return statistical values; not applicable to the time dimension (filter it via " +
-        "start_period/end_period in get_data).",
+        "start_period/end_period in ilo_get_data).",
       inputSchema: z.object({
         dataflow: z.string().min(1).describe("Dataflow id the dimension belongs to"),
-        dimension: z.string().min(1).describe('Dimension id from get_indicator_metadata (e.g. "REF_AREA", "SEX")'),
+        dimension: z.string().min(1).describe('Dimension id from ilo_get_indicator_metadata (e.g. "REF_AREA", "SEX")'),
         search: z.string().min(1).optional().describe("Case-insensitive filter on code id or label"),
         limit: z.number().int().min(1).max(500).optional().describe("Maximum codes returned (default 200)"),
+        offset: z.number().int().min(0).optional().describe("Codes to skip, for pagination (default 0)"),
         provenance_mode: PROVENANCE_MODE_SCHEMA,
       }),
       outputSchema: z.looseObject({
@@ -159,7 +169,10 @@ export function registerMetadataTools(server: McpServer, env: Env, record: Recor
         codelist: z.string(),
         total_codes: z.number(),
         showing: z.number(),
+        offset: z.number(),
         values: z.array(z.object({ id: z.string(), name: z.string().nullable() })),
+        has_more: z.boolean(),
+        next_offset: z.number().optional(),
         ...provenanceOutputShape(),
       }),
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true },

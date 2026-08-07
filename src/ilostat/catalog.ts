@@ -45,7 +45,12 @@ async function catalogMeta(db: D1Database, key: string): Promise<string | null> 
  * Busca por termos no nome/id do dataflow (AND entre termos, case-insensitive),
  * ordenada pelo peso de busca do próprio catálogo da OIT (annotation SEARCH_WEIGHT).
  */
-export async function searchCatalog(env: Env, query: string, limit: number): Promise<CatalogSearchResult> {
+export async function searchCatalog(
+  env: Env,
+  query: string,
+  limit: number,
+  offset = 0,
+): Promise<CatalogSearchResult> {
   const db = requireDb(env);
   const terms = query.toLowerCase().split(/\s+/).filter(Boolean);
   if (!terms.length) {
@@ -59,7 +64,8 @@ export async function searchCatalog(env: Env, query: string, limit: number): Pro
     db
       .prepare(
         `SELECT id, agency, version, name FROM dataflows WHERE ${where} ` +
-          `ORDER BY search_weight DESC, id LIMIT ${Math.max(1, Math.min(limit, 100))}`,
+          `ORDER BY search_weight DESC, id LIMIT ${Math.max(1, Math.min(limit, 100))} ` +
+          `OFFSET ${Math.max(0, Math.floor(offset))}`,
       )
       .bind(...params)
       .all<CatalogEntry>(),

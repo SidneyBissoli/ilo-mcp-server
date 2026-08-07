@@ -48,7 +48,7 @@ export function buildDataKey(
     throw new IlostatUserError(
       `Unknown dimension(s) for dataflow ${structure.id}: ${unknown.join(", ")}. ` +
         `Valid dimensions are: ${dimIds.join(", ")}. ` +
-        `Use get_indicator_metadata to inspect the dataflow's dimensions.`,
+        `Use ilo_get_indicator_metadata to inspect the dataflow's dimensions.`,
     );
   }
   if (structure.timeDimension && filters[structure.timeDimension] !== undefined) {
@@ -69,7 +69,7 @@ export function buildDataKey(
             `Pass up to ${ILOSTAT_LIMITS.maxAreasPerCall} area codes (e.g. ["BRA","ARG"]) — ` +
             `for broad panels, split the areas into batches of ${ILOSTAT_LIMITS.maxAreasPerCall} ` +
             `and/or paginate by period (start_period/end_period). ` +
-            `Use list_dimension_values with dimension REF_AREA to discover codes.`,
+            `Use ilo_list_dimension_values with dimension REF_AREA to discover codes.`,
         );
       }
       if (values.length > ILOSTAT_LIMITS.maxAreasPerCall) {

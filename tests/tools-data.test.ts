@@ -147,7 +147,7 @@ describe("getDataHandler", () => {
     })) as { structuredContent: Record<string, unknown>; isError?: boolean };
     expect(r.isError).toBeUndefined();
     expect(r.structuredContent.rows_count).toBe(0);
-    expect(String(r.structuredContent.hint)).toContain("list_dimension_values");
+    expect(String(r.structuredContent.hint)).toContain("ilo_list_dimension_values");
   });
 
   it("upstream 504 → erro pedagógico de recorte", async () => {

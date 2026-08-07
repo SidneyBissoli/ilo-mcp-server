@@ -107,7 +107,7 @@ export async function getDataflowStructure(env: Env, dataflowId: string): Promis
   } catch (e) {
     if (e instanceof IlostatUpstreamError && e.status === 404) {
       throw new IlostatUserError(
-        `Dataflow "${dataflowId}" not found at ILOSTAT. Use search_indicators to find valid dataflow ids.`,
+        `Dataflow "${dataflowId}" not found at ILOSTAT. Use ilo_search_indicators to find valid dataflow ids.`,
       );
     }
     throw e;

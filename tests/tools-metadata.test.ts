@@ -100,7 +100,7 @@ describe("getIndicatorMetadataHandler", () => {
       content: Array<{ text: string }>;
     };
     expect(r.isError).toBe(true);
-    expect(r.content[0]?.text).toContain("search_indicators");
+    expect(r.content[0]?.text).toContain("ilo_search_indicators");
   });
 });
 

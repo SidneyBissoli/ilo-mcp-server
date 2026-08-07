@@ -4,15 +4,12 @@ import { CATALOG } from "../../evals/catalog.js";
 import { FIXTURES } from "../../evals/fixtures/queries.js";
 
 describe("evals: catálogo e fixtures", () => {
-  it("o catálogo vivo captura exatamente as 7 tools do servidor (4 ILOSTAT + 3 UIS)", () => {
+  it("o catálogo vivo captura exatamente as 4 tools do servidor", () => {
     expect([...CATALOG.toolNames].sort()).toEqual([
-      "get_data",
-      "get_indicator_metadata",
-      "list_dimension_values",
-      "search_indicators",
-      "uis_get_data",
-      "uis_list_geo_units",
-      "uis_search_indicators",
+      "ilo_get_data",
+      "ilo_get_indicator_metadata",
+      "ilo_list_dimension_values",
+      "ilo_search_indicators",
     ]);
   });
 

@@ -11,17 +11,16 @@ import type { ProvenanceContextOptions } from "@sbissoli/mcp-provenance";
 
 export const SERVER_CONFIG = {
   /** Nome curto do servidor (handshake MCP, /status, landing). */
-  name: "ilostat-mcp",
+  name: "ilo-mcp-server",
   /** Versão do servidor — manter em sincronia com package.json. */
-  version: "0.1.0",
+  version: "0.2.0",
   /** Título de exibição (clientes MCP mostram ao usuário). */
-  title: "ILOSTAT & UNESCO UIS — International Statistics (provenance-first)",
+  title: "ILOSTAT — ILO Labour Statistics (provenance-first)",
   /** Uma frase: o que o servidor serve e de qual fonte. */
   description:
-    "MCP server for two official statistical sources: ILOSTAT (International Labour " +
-    "Organization — labour statistics) and the UNESCO Institute for Statistics (education, " +
-    "science, culture and communication). Every response carries a deterministic provenance " +
-    "and attribution block for its source; the two sources are never mixed in one response.",
+    "MCP server for ILOSTAT, the International Labour Organization's statistical database: " +
+    "search 1,200+ indicator dataflows and retrieve labour statistics by country, year, sex " +
+    "and age — every response carries a deterministic provenance and attribution block.",
   /**
    * Contato exibido na landing page. A URL raiz do Worker é o que sysadmins upstream
    * veem no User-Agent — precisa resolver para identificação humana + contato.
@@ -34,15 +33,13 @@ export const SERVER_CONFIG = {
    * usá-lo (critério do diretório Anthropic).
    */
   instructions:
-    "Statistics from two official sources, each behind its own tools. ILOSTAT " +
-    "(International Labour Organization): unemployment, employment, wages, working time — " +
-    "flow: search_indicators to find a dataflow, then get_data with country and period " +
-    "filters (get_indicator_metadata / list_dimension_values give valid filter codes). " +
-    "UNESCO UIS: education, science/R&D, culture and communication indicators — flow: " +
-    "uis_search_indicators to find an indicator code, uis_list_geo_units for country/region " +
-    "codes, then uis_get_data. Never mix the two sources in one answer without citing each " +
-    "source's own attribution block (ILOSTAT is CC BY 4.0; UIS is CC BY-SA 4.0). Do not use " +
-    "this server for statistics published by neither organization (e.g. health, trade, GDP).",
+    "Labour statistics from ILOSTAT (International Labour Organization) via the official " +
+    "SDMX API: unemployment, employment, wages, working time and related indicators, by " +
+    "country, year and disaggregations such as sex and age. Typical flow: " +
+    "ilo_search_indicators to find a dataflow, then ilo_get_data with country and period " +
+    "filters; use ilo_get_indicator_metadata / ilo_list_dimension_values to discover valid " +
+    "filter codes. Do not use this server for non-labour statistics (education, health, " +
+    "trade) or for data not published by the ILO.",
   /**
    * Hostnames aceitos no header Host. A lista SUBSTITUI os defaults do
    * createMcpHandler (localhost e *.workers.dev) — por isso inclui também o
@@ -79,25 +76,10 @@ export const RATE_LIMIT = {
 
 /** Tunáveis do domínio ILOSTAT (decisões do spike/decisor — ver README). */
 export const ILOSTAT_LIMITS = {
-  /** Teto de áreas (REF_AREA) por chamada de get_data — decisão do decisor, 07/08/2026. */
+  /** Teto de áreas (REF_AREA) por chamada de ilo_get_data — decisão do decisor, 07/08/2026. */
   maxAreasPerCall: 30,
   /** TTL do cache KV de codelists (7 dias — codelists mudam raramente). */
   codelistTtlSeconds: 7 * 24 * 3600,
   /** TTL do cache KV de estrutura de dataflow (24 h — fonte do data_vintage). */
   structureTtlSeconds: 24 * 3600,
-} as const;
-
-/** Tunáveis do domínio UIS (medições do mini-spike, docs/06 do projeto). */
-export const UIS_LIMITS = {
-  /** Teto de indicadores por chamada de uis_get_data. */
-  maxIndicatorsPerCall: 25,
-  /**
-   * Teto de registros devolvidos numa resposta (proteção do contexto do cliente
-   * MCP — o upstream aceita até 100k). Acima disso: erro pedagógico com a
-   * contagem real; nunca truncar silenciosamente (dado parcial apresentado como
-   * completo viola o contrato anti-alucinação). Reavaliar com uso real.
-   */
-  maxRecordsPerResponse: 5000,
-  /** TTL do cache KV da release corrente (/versions/default — fonte do data_vintage). */
-  releaseTtlSeconds: 24 * 3600,
 } as const;

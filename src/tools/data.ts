@@ -1,5 +1,5 @@
 /**
- * get_data — a tool central: dados estatísticos de um dataflow, com recorte
+ * ilo_get_data — a tool central: dados estatísticos de um dataflow, com recorte
  * obrigatório (teto de 30 áreas, decisão do decisor 07/08/2026) e bloco de
  * proveniência v1.0 com a chave de dimensões da consulta.
  *
@@ -19,7 +19,7 @@ import { withUsage } from "../usage-wrap.js";
 import { withToolErrors } from "./errors.js";
 import { PROVENANCE_MODE_SCHEMA, provenanceOutputShape } from "./shared.js";
 
-export const GET_DATA = "get_data";
+export const GET_DATA = "ilo_get_data";
 
 /** Rótulo do período para o dimension_key (a chave SDMX não carrega o período). */
 export function timePeriodLabel(
@@ -81,7 +81,7 @@ export function getDataHandler(env: Env) {
         ...(rows.length === 0
           ? {
               hint:
-                "No observations for this selection. Check the codes with list_dimension_values " +
+                "No observations for this selection. Check the codes with ilo_list_dimension_values " +
                 "and the period with start_period/end_period — some series do not cover all areas or years.",
             }
           : {}),
@@ -118,14 +118,14 @@ export function registerDataTools(server: McpServer, env: Env, record: RecordUsa
         "per call — for broad panels, split areas into batches and/or paginate by period. " +
         "Unfiltered dimensions return all their categories. Does not aggregate, convert or " +
         "otherwise transform values (raw ILOSTAT data only), and does not search indicators " +
-        "(use search_indicators).",
+        "(use ilo_search_indicators).",
       inputSchema: z.object({
-        dataflow: z.string().min(1).describe('Dataflow id from search_indicators (e.g. "DF_UNE_DEAP_SEX_AGE_RT")'),
+        dataflow: z.string().min(1).describe('Dataflow id from ilo_search_indicators (e.g. "DF_UNE_DEAP_SEX_AGE_RT")'),
         filters: z
           .record(z.string(), z.union([z.string(), z.array(z.string()).min(1)]))
           .optional()
           .describe(
-            "Dimension id → code or list of codes (from list_dimension_values). " +
+            "Dimension id → code or list of codes (from ilo_list_dimension_values). " +
               "REF_AREA is required (up to 30 area codes).",
           ),
         start_period: z.string().min(1).optional().describe('First period, e.g. "2015"'),
