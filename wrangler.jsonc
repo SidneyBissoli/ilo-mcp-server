@@ -1,0 +1,37 @@
+// Configuração do Worker — servidor MCP ILOSTAT (Fase 1 do projeto ilostat).
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "ilostat-mcp",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-08-07",
+  "compatibility_flags": ["nodejs_compat"],
+  "workers_dev": true,
+
+  "vars": {
+    "ALLOWED_ORIGIN": "*"
+  },
+
+  // Cache SDMX: codelists cacheadas POR CODELIST (CL_MEASURE/CL_AREA são compartilhadas
+  // entre dataflows — ~90% de economia, medição do spike) + estrutura de dataflow.
+  "kv_namespaces": [
+    { "binding": "SDMX_CACHE", "id": "e34b3945586c4072a3d54465fe41e455" }
+  ],
+
+  // Catálogo de dataflows (1.210 / 557 KB, medição do spike) — busca de indicadores
+  // 100% local, sem chamada ao upstream. Seed: scripts/seed-catalog.mjs.
+  "d1_databases": [
+    { "binding": "CATALOG_DB", "database_name": "ilostat-catalog", "database_id": "a4a11eaa-574b-446b-a0b0-d584b467f3b3" }
+  ],
+
+  // Estatísticas de uso — Durable Object singleton com storage SQLite (src/usage.ts).
+  "durable_objects": {
+    "bindings": [{ "name": "USAGE", "class_name": "UsageTracker" }]
+  },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["UsageTracker"] }],
+
+  // Metadados do último deploy (id/tag/timestamp) — expostos em GET /status.
+  "version_metadata": { "binding": "CF_VERSION_METADATA" },
+
+  // Logs estruturados no painel da Cloudflare (Workers Logs).
+  "observability": { "enabled": true }
+}
