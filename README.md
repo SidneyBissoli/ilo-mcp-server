@@ -124,3 +124,7 @@ Harness:
 `/` landing · `/health` liveness · `/status` versão+deploy · `/metrics` uso agregado ·
 `/mcp` MCP Streamable HTTP. Auth Bearer opcional (`wrangler secret put API_KEY`);
 rate limit token-bucket por IP.
+
+## Privacidade
+
+Política de privacidade do serviço hospedado: [PRIVACY.md](PRIVACY.md).
