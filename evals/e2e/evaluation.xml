@@ -1,0 +1,42 @@
+<evaluation>
+   <qa_pair>
+      <question>Among the four founding members of Mercosur (Brazil, Argentina, Paraguay, Uruguay), which country had the highest annual unemployment rate in 2019 (SDG indicator 8.5.2, both sexes, ages 15 and over)? Answer with the country name in English.</question>
+      <answer>Brazil</answer>
+   </qa_pair>
+   <qa_pair>
+      <question>Considering annual data from 2011 to 2019 for SDG indicator 8.5.2 (unemployment rate, both sexes, ages 15 and over), in which year did Brazil's unemployment rate peak? Answer with the year in YYYY format.</question>
+      <answer>2017</answer>
+   </qa_pair>
+   <qa_pair>
+      <question>According to ILOSTAT SDG indicator 8.5.2, what was South Africa's youth unemployment rate (ages 15-24, both sexes) in 2020? Answer with the number only, rounded to one decimal place, without a percent sign.</question>
+      <answer>59.4</answer>
+   </qa_pair>
+   <qa_pair>
+      <question>Among the G7 countries (Canada, France, Germany, Italy, Japan, United Kingdom, United States), which had the lowest female unemployment rate (ages 15 and over) in 2015 according to SDG indicator 8.5.2? Answer with the country name in English.</question>
+      <answer>Japan</answer>
+   </qa_pair>
+   <qa_pair>
+      <question>By how many percentage points did Argentina's annual unemployment rate (SDG indicator 8.5.2, both sexes, ages 15 and over) fall between 2020 and 2022? Answer with the number only, rounded to one decimal place.</question>
+      <answer>4.7</answer>
+   </qa_pair>
+   <qa_pair>
+      <question>According to ILOSTAT, which country had a higher labour force participation rate among women aged 15 and over in 2019: India or Sri Lanka? Answer with the country name in English.</question>
+      <answer>Sri Lanka</answer>
+   </qa_pair>
+   <qa_pair>
+      <question>According to ILOSTAT, what was the average monthly earnings of employees (both sexes) in Mexico in 2019, expressed in U.S. dollars? Answer with the number only, rounded to the nearest whole number.</question>
+      <answer>344</answer>
+   </qa_pair>
+   <qa_pair>
+      <question>What is the ILOSTAT area code used for the country commonly known in English as Ivory Coast? Answer with the code only.</question>
+      <answer>CIV</answer>
+   </qa_pair>
+   <qa_pair>
+      <question>According to SDG indicator 8.5.2, in Chile in 2019, which sex had the higher unemployment rate (ages 15 and over): male or female? Answer with exactly one word, Male or Female.</question>
+      <answer>Female</answer>
+   </qa_pair>
+   <qa_pair>
+      <question>How many dimensions does the ILOSTAT dataflow "SDG indicator 8.5.2: Unemployment rate by sex and age" have in its data structure (the time period is not one of them)? Answer with the number only.</question>
+      <answer>5</answer>
+   </qa_pair>
+</evaluation>

@@ -89,11 +89,35 @@ npm run deploy
 node scripts/smoke-mcp.mjs      # smoke do MCP em produção (initialize → 4 tools → erros)
 ```
 
+## Refresh do seed (D1) — decisão da Sessão 07 (07/08/2026)
+
+Estratégia: **seed manual com gatilho definido; sem cron do Worker.** Os dados de
+`ilo_get_data` são sempre live (nunca envelhecem); o que o seed congela é só o
+catálogo de busca (~1.210 dataflows, quase estático no upstream). A proveniência de
+`ilo_search_indicators` expõe o `retrieved_at` REAL do seed, então a idade do
+catálogo é sempre visível ao cliente — staleness explícita, não silenciosa.
+
+- **Gatilhos de re-seed**: (a) trimestral; (b) imediato se um dataflow existente no
+  upstream não aparecer na busca (sintoma de catálogo defasado). Procedimento: os 3
+  comandos de seed em "Desenvolvimento".
+- **Cron rejeitado por ora**: cadência upstream baixa não justifica código/estado
+  extra; reavaliar na Fase 3 (pós-submissão), com tráfego real — mesma janela da
+  reavaliação dos tetos operacionais.
+
 ## Evals
 
 `@sbissoli/mcp-evals`: 24 fixtures próprias em `evals/fixtures/queries.ts`, validadas
 offline em `npm test`. A rodada com modelo real (`npm run eval`) **custa API** — só
 com decisão explícita (`ANTHROPIC_API_KEY`; sem a chave, sai 0 com instruções).
+Rodada de 07/08/2026 (Sessão 07): **top-1 100% (24/24)** — `evals/results/`.
+
+**End-to-end (formato mcp-builder)**: 10 perguntas complexas com resposta única
+verificável em `evals/e2e/evaluation.xml`, respostas validadas manualmente contra a
+produção (`evals/e2e/validacao-respostas.md`). Rodada de 07/08/2026 (Sonnet):
+**9/10 string exata; 10/10 substantivo** — `evals/results/2026-08-07-e2e.md`.
+Harness:
+`fase0-insumos/mcp-builder-evaluation/evaluation.py -t http -u https://ilo.sidneybissoli.com/mcp`
+(exige as correções de compatibilidade descritas no registro de resultados).
 
 ## Rotas
 
