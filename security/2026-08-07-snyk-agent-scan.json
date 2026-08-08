@@ -1,0 +1,1047 @@
+{
+  "snyk-mcp-config.json": {
+    "client": "snyk-mcp-config.json",
+    "path": "snyk-mcp-config.json",
+    "servers": [
+      {
+        "name": "ilo-mcp-server",
+        "config_path": "C:/Users/SIDNEY/AppData/Local/Temp/claude/C--dev-mcp/83dbda6a-02bc-45cd-8556-64b938ebdda5/scratchpad/snyk-mcp-config.json",
+        "server": {
+          "command": "npx",
+          "args": [
+            "-y",
+            "mcp-remote",
+            "https://ilo.sidneybissoli.com/mcp"
+          ],
+          "type": "stdio",
+          "env": null,
+          "binary_identifier": null
+        },
+        "signature": {
+          "metadata": {
+            "meta": null,
+            "protocolVersion": "2025-11-25",
+            "capabilities": {
+              "experimental": null,
+              "logging": null,
+              "prompts": null,
+              "resources": null,
+              "tools": {
+                "listChanged": true
+              },
+              "completions": null,
+              "tasks": null
+            },
+            "serverInfo": {
+              "name": "ilo-mcp-server",
+              "title": "ILOSTAT \u2014 ILO Labour Statistics (provenance-first)",
+              "version": "0.2.0",
+              "websiteUrl": null,
+              "icons": null
+            },
+            "instructions": "Labour statistics from ILOSTAT (International Labour Organization) via the official SDMX API: unemployment, employment, wages, working time and related indicators, by country, year and disaggregations such as sex and age. Typical flow: ilo_search_indicators to find a dataflow, then ilo_get_data with country and period filters; use ilo_get_indicator_metadata / ilo_list_dimension_values to discover valid filter codes. Do not use this server for non-labour statistics (education, health, trade) or for data not published by the ILO."
+          },
+          "prompts": [],
+          "resources": [],
+          "resource_templates": [],
+          "tools": [
+            {
+              "name": "ilo_search_indicators",
+              "title": "Search ILOSTAT indicators",
+              "description": "Search the ILOSTAT catalogue of ~1,200 indicator dataflows by keywords in the name or id (e.g. \"unemployment rate sex age\"). Returns dataflow ids to use with ilo_get_data / ilo_get_indicator_metadata. Searches the catalogue only \u2014 it does not return statistical values (use ilo_get_data) and does not cover non-ILO sources.",
+              "inputSchema": {
+                "type": "object",
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "properties": {
+                  "query": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Keywords, matched against dataflow name and id (AND between terms)"
+                  },
+                  "limit": {
+                    "description": "Maximum results (default 20)",
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 100
+                  },
+                  "offset": {
+                    "description": "Results to skip, for pagination (default 0)",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "provenance_mode": {
+                    "description": "Provenance verbosity: 'concise' (default \u2014 source, url, vintage, retrieval date, citation, license) or 'detailed' (full canonical block with dataset, dimension key and notices)",
+                    "type": "string",
+                    "enum": [
+                      "concise",
+                      "detailed"
+                    ]
+                  }
+                },
+                "required": [
+                  "query"
+                ]
+              },
+              "outputSchema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "total_matches": {
+                    "type": "number"
+                  },
+                  "showing": {
+                    "type": "number"
+                  },
+                  "offset": {
+                    "type": "number"
+                  },
+                  "indicators": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "version": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "name",
+                        "version"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "has_more": {
+                    "type": "boolean"
+                  },
+                  "next_offset": {
+                    "type": "number"
+                  },
+                  "provenance": {},
+                  "attribution": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "required": [
+                  "total_matches",
+                  "showing",
+                  "offset",
+                  "indicators",
+                  "has_more",
+                  "provenance",
+                  "attribution"
+                ],
+                "additionalProperties": {}
+              },
+              "icons": null,
+              "annotations": {
+                "title": null,
+                "readOnlyHint": true,
+                "destructiveHint": false,
+                "idempotentHint": true,
+                "openWorldHint": false
+              },
+              "meta": null,
+              "execution": null
+            },
+            {
+              "name": "ilo_get_indicator_metadata",
+              "title": "Get ILOSTAT indicator metadata",
+              "description": "Structure of one ILOSTAT dataflow: dimensions (in SDMX key order), their codelists, the time dimension, the source's default selection and the data vintage (last update at the ILO). Use before ilo_get_data to know which filters exist. Does not return statistical values and does not list the codes themselves (use ilo_list_dimension_values).",
+              "inputSchema": {
+                "type": "object",
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "properties": {
+                  "dataflow": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Dataflow id from ilo_search_indicators (e.g. \"DF_UNE_DEAP_SEX_AGE_RT\")"
+                  },
+                  "provenance_mode": {
+                    "description": "Provenance verbosity: 'concise' (default \u2014 source, url, vintage, retrieval date, citation, license) or 'detailed' (full canonical block with dataset, dimension key and notices)",
+                    "type": "string",
+                    "enum": [
+                      "concise",
+                      "detailed"
+                    ]
+                  }
+                },
+                "required": [
+                  "dataflow"
+                ]
+              },
+              "outputSchema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "version": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "data_vintage": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "dimensions": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "codelist": {
+                          "anyOf": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "codelist"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "time_dimension": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "provenance": {},
+                  "attribution": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "required": [
+                  "id",
+                  "version",
+                  "name",
+                  "data_vintage",
+                  "dimensions",
+                  "time_dimension",
+                  "provenance",
+                  "attribution"
+                ],
+                "additionalProperties": {}
+              },
+              "icons": null,
+              "annotations": {
+                "title": null,
+                "readOnlyHint": true,
+                "destructiveHint": false,
+                "idempotentHint": true,
+                "openWorldHint": true
+              },
+              "meta": null,
+              "execution": null
+            },
+            {
+              "name": "ilo_list_dimension_values",
+              "title": "List valid codes of a dimension",
+              "description": "Valid codes (id + label) of one dimension of an ILOSTAT dataflow \u2014 e.g. the country/area codes of REF_AREA or the sex categories of SEX. Use to build correct ilo_get_data filters. Does not return statistical values; not applicable to the time dimension (filter it via start_period/end_period in ilo_get_data).",
+              "inputSchema": {
+                "type": "object",
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "properties": {
+                  "dataflow": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Dataflow id the dimension belongs to"
+                  },
+                  "dimension": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Dimension id from ilo_get_indicator_metadata (e.g. \"REF_AREA\", \"SEX\")"
+                  },
+                  "search": {
+                    "description": "Case-insensitive filter on code id or label",
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "limit": {
+                    "description": "Maximum codes returned (default 200)",
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 500
+                  },
+                  "offset": {
+                    "description": "Codes to skip, for pagination (default 0)",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "provenance_mode": {
+                    "description": "Provenance verbosity: 'concise' (default \u2014 source, url, vintage, retrieval date, citation, license) or 'detailed' (full canonical block with dataset, dimension key and notices)",
+                    "type": "string",
+                    "enum": [
+                      "concise",
+                      "detailed"
+                    ]
+                  }
+                },
+                "required": [
+                  "dataflow",
+                  "dimension"
+                ]
+              },
+              "outputSchema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "dataflow": {
+                    "type": "string"
+                  },
+                  "dimension": {
+                    "type": "string"
+                  },
+                  "codelist": {
+                    "type": "string"
+                  },
+                  "total_codes": {
+                    "type": "number"
+                  },
+                  "showing": {
+                    "type": "number"
+                  },
+                  "offset": {
+                    "type": "number"
+                  },
+                  "values": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "name": {
+                          "anyOf": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "name"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "has_more": {
+                    "type": "boolean"
+                  },
+                  "next_offset": {
+                    "type": "number"
+                  },
+                  "provenance": {},
+                  "attribution": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "required": [
+                  "dataflow",
+                  "dimension",
+                  "codelist",
+                  "total_codes",
+                  "showing",
+                  "offset",
+                  "values",
+                  "has_more",
+                  "provenance",
+                  "attribution"
+                ],
+                "additionalProperties": {}
+              },
+              "icons": null,
+              "annotations": {
+                "title": null,
+                "readOnlyHint": true,
+                "destructiveHint": false,
+                "idempotentHint": true,
+                "openWorldHint": true
+              },
+              "meta": null,
+              "execution": null
+            },
+            {
+              "name": "ilo_get_data",
+              "title": "Get ILOSTAT data",
+              "description": "Statistical observations from one ILOSTAT dataflow, filtered by dimension codes (filters, e.g. {\"REF_AREA\": [\"BRA\",\"ARG\"], \"SEX\": \"SEX_T\"}) and period (start_period/end_period, e.g. \"2015\"/\"2024\"). REF_AREA is required, maximum 30 areas per call \u2014 for broad panels, split areas into batches and/or paginate by period. Unfiltered dimensions return all their categories. Does not aggregate, convert or otherwise transform values (raw ILOSTAT data only), and does not search indicators (use ilo_search_indicators).",
+              "inputSchema": {
+                "type": "object",
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "properties": {
+                  "dataflow": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Dataflow id from ilo_search_indicators (e.g. \"DF_UNE_DEAP_SEX_AGE_RT\")"
+                  },
+                  "filters": {
+                    "description": "Dimension id \u2192 code or list of codes (from ilo_list_dimension_values). REF_AREA is required (up to 30 area codes).",
+                    "type": "object",
+                    "propertyNames": {
+                      "type": "string"
+                    },
+                    "additionalProperties": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "minItems": 1,
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  "start_period": {
+                    "description": "First period, e.g. \"2015\"",
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "end_period": {
+                    "description": "Last period, e.g. \"2024\"",
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "last_n_observations": {
+                    "description": "Alternative to periods: only the latest N observations per series",
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 100
+                  },
+                  "provenance_mode": {
+                    "description": "Provenance verbosity: 'concise' (default \u2014 source, url, vintage, retrieval date, citation, license) or 'detailed' (full canonical block with dataset, dimension key and notices)",
+                    "type": "string",
+                    "enum": [
+                      "concise",
+                      "detailed"
+                    ]
+                  }
+                },
+                "required": [
+                  "dataflow"
+                ]
+              },
+              "outputSchema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "dataflow": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "version": {
+                        "type": "string"
+                      },
+                      "name": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "version",
+                      "name"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "columns": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "rows_count": {
+                    "type": "number"
+                  },
+                  "rows": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "propertyNames": {
+                        "type": "string"
+                      },
+                      "additionalProperties": {}
+                    }
+                  },
+                  "provenance": {},
+                  "attribution": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "required": [
+                  "dataflow",
+                  "columns",
+                  "rows_count",
+                  "rows",
+                  "provenance",
+                  "attribution"
+                ],
+                "additionalProperties": {}
+              },
+              "icons": null,
+              "annotations": {
+                "title": null,
+                "readOnlyHint": true,
+                "destructiveHint": false,
+                "idempotentHint": true,
+                "openWorldHint": true
+              },
+              "meta": null,
+              "execution": null
+            }
+          ]
+        },
+        "error": null
+      },
+      {
+        "name": "uis-mcp-server",
+        "config_path": "C:/Users/SIDNEY/AppData/Local/Temp/claude/C--dev-mcp/83dbda6a-02bc-45cd-8556-64b938ebdda5/scratchpad/snyk-mcp-config.json",
+        "server": {
+          "command": "npx",
+          "args": [
+            "-y",
+            "mcp-remote",
+            "https://uis.sidneybissoli.com/mcp"
+          ],
+          "type": "stdio",
+          "env": null,
+          "binary_identifier": null
+        },
+        "signature": {
+          "metadata": {
+            "meta": null,
+            "protocolVersion": "2025-11-25",
+            "capabilities": {
+              "experimental": null,
+              "logging": null,
+              "prompts": null,
+              "resources": null,
+              "tools": {
+                "listChanged": true
+              },
+              "completions": null,
+              "tasks": null
+            },
+            "serverInfo": {
+              "name": "uis-mcp-server",
+              "title": "UNESCO UIS \u2014 Education, Science & Culture Statistics (provenance-first)",
+              "version": "0.1.0",
+              "websiteUrl": null,
+              "icons": null
+            },
+            "instructions": "Statistics from the UNESCO Institute for Statistics (UIS) via the official Data API: education (enrolment, completion, literacy, spending), science/R&D (SDG 9.5), culture (SDG 11.4) and communication indicators, by country or region and year. Typical flow: uis_search_indicators to find an indicator code, uis_list_geo_units for country/region codes, then uis_get_data with year filters. Do not use this server for statistics not published by the UIS (e.g. labour, health, trade, GDP)."
+          },
+          "prompts": [],
+          "resources": [],
+          "resource_templates": [],
+          "tools": [
+            {
+              "name": "uis_search_indicators",
+              "title": "Search UNESCO UIS indicators",
+              "description": "Search the UNESCO Institute for Statistics catalogue of ~5,000 indicators \u2014 education, science/R&D, culture and communication \u2014 by keywords in the name or code, optionally filtered by theme. Returns indicator codes to use with uis_get_data, plus each indicator's data availability (years, record count). Searches the catalogue only \u2014 it does not return statistical values (use uis_get_data); ILO labour statistics live in the sibling ILOSTAT MCP server.",
+              "inputSchema": {
+                "type": "object",
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "properties": {
+                  "query": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Keywords, matched against indicator name and code (e.g. \"literacy rate youth\")"
+                  },
+                  "theme": {
+                    "description": "Restrict to one UIS theme",
+                    "type": "string",
+                    "enum": [
+                      "EDUCATION",
+                      "SCIENCE_TECHNOLOGY_INNOVATION",
+                      "CULTURE",
+                      "DEMOGRAPHIC_SOCIOECONOMIC"
+                    ]
+                  },
+                  "limit": {
+                    "description": "Maximum results (default 20)",
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 100
+                  },
+                  "offset": {
+                    "description": "Results to skip, for pagination (default 0)",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "provenance_mode": {
+                    "description": "Provenance verbosity: 'concise' (default \u2014 source, url, vintage, retrieval date, citation, license) or 'detailed' (full canonical block with dataset, dimension key and notices)",
+                    "type": "string",
+                    "enum": [
+                      "concise",
+                      "detailed"
+                    ]
+                  }
+                },
+                "required": [
+                  "query"
+                ]
+              },
+              "outputSchema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "total_matches": {
+                    "type": "number"
+                  },
+                  "showing": {
+                    "type": "number"
+                  },
+                  "offset": {
+                    "type": "number"
+                  },
+                  "has_more": {
+                    "type": "boolean"
+                  },
+                  "next_offset": {
+                    "type": "number"
+                  },
+                  "indicators": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "theme": {
+                          "type": "string"
+                        },
+                        "last_data_update": {
+                          "anyOf": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "records": {
+                          "anyOf": [
+                            {
+                              "type": "number"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "years": {
+                          "anyOf": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
+                        "geo_types": {
+                          "anyOf": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "name",
+                        "theme",
+                        "last_data_update",
+                        "records",
+                        "years",
+                        "geo_types"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "provenance": {},
+                  "attribution": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "required": [
+                  "total_matches",
+                  "showing",
+                  "offset",
+                  "has_more",
+                  "indicators",
+                  "provenance",
+                  "attribution"
+                ],
+                "additionalProperties": {}
+              },
+              "icons": null,
+              "annotations": {
+                "title": null,
+                "readOnlyHint": true,
+                "destructiveHint": false,
+                "idempotentHint": true,
+                "openWorldHint": false
+              },
+              "meta": null,
+              "execution": null
+            },
+            {
+              "name": "uis_list_geo_units",
+              "title": "List UNESCO UIS geo units",
+              "description": "Valid geographic codes for uis_get_data: 462 geo units \u2014 countries (NATIONAL, ISO alpha-3 codes like BRA) and regional aggregates (REGIONAL). Filter by name/code and type. Does not return statistical values; these codes apply only to uis_get_data, not to other statistical servers.",
+              "inputSchema": {
+                "type": "object",
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "properties": {
+                  "search": {
+                    "description": "Case-insensitive filter on name, or exact code (e.g. \"BRA\")",
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "type": {
+                    "description": "Only countries (NATIONAL) or only regional aggregates",
+                    "type": "string",
+                    "enum": [
+                      "NATIONAL",
+                      "REGIONAL"
+                    ]
+                  },
+                  "limit": {
+                    "description": "Maximum results (default 100)",
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 500
+                  },
+                  "offset": {
+                    "description": "Results to skip, for pagination (default 0)",
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "provenance_mode": {
+                    "description": "Provenance verbosity: 'concise' (default \u2014 source, url, vintage, retrieval date, citation, license) or 'detailed' (full canonical block with dataset, dimension key and notices)",
+                    "type": "string",
+                    "enum": [
+                      "concise",
+                      "detailed"
+                    ]
+                  }
+                }
+              },
+              "outputSchema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "total_matches": {
+                    "type": "number"
+                  },
+                  "showing": {
+                    "type": "number"
+                  },
+                  "offset": {
+                    "type": "number"
+                  },
+                  "has_more": {
+                    "type": "boolean"
+                  },
+                  "next_offset": {
+                    "type": "number"
+                  },
+                  "geo_units": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "type": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "name",
+                        "type"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "provenance": {},
+                  "attribution": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "required": [
+                  "total_matches",
+                  "showing",
+                  "offset",
+                  "has_more",
+                  "geo_units",
+                  "provenance",
+                  "attribution"
+                ],
+                "additionalProperties": {}
+              },
+              "icons": null,
+              "annotations": {
+                "title": null,
+                "readOnlyHint": true,
+                "destructiveHint": false,
+                "idempotentHint": true,
+                "openWorldHint": false
+              },
+              "meta": null,
+              "execution": null
+            },
+            {
+              "name": "uis_get_data",
+              "title": "Get UNESCO UIS data",
+              "description": "Statistical records from the UNESCO Institute for Statistics Data API, filtered by indicator codes (from uis_search_indicators, up to 25), geo unit codes (from uis_list_geo_units) and year range. Set include_footnotes for per-record source notes. Returns raw UIS records only \u2014 it does not aggregate, convert or otherwise transform values; ILO labour statistics live in the sibling ILOSTAT MCP server. Broad queries are rejected with the record count \u2014 narrow by geo unit or years.",
+              "inputSchema": {
+                "type": "object",
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "properties": {
+                  "indicators": {
+                    "minItems": 1,
+                    "maxItems": 25,
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "description": "Indicator codes from uis_search_indicators (e.g. [\"CR.1\"])"
+                  },
+                  "geo_units": {
+                    "description": "Geo unit codes from uis_list_geo_units (e.g. [\"BRA\",\"ARG\"]); omit for all",
+                    "minItems": 1,
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "start_year": {
+                    "description": "First year, e.g. 2015",
+                    "type": "integer",
+                    "minimum": 1900,
+                    "maximum": 2100
+                  },
+                  "end_year": {
+                    "description": "Last year, e.g. 2024",
+                    "type": "integer",
+                    "minimum": 1900,
+                    "maximum": 2100
+                  },
+                  "include_footnotes": {
+                    "description": "Include per-record footnotes (source notes); default false",
+                    "type": "boolean"
+                  },
+                  "provenance_mode": {
+                    "description": "Provenance verbosity: 'concise' (default \u2014 source, url, vintage, retrieval date, citation, license) or 'detailed' (full canonical block with dataset, dimension key and notices)",
+                    "type": "string",
+                    "enum": [
+                      "concise",
+                      "detailed"
+                    ]
+                  }
+                },
+                "required": [
+                  "indicators"
+                ]
+              },
+              "outputSchema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "columns": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "rows_count": {
+                    "type": "number"
+                  },
+                  "rows": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "propertyNames": {
+                        "type": "string"
+                      },
+                      "additionalProperties": {}
+                    }
+                  },
+                  "provenance": {},
+                  "attribution": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "required": [
+                  "columns",
+                  "rows_count",
+                  "rows",
+                  "provenance",
+                  "attribution"
+                ],
+                "additionalProperties": {}
+              },
+              "icons": null,
+              "annotations": {
+                "title": null,
+                "readOnlyHint": true,
+                "destructiveHint": false,
+                "idempotentHint": true,
+                "openWorldHint": true
+              },
+              "meta": null,
+              "execution": null
+            }
+          ]
+        },
+        "error": null
+      }
+    ],
+    "issues": [],
+    "labels": [
+      [
+        {
+          "is_public_sink": 0,
+          "destructive": 0,
+          "untrusted_content": 0,
+          "private_data": 0
+        },
+        {
+          "is_public_sink": 0,
+          "destructive": 0,
+          "untrusted_content": 0,
+          "private_data": 0
+        },
+        {
+          "is_public_sink": 0,
+          "destructive": 0,
+          "untrusted_content": 0,
+          "private_data": 0
+        },
+        {
+          "is_public_sink": 0,
+          "destructive": 0,
+          "untrusted_content": 0,
+          "private_data": 0
+        }
+      ],
+      [
+        {
+          "is_public_sink": 0,
+          "destructive": 0,
+          "untrusted_content": 0,
+          "private_data": 0
+        },
+        {
+          "is_public_sink": 0,
+          "destructive": 0,
+          "untrusted_content": 0,
+          "private_data": 0
+        },
+        {
+          "is_public_sink": 0,
+          "destructive": 0,
+          "untrusted_content": 0,
+          "private_data": 0
+        }
+      ]
+    ],
+    "error": null
+  }
+}
