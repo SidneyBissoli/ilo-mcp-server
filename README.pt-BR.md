@@ -14,16 +14,14 @@ Servidor [MCP](https://modelcontextprotocol.io) **público, hospedado e provenan
 estatísticas da **Organização Internacional do Trabalho (OIT)** — a base **ILOSTAT** — **sem
 instalação, sem conta, sem chave de API**. Aponte seu cliente MCP para o endpoint hospedado e
 pergunte sobre desemprego, emprego, salários, jornada e outros indicadores de trabalho por país,
-ano, sexo e idade. Roda em Cloudflare Workers via Streamable HTTP e fala com a API SDMX REST
+ano, sexo e idade. Roda em Cloudflare Workers via Streamable HTTP e consulta a API SDMX REST
 oficial do ILOSTAT.
 
 Toda resposta carrega um **bloco de proveniência** (URL da fonte, vintage dos dados, instante
 real da extração, licença, citação da OIT) — números exatos com trilha de auditoria, não
-palpites da base de treino. As estatísticas da UNESCO UIS vivem no servidor irmão
-[`uis-mcp-server`](https://github.com/SidneyBissoli/uis-mcp-server) (um servidor por fonte:
-segregação estrutural entre dados CC BY e CC BY-SA).
+palpites da base de treino.
 
-## Use (hospedado — sem setup)
+## Use (hospedado — sem configuração)
 
 Aponte qualquer cliente MCP para o endpoint Streamable HTTP:
 
@@ -49,69 +47,62 @@ O hostname `ilo-mcp-server.sidneybissoli.workers.dev` também é servido, como s
 
 ## Tools
 
-| Tool | O quê | Fonte |
+| Tool | O que faz | Fonte |
 |---|---|---|
-| `ilo_search_indicators` | busca ~1.210 dataflows por palavra-chave (paginação por `offset`) | catálogo em D1 (100% local) |
-| `ilo_get_indicator_metadata` | dimensões, codelists, vintage, defaults de um dataflow | estrutura em KV (miss → upstream) |
-| `ilo_list_dimension_values` | códigos válidos de uma dimensão (paginação por `offset`) | codelist em KV (miss → upstream) |
-| `ilo_get_data` | observações com filtros por dimensão e período | 1 chamada REST por consulta |
+| `ilo_search_indicators` | busca ~1.210 dataflows por palavra-chave (paginação por `offset`) | catálogo local (sem chamada à fonte) |
+| `ilo_get_indicator_metadata` | dimensões, codelists, vintage e seleção padrão de um dataflow | estrutura em cache (miss → fonte) |
+| `ilo_list_dimension_values` | códigos válidos de uma dimensão (paginação por `offset`) | codelist em cache (miss → fonte) |
+| `ilo_get_data` | observações filtradas por dimensão e período | 1 chamada REST ao vivo por consulta |
 
 Fluxo típico: `ilo_search_indicators` → `ilo_get_indicator_metadata` / `ilo_list_dimension_values`
 para descobrir os códigos válidos de filtro → `ilo_get_data` com filtros de país e período.
 
 Toda resposta carrega o **bloco de proveniência v1.0**
 ([`@sbissoli/mcp-provenance`](https://www.npmjs.com/package/@sbissoli/mcp-provenance), modos
-`concise`/`detailed` via parâmetro `provenance_mode`) nos três canais do contrato:
-`structuredContent`, `_meta` namespaced (`com.sidneybissoli.ilostat/*`) e rodapé de texto.
+`concise`/`detailed` via parâmetro `provenance_mode`) em três canais: `structuredContent`,
+`_meta` com namespace (`com.sidneybissoli.ilostat/*`) e rodapé de texto.
 
-## Decisões de projeto (vinculantes)
+## Comportamento e limites
 
-Achados do spike SDMX, fixados como regras do servidor:
+- **`REF_AREA` é obrigatório em `ilo_get_data`, até 30 áreas por chamada.** O gateway da OIT
+  expira (HTTP 504) em consultas irrestritas, então o servidor nunca emite uma; para painéis
+  amplos, divida as áreas em lotes e/ou pagine por período (`start_period`/`end_period`). A
+  mensagem de erro explica como.
+- **Uma chamada REST ao vivo por consulta de dados.** Dados nunca são cacheados — todo resultado
+  de `ilo_get_data` é buscado no ILOSTAT no momento da requisição. Estruturas de dataflow (TTL
+  24 h) e codelists (TTL 7 dias, compartilhadas entre dataflows) ficam em cache.
+- **`data_vintage`** é a data da última atualização do dataflow publicada pela OIT (annotation
+  `LAST_UPDATE`, normalizada para ISO).
+- **`retrieved_at` é sempre o instante real da extração no ILOSTAT**, preservado junto a
+  qualquer valor cacheado — nunca o momento do build ou da resposta. Respostas vindas de cache
+  dizem isso (`served_from_cache: true`).
+- **O catálogo de indicadores é um snapshot local** (~1.210 dataflows), atualizado
+  periodicamente; o `retrieved_at` dele é reportado na proveniência de `ilo_search_indicators`,
+  então a idade do catálogo é sempre visível.
+- **Toda chamada à fonte leva um User-Agent identificável** (URL do serviço + contato), para que
+  os administradores da OIT consigam chegar ao operador.
+- **Idioma: inglês; fuso: UTC** (os dados da OIT são publicados em inglês).
 
-- **JSON só via header `Accept`** (`application/vnd.sdmx.{structure,data}+json`) —
-  `?format=` é ignorado pelo endpoint e devolve XML.
-- **Nunca emitir consulta irrestrita** (`/all` → HTTP 504 do gateway da OIT em ~61 s).
-  `REF_AREA` é obrigatório em `ilo_get_data`, com **teto de 30 áreas por chamada** e erro
-  pedagógico pedindo lotes / paginação por período. Sem fatiamento server-side no MVP;
-  reavaliar pós-lançamento com dados do UsageTracker.
-- **Codelists cacheadas POR CODELIST** (`codelist:ILO:CL_AREA:1.0`, TTL 7 dias) —
-  `CL_MEASURE`/`CL_AREA` são compartilhadas entre dataflows (~90% de economia de KV).
-  Estrutura de dataflow em KV com TTL 24 h (é a fonte do `data_vintage`).
-- **`data_vintage`** = annotation `LAST_UPDATE` do dataflow (`dd/MM/yyyy` → ISO), servido da
-  estrutura cacheada — consulta típica permanece **1 chamada REST**.
-- **Catálogo em D1**, seed via `scripts/seed-catalog.mjs`; o `retrieved_at` do seed é gravado
-  em `catalog_meta` e reportado na proveniência de `ilo_search_indicators`
-  (`served_from_cache: true`).
-- **`retrieved_at` é sempre o instante REAL da extração no upstream**, preservado junto ao
-  valor cacheado — nunca o momento do build ou da resposta.
-- **User-Agent identificável** em toda chamada upstream (o gateway da OIT responde 500 a
-  clientes sem UA reconhecível; o `fetch` do Node/undici é rejeitado mesmo com UA — o seed
-  usa `curl`).
-- **Idioma do servidor: inglês; fuso: UTC** (persona internacional; dados da OIT são
-  publicados em inglês).
+### Campos de proveniência
 
-### Regra de `derived` (caso de fronteira)
+- **`derived`** — `true` só para transformação real (agregação, taxa calculada pelo servidor,
+  interpolação, harmonização), sempre com `derivation_note`; conversão de unidade e
+  arredondamento não contam. Este servidor não transforma valores, então `derived` é sempre
+  `false`.
+- **`notices`** — reproduz os valores de `OBS_STATUS` (canal de status/ressalva do SDMX, ex.:
+  "Break in series"), verbatim e com contagem. Atributos técnicos por observação (`DECIMALS`
+  etc.) permanecem nas linhas (`rows[].attributes`).
 
-Conversão de unidade e arredondamento **não** contam como derivação: `derived=false` com nota
-documentando a conversão. `derived=true` fica reservado a **transformação real** (agregação,
-taxa calculada pelo servidor, interpolação, harmonização), sempre com `derivation_note`. Regra
-operativa: *valor com o mesmo significado = não derivado; valor calculado = derivado.* O MVP
-não transforma nada — `derived` é sempre `false`.
+## Licença dos dados e atribuição
 
-### Notices
-
-`notices` reproduz os valores de `OBS_STATUS` (canal de status/disclaimer do SDMX, ex.: "Break
-in series"), verbatim com contagem. Atributos técnicos por observação (`DECIMALS` etc.)
-permanecem nas linhas (`rows[].attributes`).
-
-## Obrigações de licença
-
-- ILOSTAT: **CC BY 4.0** (dados/metadados desde 03/05/2023; `verified_at` 2026-08-04).
-- Atribuição ILO em toda resposta (campo `citation`):
+- Dados e metadados do ILOSTAT: **CC BY 4.0** (desde 03/05/2023; licença verificada em
+  04/08/2026).
+- Atribuição à OIT em toda resposta (campo `citation`):
   `International Labour Organization, ILOSTAT, https://ilostat.ilo.org/data/, accessed <data>.`
-- **Não** usar o logo da OIT. Landing declara "not endorsed by the ILO".
-- Dados UIS (CC BY-SA) vivem no servidor irmão `uis-mcp-server` — segregação estrutural: os
-  dois regimes nunca coabitam um servidor.
+- O logo da OIT não é usado. Este serviço não é endossado pela OIT.
+- As estatísticas da UNESCO UIS (CC BY-SA) são servidas por um servidor separado,
+  [`uis-mcp-server`](https://github.com/SidneyBissoli/uis-mcp-server), para que os dois regimes
+  de licença nunca se misturem.
 
 ## Self-hosting / desenvolvimento
 
@@ -120,7 +111,7 @@ servidor público.
 
 ```bash
 npm install
-npm run typecheck && npm test   # 75 testes offline (parsers, chave, tools, contrato de saída, evals-fixtures)
+npm run typecheck && npm test   # 75 testes offline (parsers, chave, tools, contrato de saída, fixtures de evals)
 npm run dev                     # http://localhost:8787/mcp
 
 # Seed do catálogo (D1) — necessário antes do primeiro uso:
@@ -129,41 +120,37 @@ npx wrangler d1 execute ilostat-catalog --local  --file=scripts/seed-catalog.sql
 npx wrangler d1 execute ilostat-catalog --remote --file=scripts/seed-catalog.sql
 
 npm run deploy
-node scripts/smoke-mcp.mjs      # smoke do MCP em produção (initialize → 4 tools → erros)
+node scripts/smoke-mcp.mjs      # smoke test contra a produção (initialize → 4 tools → erros)
 ```
 
 Bindings (ver `wrangler.jsonc`): KV `SDMX_CACHE`, D1 `CATALOG_DB`, Durable Object `USAGE`
-(contadores de uso em SQLite), `CF_VERSION_METADATA`. Auth Bearer opcional
+(contadores de uso em SQLite), `CF_VERSION_METADATA`. Autenticação Bearer opcional
 (`wrangler secret put API_KEY`); rate limit token-bucket por IP.
 
-### Refresh do catálogo (D1)
+Notas para operadores:
 
-Estratégia: **seed manual com gatilho definido; sem cron do Worker.** Os dados de
-`ilo_get_data` são sempre live (nunca envelhecem); o que o seed congela é só o catálogo de
-busca (~1.210 dataflows, quase estático no upstream). A proveniência de
-`ilo_search_indicators` expõe o `retrieved_at` REAL do seed, então a idade do catálogo é
-sempre visível ao cliente — staleness explícita, não silenciosa.
-
-- **Gatilhos de re-seed**: (a) trimestral; (b) imediato se um dataflow existente no upstream
-  não aparecer na busca (sintoma de catálogo defasado). Procedimento: os 3 comandos de seed
-  acima.
-- **Cron rejeitado por ora**: cadência upstream baixa não justifica código/estado extra;
-  reavaliar pós-submissão, com tráfego real — mesma janela da reavaliação dos tetos
-  operacionais.
+- O ILOSTAT devolve JSON só quando negociado via header `Accept`
+  (`application/vnd.sdmx.{structure,data}+json`); `?format=` é ignorado e devolve XML.
+- O gateway da OIT rejeita requisições sem User-Agent reconhecível e rejeita o `fetch` do Node
+  mesmo com um — o script de seed baixa com `curl`.
+- **Atualização do catálogo** é manual (sem cron): trimestral, ou imediata se um dataflow que
+  existe na fonte não aparecer na busca. Procedimento: os três comandos de seed acima. Consultas
+  de dados são sempre ao vivo, então só o catálogo de busca pode envelhecer — e a idade dele é
+  exposta na proveniência.
 
 ## Evals
 
-[`@sbissoli/mcp-evals`](https://www.npmjs.com/package/@sbissoli/mcp-evals): 24 fixtures
-próprias em `evals/fixtures/queries.ts`, validadas offline em `npm test`. A rodada com modelo
-real (`npm run eval`) **custa API** — só com decisão explícita (`ANTHROPIC_API_KEY`; sem a
-chave, sai 0 com instruções). Rodada de 07/08/2026: **top-1 100% (24/24)** — `evals/results/`.
+[`@sbissoli/mcp-evals`](https://www.npmjs.com/package/@sbissoli/mcp-evals): 24 fixtures em
+`evals/fixtures/queries.ts`, validadas offline em `npm test`. A rodada com modelo real
+(`npm run eval`) usa a API da Anthropic e exige `ANTHROPIC_API_KEY` (sem a chave, sai com
+instruções). Rodada de 07/08/2026: **top-1 100% (24/24)** — `evals/results/`.
 
-**End-to-end (formato mcp-builder)**: 10 perguntas complexas com resposta única verificável em
+**End-to-end**: 10 perguntas complexas com resposta única verificável em
 `evals/e2e/evaluation.xml`, respostas validadas manualmente contra a produção
 (`evals/e2e/validacao-respostas.md`). Rodada de 07/08/2026 (Sonnet): **9/10 string exata;
 10/10 substantivo** — `evals/results/2026-08-07-e2e.md`.
 
-## Rotas
+## Endpoints
 
 | Rota | Finalidade |
 |---|---|
@@ -175,12 +162,12 @@ chave, sai 0 com instruções). Rodada de 07/08/2026: **top-1 100% (24/24)** —
 
 ## Segurança
 
-Gate de submissão ao diretório: Snyk Agent Scan (07/08/2026) **passou** — evidência em
+Snyk Agent Scan (07/08/2026): **aprovado** — relatório em
 [`security/`](security/2026-08-07-snyk-agent-scan.md).
 
 ## Licença
 
-Código: [MIT](LICENSE.md). Dados: ILOSTAT, CC BY 4.0 (ver "Obrigações de licença" acima).
+Código: [MIT](LICENSE.md). Dados: ILOSTAT, CC BY 4.0 (ver "Licença dos dados e atribuição" acima).
 
 ## Privacidade
 
