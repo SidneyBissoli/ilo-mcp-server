@@ -77,7 +77,7 @@ ex.: "Break in series"), verbatim com contagem. Atributos técnicos por observa�
 
 ```bash
 npm install
-npm run typecheck && npm test   # 62 testes offline (parsers, chave, tools, evals-fixtures)
+npm run typecheck && npm test   # 74 testes offline (parsers, chave, tools, contrato de saida, evals-fixtures)
 npm run dev                     # http://localhost:8787/mcp
 
 # Seed do catálogo (D1) — necessário antes do primeiro uso:
