@@ -188,4 +188,4 @@ Política de privacidade do serviço hospedado: [PRIVACY.md](PRIVACY.md).
 
 ## Contato
 
-Sidney Bissoli — sbissoli76@gmail.com. Este serviço não é endossado pela OIT.
+Sidney da S. P. Bissoli — sbissoli76@gmail.com. Este serviço não é endossado pela OIT.

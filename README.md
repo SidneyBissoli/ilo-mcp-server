@@ -187,4 +187,4 @@ Privacy policy of the hosted service: [PRIVACY.md](PRIVACY.md).
 
 ## Contact
 
-Sidney Bissoli — sbissoli76@gmail.com. This service is not endorsed by the ILO.
+Sidney da S. P. Bissoli — sbissoli76@gmail.com. This service is not endorsed by the ILO.
