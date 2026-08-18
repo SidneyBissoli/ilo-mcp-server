@@ -1,4 +1,4 @@
-# ILOSTAT MCP Server
+# ILO Labour Statistics (ILOSTAT) — MCP Server
 
 ![MCP](https://img.shields.io/badge/MCP-Streamable%20HTTP-1f6feb)
 [![Version](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Filo.sidneybissoli.com%2Fstatus&query=%24.version&label=version&color=1f6feb)](https://ilo.sidneybissoli.com/status)
@@ -10,8 +10,8 @@
 
 🇧🇷 [Leia em Português](README.pt-BR.md)
 
-A **public, hosted, provenance-first** [MCP](https://modelcontextprotocol.io) server for
-**ILOSTAT**, the statistical database of the International Labour Organization (ILO) —
+A **public, hosted, provenance-first** [MCP](https://modelcontextprotocol.io) server for the
+**International Labour Organization (ILO)** statistics — the **ILOSTAT** database —
 **no installation, no account, no API key**. Point your MCP client at the hosted endpoint and
 ask about unemployment, employment, wages, working time and other labour indicators by
 country, year, sex and age. It runs on Cloudflare Workers over Streamable HTTP and talks to

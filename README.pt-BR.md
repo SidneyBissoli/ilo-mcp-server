@@ -1,4 +1,4 @@
-# ILOSTAT MCP Server
+# Estatísticas do Trabalho da OIT (ILOSTAT) — MCP Server
 
 ![MCP](https://img.shields.io/badge/MCP-Streamable%20HTTP-1f6feb)
 [![Version](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Filo.sidneybissoli.com%2Fstatus&query=%24.version&label=version&color=1f6feb)](https://ilo.sidneybissoli.com/status)
@@ -10,8 +10,8 @@
 
 🇺🇸 [Read in English](README.md)
 
-Servidor [MCP](https://modelcontextprotocol.io) **público, hospedado e provenance-first** para o
-**ILOSTAT**, a base estatística da Organização Internacional do Trabalho (OIT) — **sem
+Servidor [MCP](https://modelcontextprotocol.io) **público, hospedado e provenance-first** para as
+estatísticas da **Organização Internacional do Trabalho (OIT)** — a base **ILOSTAT** — **sem
 instalação, sem conta, sem chave de API**. Aponte seu cliente MCP para o endpoint hospedado e
 pergunte sobre desemprego, emprego, salários, jornada e outros indicadores de trabalho por país,
 ano, sexo e idade. Roda em Cloudflare Workers via Streamable HTTP e fala com a API SDMX REST
