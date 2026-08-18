@@ -31,7 +31,7 @@ export function landingHtml(): string {
   <li><code>/metrics</code> — aggregated usage statistics</li>
 </ul>
 <p>Data: International Labour Organization (ILO), ILOSTAT — CC BY 4.0. This service is not
-endorsed by the ILO. A sibling server covers UNESCO UIS statistics.</p>
+endorsed by the ILO.</p>
 <p>Contact: ${c.contactName} — <a href="mailto:${c.contactEmail}">${c.contactEmail}</a></p>
 </body>
 </html>`;

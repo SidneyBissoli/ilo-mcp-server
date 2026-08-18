@@ -15,7 +15,7 @@ export const SERVER_CONFIG = {
   /** Versão do servidor — manter em sincronia com package.json. */
   version: "0.2.1",
   /** Título de exibição (clientes MCP mostram ao usuário). */
-  title: "ILOSTAT — ILO Labour Statistics (provenance-first)",
+  title: "ILO Labour Statistics (ILOSTAT)",
   /** Uma frase: o que o servidor serve e de qual fonte. */
   description:
     "MCP server for ILOSTAT, the International Labour Organization's statistical database: " +
