@@ -8,7 +8,7 @@
  */
 
 export type UsageKind =
-  | "request" // requisição aceita nas rotas não-públicas (nome = pathname)
+  | "request" // requisição aceita no endpoint MCP (nome = pathname); outros paths não contam
   | "auth_failure"
   | "rate_limited"
   | "tool_call" // toda chamada de tool (nome = tool)

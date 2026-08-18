@@ -32,6 +32,7 @@ export default {
     const url = new URL(request.url);
     const start = Date.now();
     const record = createUsageRecorder(env, ctx);
+    const isMcp = url.pathname === SERVER_CONFIG.mcpRoute;
 
     // --- Rotas públicas, servidas antes de qualquer auth ---
     if (url.pathname === "/") return landingResponse();
@@ -50,7 +51,7 @@ export default {
     if (request.method !== "OPTIONS") {
       const authResponse = await checkAuth(request, env.API_KEY);
       if (authResponse) {
-        record("auth_failure", url.pathname);
+        if (isMcp) record("auth_failure", url.pathname);
         logger.warn("auth_failure", {
           method: request.method,
           path: url.pathname,
@@ -62,7 +63,7 @@ export default {
       const clientId = request.headers.get("CF-Connecting-IP") ?? "unknown";
       const decision = checkRateLimit(clientId);
       if (!decision.allowed) {
-        record("rate_limited", url.pathname);
+        if (isMcp) record("rate_limited", url.pathname);
         return new Response("Too Many Requests", {
           status: 429,
           headers: { "Retry-After": String(decision.retryAfterS), "Content-Type": "text/plain" },
@@ -70,7 +71,9 @@ export default {
       }
     }
 
-    record("request", url.pathname);
+    // Só o endpoint MCP entra nas métricas de uso: paths inexistentes (varredura de
+    // bots) inflavam "request"/"rate_limited" em ordens de grandeza sobre o uso real.
+    if (isMcp) record("request", url.pathname);
 
     const handler = createMcpHandler(() => buildServer(env, record), {
       route: SERVER_CONFIG.mcpRoute,
