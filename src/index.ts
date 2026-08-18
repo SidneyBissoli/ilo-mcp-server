@@ -83,6 +83,10 @@ export default {
       ...(SERVER_CONFIG.extraAllowedHostnames.length
         ? { allowedHostnames: [...SERVER_CONFIG.extraAllowedHostnames] }
         : {}),
+      // agents >= 0.21 valida também o header Origin (só clientes de navegador o
+      // enviam). Coerente com o CORS: origem "*" = qualquer Origin; origem concreta
+      // = só o hostname dela (default do handler, derivado de corsOptions.origin).
+      ...(!env.ALLOWED_ORIGIN || env.ALLOWED_ORIGIN === "*" ? { allowedOriginHostnames: "*" as const } : {}),
       corsOptions: {
         origin: env.ALLOWED_ORIGIN || "*",
         methods: "GET, POST, DELETE, OPTIONS",
