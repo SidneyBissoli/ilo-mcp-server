@@ -178,6 +178,10 @@ chave, sai 0 com instruções). Rodada de 07/08/2026: **top-1 100% (24/24)** —
 Gate de submissão ao diretório: Snyk Agent Scan (07/08/2026) **passou** — evidência em
 [`security/`](security/2026-08-07-snyk-agent-scan.md).
 
+## Licença
+
+Código: [MIT](LICENSE.md). Dados: ILOSTAT, CC BY 4.0 (ver "Obrigações de licença" acima).
+
 ## Privacidade
 
 Política de privacidade do serviço hospedado: [PRIVACY.md](PRIVACY.md).

@@ -177,6 +177,10 @@ the key it exits 0 with instructions). Run of 2026-08-07: **top-1 100% (24/24)**
 Directory submission gate: Snyk Agent Scan (2026-08-07) **passed** — evidence in
 [`security/`](security/2026-08-07-snyk-agent-scan.md).
 
+## License
+
+Code: [MIT](LICENSE.md). Data: ILOSTAT, CC BY 4.0 (see "License obligations" above).
+
 ## Privacy
 
 Privacy policy of the hosted service: [PRIVACY.md](PRIVACY.md).
