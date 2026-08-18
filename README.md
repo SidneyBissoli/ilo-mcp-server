@@ -98,9 +98,6 @@ Every response carries the **provenance block v1.0**
 - ILO attribution in every response (`citation` field):
   `International Labour Organization, ILOSTAT, https://ilostat.ilo.org/data/, accessed <date>.`
 - The ILO logo is not used. This service is not endorsed by the ILO.
-- UNESCO UIS statistics (CC BY-SA) are served by a separate server,
-  [`uis-mcp-server`](https://github.com/SidneyBissoli/uis-mcp-server), so the two license regimes
-  never mix.
 
 ## Self-hosting / development
 

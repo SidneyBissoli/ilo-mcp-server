@@ -100,9 +100,6 @@ Toda resposta carrega o **bloco de proveniência v1.0**
 - Atribuição à OIT em toda resposta (campo `citation`):
   `International Labour Organization, ILOSTAT, https://ilostat.ilo.org/data/, accessed <data>.`
 - O logo da OIT não é usado. Este serviço não é endossado pela OIT.
-- As estatísticas da UNESCO UIS (CC BY-SA) são servidas por um servidor separado,
-  [`uis-mcp-server`](https://github.com/SidneyBissoli/uis-mcp-server), para que os dois regimes
-  de licença nunca se misturem.
 
 ## Self-hosting / desenvolvimento
 
