@@ -2,8 +2,9 @@
 
 ![Cloudflare Workers](https://img.shields.io/badge/Cloudflare%20Workers-F38020?logo=cloudflare&logoColor=white)
 ![MCP](https://img.shields.io/badge/MCP-Streamable%20HTTP-1f6feb)
-![Tools](https://img.shields.io/badge/tools-4-2ea44f)
-![Provenance](https://img.shields.io/badge/provenance-v1.0-8250df)
+[![Version](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Filo.sidneybissoli.com%2Fstatus&query=%24.version&label=version&color=1f6feb)](https://ilo.sidneybissoli.com/status)
+[![Tools](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Filo.sidneybissoli.com%2Fstatus&query=%24.tools&label=tools&color=2ea44f)](https://ilo.sidneybissoli.com/status)
+[![Provenance](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Filo.sidneybissoli.com%2Fstatus&query=%24.provenance_contract&label=provenance&prefix=v&color=8250df)](https://ilo.sidneybissoli.com/status)
 [![ilo-mcp-server MCP server](https://glama.ai/mcp/servers/SidneyBissoli/ilo-mcp-server/badges/score.svg)](https://glama.ai/mcp/servers/SidneyBissoli/ilo-mcp-server)
 [![GitHub stars](https://img.shields.io/github/stars/SidneyBissoli/ilo-mcp-server?style=flat&logo=github)](https://github.com/SidneyBissoli/ilo-mcp-server)
 [![Status](https://img.shields.io/website?url=https%3A%2F%2Filo.sidneybissoli.com%2Fhealth&up_message=online&down_message=offline&label=status)](https://ilo.sidneybissoli.com/status)
@@ -120,7 +121,7 @@ servidor público.
 
 ```bash
 npm install
-npm run typecheck && npm test   # 74 testes offline (parsers, chave, tools, contrato de saída, evals-fixtures)
+npm run typecheck && npm test   # 75 testes offline (parsers, chave, tools, contrato de saída, evals-fixtures)
 npm run dev                     # http://localhost:8787/mcp
 
 # Seed do catálogo (D1) — necessário antes do primeiro uso:
@@ -169,7 +170,7 @@ chave, sai 0 com instruções). Rodada de 07/08/2026: **top-1 100% (24/24)** —
 |---|---|
 | `/` | landing page (identidade do serviço + contato — pública) |
 | `/health` | liveness |
-| `/status` | versão + deploy corrente |
+| `/status` | versão, contagem/nomes das tools, versão do contrato de proveniência, deploy corrente (alimenta os badges do README) |
 | `/metrics` | uso agregado (só o endpoint MCP; sem IPs, sem conteúdo de consulta) |
 | `/mcp` | MCP Streamable HTTP |
 

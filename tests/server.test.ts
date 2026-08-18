@@ -1,12 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { McpServer } from "@modelcontextprotocol/server";
 import { buildServer, withUsage } from "../src/server.js";
-import { SEARCH_INDICATORS } from "../src/tools/catalog.js";
-import { GET_DATA } from "../src/tools/data.js";
-import { GET_INDICATOR_METADATA, LIST_DIMENSION_VALUES } from "../src/tools/metadata.js";
+import { TOOL_NAMES } from "../src/tools/index.js";
 import type { UsageKind } from "../src/usage-core.js";
-
-const TOOL_NAMES = [SEARCH_INDICATORS, GET_INDICATOR_METADATA, GET_DATA, LIST_DIMENSION_VALUES];
 
 describe("buildServer", () => {
   it("constrói um McpServer com as 4 tools do MVP", () => {
@@ -18,7 +14,7 @@ describe("buildServer", () => {
   });
 
   it("são exatamente as 4 tools do docs/01", () => {
-    expect(TOOL_NAMES.sort()).toEqual(
+    expect([...TOOL_NAMES].sort()).toEqual(
       ["ilo_get_data", "ilo_get_indicator_metadata", "ilo_list_dimension_values", "ilo_search_indicators"].sort(),
     );
   });
