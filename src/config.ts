@@ -25,6 +25,7 @@ export const SERVER_CONFIG = {
    * Contato exibido na landing page. A URL raiz do Worker é o que sysadmins upstream
    * veem no User-Agent — precisa resolver para identificação humana + contato.
    */
+  contactName: "Sidney da S. P. Bissoli",
   contactEmail: "sbissoli76@gmail.com",
   /** Rota do endpoint MCP (Streamable HTTP). */
   mcpRoute: "/mcp",

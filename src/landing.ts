@@ -32,7 +32,7 @@ export function landingHtml(): string {
 </ul>
 <p>Data: International Labour Organization (ILO), ILOSTAT — CC BY 4.0. This service is not
 endorsed by the ILO. A sibling server covers UNESCO UIS statistics.</p>
-<p>Contact: <a href="mailto:${c.contactEmail}">${c.contactEmail}</a></p>
+<p>Contact: ${c.contactName} — <a href="mailto:${c.contactEmail}">${c.contactEmail}</a></p>
 </body>
 </html>`;
 }
