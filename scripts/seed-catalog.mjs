@@ -11,13 +11,13 @@
  *   npx wrangler d1 execute ilostat-catalog --local  --file=scripts/seed-catalog.sql
  *   npx wrangler d1 execute ilostat-catalog --remote --file=scripts/seed-catalog.sql
  *
- * O gateway da OIT responde HTTP 500 ao fetch do Node/undici (qualquer header;
- * observado em 07/08/2026), mas 200 ao curl e ao fetch do workerd. Sem argumento,
- * o script baixa via `curl`; com argumento, lê o JSON do arquivo indicado
- * (baixado AGORA — o retrieved_at gravado é o instante da execução).
+ * Download via fetch do Node com `Accept-Language: en` explícito: o gateway da
+ * OIT responde HTTP 500 ao `Accept-Language: *` que o undici envia por padrão
+ * (era isso — não o User-Agent — que fazia o Node parecer rejeitado; 18/08/2026).
+ * Com argumento, lê o JSON do arquivo indicado (baixado AGORA — o retrieved_at
+ * gravado é o instante da execução).
  */
 
-import { execFileSync } from "node:child_process";
 import { readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -31,11 +31,15 @@ const fileArg = process.argv[2];
 if (fileArg) {
   body = readFileSync(fileArg, "utf8");
 } else {
-  body = execFileSync(
-    "curl",
-    ["-sS", "--fail", "-H", "Accept: application/vnd.sdmx.structure+json", CATALOG_URL],
-    { encoding: "utf8", maxBuffer: 64 * 1024 * 1024 },
-  );
+  const res = await fetch(CATALOG_URL, {
+    headers: {
+      Accept: "application/vnd.sdmx.structure+json",
+      "Accept-Language": "en",
+      "User-Agent": "ilo-mcp-server seed (https://ilo.sidneybissoli.com; sbissoli76@gmail.com)",
+    },
+  });
+  if (!res.ok) throw new Error(`ILOSTAT catalogue HTTP ${res.status}: ${(await res.text()).slice(0, 200)}`);
+  body = await res.text();
 }
 const retrievedAt = new Date().toISOString().replace(/\.\d{3}Z$/, "Z");
 const dataflows = JSON.parse(body).data?.dataflows ?? [];

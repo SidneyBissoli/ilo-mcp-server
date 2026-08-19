@@ -1,22 +1,26 @@
-# Dockerfile for the Glama registry (glama.ai) release/build test.
+# Dockerfile for the Glama registry (glama.ai) — builds and runs the server
+# locally over stdio (src/cli.ts → dist/cli.js). Glama's harness wraps the
+# stdio command with mcp-proxy to reach it over HTTP/SSE.
 #
-# This server is remote-only: it runs on Cloudflare Workers and is served at
-# https://ilo.sidneybissoli.com/mcp. There is no local stdio runtime — the ILO
-# gateway rejects Node's fetch, and the catalogue lives in D1 — so the container
-# is a thin, faithful bridge to the hosted endpoint:
-#
-#   mcp-proxy (HTTP/SSE for the Glama tester) → mcp-remote (stdio) → production
-#
-# The tools Glama sees are therefore the real production tools. Both bridge
-# packages are installed at build time (pinned) so nothing is fetched from npm at
-# container start. Verified locally end-to-end (initialize, tools/list, tools/call).
+# The stdio runtime is the SAME server as the hosted Cloudflare Worker: same
+# tools, validations, limits and provenance block; it talks directly to the
+# official ILOSTAT SDMX API. Without Cloudflare bindings it uses an in-process
+# cache instead of KV and downloads the search catalogue from the official
+# endpoint on first search instead of reading D1.
 
 FROM node:22-bookworm-slim
 
-RUN npm install -g mcp-proxy@6.4.3 mcp-remote@0.1.38
-
-# The bridge has nothing to build; the sources are here only for reference.
 WORKDIR /app
-COPY package.json README.md LICENSE.md ./
 
-CMD ["mcp-proxy", "--", "mcp-remote", "https://ilo.sidneybissoli.com/mcp"]
+# Dependency layer (cacheable). devDependencies are needed for `npm run build`.
+COPY package.json package-lock.json ./
+RUN npm ci
+
+# Sources + build (tsc -p tsconfig.build.json → dist/).
+COPY tsconfig.json tsconfig.build.json ./
+COPY src ./src
+RUN npm run build && npm prune --omit=dev
+
+ENV NODE_ENV=production
+
+CMD ["node", "dist/cli.js"]

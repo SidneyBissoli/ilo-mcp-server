@@ -45,6 +45,40 @@ For clients that launch MCP servers as a command, use the
 
 The `ilo-mcp-server.sidneybissoli.workers.dev` hostname is also served, as a secondary.
 
+## Run locally (stdio)
+
+Prefer not to route queries through a third-party host? The **same server** also runs as a
+**local stdio process** that talks directly to the official ILOSTAT API — same 4 tools, same
+limits, same provenance block, no Cloudflare in the loop.
+
+```bash
+git clone https://github.com/SidneyBissoli/ilo-mcp-server
+cd ilo-mcp-server
+npm install
+npm run build
+node dist/cli.js   # serves MCP over stdio (Ctrl+C to stop)
+```
+
+Point a command-based client at it:
+
+```json
+{
+  "mcpServers": {
+    "ilostat": {
+      "command": "node",
+      "args": ["/path/to/ilo-mcp-server/dist/cli.js"]
+    }
+  }
+}
+```
+
+Differences from the hosted server, all due to the absence of Cloudflare bindings: the SDMX
+cache lives in process memory (structures and codelists are reused within a session, not across
+sessions); the search catalogue is downloaded from the official endpoint on the first search
+(its real `retrieved_at` is reported in provenance); no usage metrics, rate limit or auth. Logs
+go to **stderr** — stdout carries only the JSON-RPC stream. The repository `Dockerfile` builds
+this runtime (used by the Glama registry).
+
 ## Tools
 
 | Tool | What it does | Source |
@@ -106,8 +140,9 @@ public server.
 
 ```bash
 npm install
-npm run typecheck && npm test   # 75 offline tests (parsers, key, tools, output contract, eval fixtures)
-npm run dev                     # http://localhost:8787/mcp
+npm run typecheck && npm test   # 83 offline tests (parsers, key, tools, output contract, in-memory catalogue, eval fixtures)
+npm run dev                     # http://localhost:8787/mcp (Worker)
+npm run build && npm start      # stdio runtime (dist/cli.js)
 
 # Catalogue seed (D1) — required before first use:
 node scripts/seed-catalog.mjs   # downloads via curl and generates scripts/seed-catalog.sql
@@ -126,8 +161,10 @@ Notes for operators:
 
 - ILOSTAT returns JSON only when negotiated via the `Accept` header
   (`application/vnd.sdmx.{structure,data}+json`); `?format=` is ignored and returns XML.
-- The ILO gateway rejects requests without a recognisable User-Agent and rejects Node's `fetch`
-  even with one — the seed script downloads with `curl`.
+- The ILO gateway answers HTTP 500 (`languageTag1`) to the `Accept-Language: *` header that
+  Node's `fetch` (undici) sends by default; every upstream call therefore sets
+  `Accept-Language: en` explicitly (Cloudflare's runtime sends no such header, so the Worker was
+  never affected). It also expects an identifiable User-Agent.
 - **Catalogue refresh** is manual (no cron): quarterly, or immediately if a dataflow that exists
   upstream does not show up in search. Procedure: the three seed commands above. Data queries are
   always live, so only the search catalogue can age — and its age is exposed in provenance.

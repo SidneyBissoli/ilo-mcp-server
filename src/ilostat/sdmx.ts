@@ -64,8 +64,19 @@ function kvPut(env: Env, key: string, cached: Cached<unknown>, ttlSeconds: numbe
  */
 const USER_AGENT = "ilo-mcp-server (https://ilo.sidneybissoli.com; sbissoli76@gmail.com)";
 
+/**
+ * Headers de toda chamada upstream. `Accept-Language` explícito é obrigatório:
+ * o gateway da OIT responde HTTP 500 ("languageTag1") quando recebe o
+ * `Accept-Language: *` que o fetch do Node (undici) envia por padrão — foi isso,
+ * e não o User-Agent, que fazia o Node parecer rejeitado (verificado 18/08/2026).
+ * O workerd não envia o header, por isso o Worker nunca viu o problema.
+ */
+export function upstreamHeaders(accept: string): Record<string, string> {
+  return { Accept: accept, "Accept-Language": "en", "User-Agent": USER_AGENT };
+}
+
 async function fetchJson(url: string, accept: string, context: string): Promise<unknown> {
-  const res = await fetch(url, { headers: { Accept: accept, "User-Agent": USER_AGENT } });
+  const res = await fetch(url, { headers: upstreamHeaders(accept) });
   if (!res.ok) {
     const body = (await res.text()).slice(0, 300);
     throw new IlostatUpstreamError(res.status, context, body);
@@ -182,7 +193,7 @@ export async function fetchData(
   params: DataQueryParams,
 ): Promise<DataWithOrigin> {
   const url = dataUrl(structure, key, params);
-  const res = await fetch(url, { headers: { Accept: DATA_JSON, "User-Agent": USER_AGENT } });
+  const res = await fetch(url, { headers: upstreamHeaders(DATA_JSON) });
   const retrievedAt = nowIso();
   if (res.status === 404) {
     // SDMX REST: 404 NoResultsFound — recorte válido, mas sem observações.

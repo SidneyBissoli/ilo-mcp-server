@@ -1,6 +1,7 @@
 /**
  * Catálogo de dataflows em D1 — busca de indicadores 100% local (sem chamada ao
- * upstream por consulta; medição do spike: 1.210 dataflows / 557 KB).
+ * upstream por consulta; medição do spike: 1.210 dataflows / 557 KB). Sem D1
+ * (runtime stdio, src/cli.ts), delega ao catálogo em memória (catalog-memory.ts).
  *
  * Seed: scripts/seed-catalog.mjs gera o SQL a partir do catálogo oficial
  * (`/dataflow/ILO?detail=allstubs`) e grava também o instante real da extração em
@@ -51,6 +52,8 @@ export async function searchCatalog(
   limit: number,
   offset = 0,
 ): Promise<CatalogSearchResult> {
+  // Runtime stdio (sem D1): catálogo em memória com a mesma semântica de busca.
+  if (!env.CATALOG_DB && env.CATALOG_MEMORY) return env.CATALOG_MEMORY.search(query, limit, offset);
   const db = requireDb(env);
   const terms = query.toLowerCase().split(/\s+/).filter(Boolean);
   if (!terms.length) {

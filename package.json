@@ -5,8 +5,12 @@
   "license": "MIT",
   "description": "Servidor MCP provenance-first para o ILOSTAT (estatísticas de trabalho da OIT) — Cloudflare Workers, SDMX REST, contrato de proveniência v1.0",
   "type": "module",
+  "bin": { "ilo-mcp-server": "dist/cli.js" },
+  "files": ["dist", "README.md", "LICENSE.md"],
   "scripts": {
     "dev": "wrangler dev",
+    "build": "tsc -p tsconfig.build.json",
+    "start": "node dist/cli.js",
     "deploy": "wrangler deploy",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",

@@ -1,9 +1,11 @@
 node_modules
+dist
 .wrangler
 .git
 .env
 .dev.vars
 .mcpregistry_*
-evals/results
+evals
 security
 tests
+scripts
