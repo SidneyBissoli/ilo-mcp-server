@@ -1,9 +1,36 @@
 {
   "name": "ilo-mcp-server",
-  "private": true,
   "version": "0.3.0",
+  "mcpName": "io.github.SidneyBissoli/ilo-mcp-server",
   "license": "MIT",
   "description": "Provenance-first MCP server for ILOSTAT (ILO labour statistics): search indicators and retrieve labour data by country, year, sex and age, with source URL, data vintage, retrieval timestamp and license on every response. Hosted on Cloudflare Workers (Streamable HTTP) or local stdio.",
+  "homepage": "https://ilo.sidneybissoli.com",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SidneyBissoli/ilo-mcp-server.git"
+  },
+  "bugs": {
+    "url": "https://github.com/SidneyBissoli/ilo-mcp-server/issues"
+  },
+  "author": "Sidney da S. P. Bissoli <sbissoli76@gmail.com>",
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "mcp-server",
+    "ilo",
+    "ilostat",
+    "labour-statistics",
+    "labor",
+    "unemployment",
+    "employment",
+    "wages",
+    "sdmx",
+    "open-data",
+    "provenance"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
   "type": "module",
   "bin": {
     "ilo-mcp-server": "dist/cli.js"
@@ -27,13 +54,13 @@
   "dependencies": {
     "@modelcontextprotocol/server": "^2.0.0",
     "@sbissoli/mcp-provenance": "^0.1.0",
-    "agents": "^0.21.0",
     "zod": "^4.0.0"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^5.20260818.1",
     "@sbissoli/mcp-evals": "^0.1.0",
     "@types/node": "^22.20.1",
+    "agents": "^0.21.0",
     "tsx": "^4.23.12",
     "typescript": "^5.7.0",
     "vitest": "^4.1.11",

@@ -6,6 +6,7 @@
 [![Tools](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Filo.sidneybissoli.com%2Fstatus&query=%24.tools&label=tools&color=2ea44f)](https://ilo.sidneybissoli.com/status)
 [![Resources](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Filo.sidneybissoli.com%2Fstatus&query=%24.resources&label=resources&color=2ea44f)](https://ilo.sidneybissoli.com/status)
 [![Prompts](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Filo.sidneybissoli.com%2Fstatus&query=%24.prompts&label=prompts&color=2ea44f)](https://ilo.sidneybissoli.com/status)
+[![npm](https://img.shields.io/npm/v/ilo-mcp-server?label=npm&color=cb3837)](https://www.npmjs.com/package/ilo-mcp-server)
 [![MCP Registry](https://img.shields.io/badge/MCP%20Registry-listed-blue)](https://registry.modelcontextprotocol.io/v0.1/servers/io.github.SidneyBissoli%2Filo-mcp-server/versions)
 [![ilo-mcp-server MCP server](https://glama.ai/mcp/servers/SidneyBissoli/ilo-mcp-server/badges/score.svg)](https://glama.ai/mcp/servers/SidneyBissoli/ilo-mcp-server)
 [![License: MIT](https://img.shields.io/badge/license-MIT-yellow)](LICENSE.md)
@@ -66,6 +67,21 @@ Prefer not to route queries through a third-party host? The **same server** also
 **local stdio process** that talks directly to the official ILOSTAT API — same 4 tools, resources and prompts,
 same limits, same provenance block, no Cloudflare in the loop.
 
+No install needed — the package is on npm ([`ilo-mcp-server`](https://www.npmjs.com/package/ilo-mcp-server), Node ≥ 20):
+
+```json
+{
+  "mcpServers": {
+    "ilostat": {
+      "command": "npx",
+      "args": ["-y", "ilo-mcp-server"]
+    }
+  }
+}
+```
+
+Or from source:
+
 ```bash
 git clone https://github.com/SidneyBissoli/ilo-mcp-server
 cd ilo-mcp-server
@@ -74,18 +90,7 @@ npm run build
 node dist/cli.js   # serves MCP over stdio (Ctrl+C to stop)
 ```
 
-Point a command-based client at it:
-
-```json
-{
-  "mcpServers": {
-    "ilostat": {
-      "command": "node",
-      "args": ["/path/to/ilo-mcp-server/dist/cli.js"]
-    }
-  }
-}
-```
+(then point the client at `node /path/to/ilo-mcp-server/dist/cli.js`).
 
 Differences from the hosted server, all due to the absence of Cloudflare bindings: the SDMX
 cache lives in process memory (structures and codelists are reused within a session, not across
