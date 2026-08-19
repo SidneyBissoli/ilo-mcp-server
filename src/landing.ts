@@ -30,6 +30,12 @@ export function landingHtml(): string {
   <li><code>/status</code> — version and current build</li>
   <li><code>/metrics</code> — aggregated usage statistics</li>
 </ul>
+<p>Source and directories:
+  <a href="https://github.com/SidneyBissoli/ilo-mcp-server">GitHub</a> ·
+  <a href="https://www.npmjs.com/package/ilo-mcp-server">npm</a> ·
+  <a href="https://registry.modelcontextprotocol.io/v0.1/servers/io.github.SidneyBissoli%2Filo-mcp-server/versions">MCP Registry</a> ·
+  <a href="https://smithery.ai/servers/sidneybissoli/ilo-mcp-server">Smithery</a> ·
+  <a href="https://glama.ai/mcp/servers/SidneyBissoli/ilo-mcp-server">Glama</a></p>
 <p>Data: International Labour Organization (ILO), ILOSTAT — CC BY 4.0. This service is not
 endorsed by the ILO.</p>
 <p>Contact: ${c.contactName} — <a href="mailto:${c.contactEmail}">${c.contactEmail}</a></p>

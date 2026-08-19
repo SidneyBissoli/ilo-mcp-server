@@ -9,6 +9,7 @@
 [![npm](https://img.shields.io/npm/v/ilo-mcp-server?label=npm&color=cb3837)](https://www.npmjs.com/package/ilo-mcp-server)
 [![MCP Registry](https://img.shields.io/badge/MCP%20Registry-listed-blue)](https://registry.modelcontextprotocol.io/v0.1/servers/io.github.SidneyBissoli%2Filo-mcp-server/versions)
 [![ilo-mcp-server MCP server](https://glama.ai/mcp/servers/SidneyBissoli/ilo-mcp-server/badges/score.svg)](https://glama.ai/mcp/servers/SidneyBissoli/ilo-mcp-server)
+[![smithery badge](https://smithery.ai/badge/sidneybissoli/ilo-mcp-server)](https://smithery.ai/servers/sidneybissoli/ilo-mcp-server)
 [![License: MIT](https://img.shields.io/badge/license-MIT-yellow)](LICENSE.md)
 [![Status](https://img.shields.io/website?url=https%3A%2F%2Filo.sidneybissoli.com%2Fhealth&up_message=online&down_message=offline&label=status)](https://ilo.sidneybissoli.com/status)
 
