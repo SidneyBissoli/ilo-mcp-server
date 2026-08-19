@@ -1,7 +1,524 @@
 {
   "identifier": "sidneybissoli-ilo-mcp-server",
   "name": "ILO Labour Statistics (ILOSTAT) MCP Server",
-  "icon": "📊",
   "version": "0.2.2",
-  "description": "ILO labour statistics (ILOSTAT) with full provenance: source URL, data vintage, retrieval timestamp, license and ILO citation on every response. 4 tools: search indicators, indicator metadata, dimension codes, data. Hosted on Cloudflare Workers (Streamable HTTP, no auth) or local stdio. Not affiliated with or endorsed by the ILO. MIT licensed."
+  "icon": "📊",
+  "description": "ILO labour statistics (ILOSTAT) with full provenance: source URL, data vintage, retrieval timestamp, license and ILO citation on every response. 4 tools: search indicators, indicator metadata, dimension codes, data. Hosted on Cloudflare Workers (Streamable HTTP, no auth) or local stdio. Not affiliated with or endorsed by the ILO. MIT licensed.",
+  "author": "Sidney da S. P. Bissoli",
+  "authorUrl": "https://github.com/SidneyBissoli",
+  "homepage": "https://github.com/SidneyBissoli/ilo-mcp-server",
+  "cloudEndpoint": "https://ilo.sidneybissoli.com/mcp",
+  "tags": [
+    "ilo",
+    "ilostat",
+    "labour-statistics",
+    "labor",
+    "unemployment",
+    "employment",
+    "wages",
+    "sdmx",
+    "open-data",
+    "statistics",
+    "provenance",
+    "cloudflare-workers"
+  ],
+  "tools": [
+    {
+      "name": "ilo_search_indicators",
+      "title": "Search ILOSTAT indicators",
+      "description": "Search the ILOSTAT catalogue of ~1,200 indicator dataflows by keywords in the name or id (e.g. \"unemployment rate sex age\"). Returns dataflow ids to use with ilo_get_data / ilo_get_indicator_metadata. Searches the catalogue only — it does not return statistical values (use ilo_get_data) and does not cover non-ILO sources.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Keywords, matched against dataflow name and id (AND between terms)"
+          },
+          "limit": {
+            "description": "Maximum results (default 20)",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100
+          },
+          "offset": {
+            "description": "Results to skip, for pagination (default 0)",
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "provenance_mode": {
+            "description": "Provenance verbosity: 'concise' (default — source, url, vintage, retrieval date, citation, license) or 'detailed' (full canonical block with dataset, dimension key and notices)",
+            "type": "string",
+            "enum": [
+              "concise",
+              "detailed"
+            ]
+          }
+        },
+        "required": [
+          "query"
+        ],
+        "$schema": "https://json-schema.org/draft/2020-12/schema"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "total_matches": {
+            "type": "number"
+          },
+          "showing": {
+            "type": "number"
+          },
+          "offset": {
+            "type": "number"
+          },
+          "indicators": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "version": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "name",
+                "version"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "has_more": {
+            "type": "boolean"
+          },
+          "next_offset": {
+            "type": "number"
+          },
+          "provenance": {},
+          "attribution": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "total_matches",
+          "showing",
+          "offset",
+          "indicators",
+          "has_more",
+          "provenance",
+          "attribution"
+        ],
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "additionalProperties": {}
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      }
+    },
+    {
+      "name": "ilo_get_indicator_metadata",
+      "title": "Get ILOSTAT indicator metadata",
+      "description": "Structure of one ILOSTAT dataflow: dimensions (in SDMX key order), their codelists, the time dimension, the source's default selection and the data vintage (last update at the ILO). Use before ilo_get_data to know which filters exist. Does not return statistical values and does not list the codes themselves (use ilo_list_dimension_values).",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "dataflow": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Dataflow id from ilo_search_indicators (e.g. \"DF_UNE_DEAP_SEX_AGE_RT\")"
+          },
+          "provenance_mode": {
+            "description": "Provenance verbosity: 'concise' (default — source, url, vintage, retrieval date, citation, license) or 'detailed' (full canonical block with dataset, dimension key and notices)",
+            "type": "string",
+            "enum": [
+              "concise",
+              "detailed"
+            ]
+          }
+        },
+        "required": [
+          "dataflow"
+        ],
+        "$schema": "https://json-schema.org/draft/2020-12/schema"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "version": {
+            "type": "string"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "data_vintage": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "dimensions": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "codelist": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "id",
+                "codelist"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "time_dimension": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "provenance": {},
+          "attribution": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "version",
+          "name",
+          "data_vintage",
+          "dimensions",
+          "time_dimension",
+          "provenance",
+          "attribution"
+        ],
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "additionalProperties": {}
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "ilo_list_dimension_values",
+      "title": "List valid codes of a dimension",
+      "description": "Valid codes (id + label) of one dimension of an ILOSTAT dataflow — e.g. the country/area codes of REF_AREA or the sex categories of SEX. Use to build correct ilo_get_data filters. Does not return statistical values; not applicable to the time dimension (filter it via start_period/end_period in ilo_get_data).",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "dataflow": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Dataflow id the dimension belongs to"
+          },
+          "dimension": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Dimension id from ilo_get_indicator_metadata (e.g. \"REF_AREA\", \"SEX\")"
+          },
+          "search": {
+            "description": "Case-insensitive filter on code id or label",
+            "type": "string",
+            "minLength": 1
+          },
+          "limit": {
+            "description": "Maximum codes returned (default 200)",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 500
+          },
+          "offset": {
+            "description": "Codes to skip, for pagination (default 0)",
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "provenance_mode": {
+            "description": "Provenance verbosity: 'concise' (default — source, url, vintage, retrieval date, citation, license) or 'detailed' (full canonical block with dataset, dimension key and notices)",
+            "type": "string",
+            "enum": [
+              "concise",
+              "detailed"
+            ]
+          }
+        },
+        "required": [
+          "dataflow",
+          "dimension"
+        ],
+        "$schema": "https://json-schema.org/draft/2020-12/schema"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "dataflow": {
+            "type": "string"
+          },
+          "dimension": {
+            "type": "string"
+          },
+          "codelist": {
+            "type": "string"
+          },
+          "total_codes": {
+            "type": "number"
+          },
+          "showing": {
+            "type": "number"
+          },
+          "offset": {
+            "type": "number"
+          },
+          "values": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "name": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "id",
+                "name"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "has_more": {
+            "type": "boolean"
+          },
+          "next_offset": {
+            "type": "number"
+          },
+          "provenance": {},
+          "attribution": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "dataflow",
+          "dimension",
+          "codelist",
+          "total_codes",
+          "showing",
+          "offset",
+          "values",
+          "has_more",
+          "provenance",
+          "attribution"
+        ],
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "additionalProperties": {}
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "ilo_get_data",
+      "title": "Get ILOSTAT data",
+      "description": "Statistical observations from one ILOSTAT dataflow, filtered by dimension codes (filters, e.g. {\"REF_AREA\": [\"BRA\",\"ARG\"], \"SEX\": \"SEX_T\"}) and period (start_period/end_period, e.g. \"2015\"/\"2024\"). REF_AREA is required, maximum 30 areas per call — for broad panels, split areas into batches and/or paginate by period. Unfiltered dimensions return all their categories. Does not aggregate, convert or otherwise transform values (raw ILOSTAT data only), and does not search indicators (use ilo_search_indicators).",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "dataflow": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Dataflow id from ilo_search_indicators (e.g. \"DF_UNE_DEAP_SEX_AGE_RT\")"
+          },
+          "filters": {
+            "description": "Dimension id → code or list of codes (from ilo_list_dimension_values). REF_AREA is required (up to 30 area codes).",
+            "type": "object",
+            "propertyNames": {
+              "type": "string"
+            },
+            "additionalProperties": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "minItems": 1,
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              ]
+            }
+          },
+          "start_period": {
+            "description": "First period, e.g. \"2015\"",
+            "type": "string",
+            "minLength": 1
+          },
+          "end_period": {
+            "description": "Last period, e.g. \"2024\"",
+            "type": "string",
+            "minLength": 1
+          },
+          "last_n_observations": {
+            "description": "Alternative to periods: only the latest N observations per series",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100
+          },
+          "provenance_mode": {
+            "description": "Provenance verbosity: 'concise' (default — source, url, vintage, retrieval date, citation, license) or 'detailed' (full canonical block with dataset, dimension key and notices)",
+            "type": "string",
+            "enum": [
+              "concise",
+              "detailed"
+            ]
+          }
+        },
+        "required": [
+          "dataflow"
+        ],
+        "$schema": "https://json-schema.org/draft/2020-12/schema"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "dataflow": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "version": {
+                "type": "string"
+              },
+              "name": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "id",
+              "version",
+              "name"
+            ],
+            "additionalProperties": false
+          },
+          "columns": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "rows_count": {
+            "type": "number"
+          },
+          "rows": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "propertyNames": {
+                "type": "string"
+              },
+              "additionalProperties": {}
+            }
+          },
+          "provenance": {},
+          "attribution": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "dataflow",
+          "columns",
+          "rows_count",
+          "rows",
+          "provenance",
+          "attribution"
+        ],
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "additionalProperties": {}
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      }
+    }
+  ],
+  "resources": [],
+  "prompts": []
 }

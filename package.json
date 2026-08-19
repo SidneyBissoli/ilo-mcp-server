@@ -3,10 +3,16 @@
   "private": true,
   "version": "0.2.2",
   "license": "MIT",
-  "description": "Servidor MCP provenance-first para o ILOSTAT (estatísticas de trabalho da OIT) — Cloudflare Workers, SDMX REST, contrato de proveniência v1.0",
+  "description": "Provenance-first MCP server for ILOSTAT (ILO labour statistics): search indicators and retrieve labour data by country, year, sex and age, with source URL, data vintage, retrieval timestamp and license on every response. Hosted on Cloudflare Workers (Streamable HTTP) or local stdio.",
   "type": "module",
-  "bin": { "ilo-mcp-server": "dist/cli.js" },
-  "files": ["dist", "README.md", "LICENSE.md"],
+  "bin": {
+    "ilo-mcp-server": "dist/cli.js"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE.md"
+  ],
   "scripts": {
     "dev": "wrangler dev",
     "build": "tsc -p tsconfig.build.json",
