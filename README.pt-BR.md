@@ -30,6 +30,18 @@ Aponte qualquer cliente MCP para o endpoint Streamable HTTP:
 https://ilo.sidneybissoli.com/mcp
 ```
 
+Claude Desktop / Claude Code e outros clientes com suporte nativo a servidores remotos:
+
+```json
+{
+  "mcpServers": {
+    "ilostat": {
+      "url": "https://ilo.sidneybissoli.com/mcp"
+    }
+  }
+}
+```
+
 Para clientes que lançam servidores MCP como comando, use a ponte
 [`mcp-remote`](https://www.npmjs.com/package/mcp-remote):
 
