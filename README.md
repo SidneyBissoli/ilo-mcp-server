@@ -22,6 +22,10 @@ ask about unemployment, employment, wages, working time and other labour indicat
 country, year, sex and age. It runs on Cloudflare Workers over Streamable HTTP and talks to
 the official ILOSTAT SDMX REST API.
 
+> **Independent project.** This is an unofficial, community-built client of the ILO's public
+> ILOSTAT API — not affiliated with or endorsed by the International Labour Organization.
+> Data remain © ILO under CC BY 4.0; see [Data license and attribution](#data-license-and-attribution).
+
 Every response carries a **provenance block** (source URL, data vintage, real retrieval
 timestamp, license, ILO citation) — exact figures with an audit trail, not numbers guessed
 from training data.

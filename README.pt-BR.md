@@ -22,6 +22,10 @@ pergunte sobre desemprego, emprego, salários, jornada e outros indicadores de t
 ano, sexo e idade. Roda em Cloudflare Workers via Streamable HTTP e consulta a API SDMX REST
 oficial do ILOSTAT.
 
+> **Projeto independente.** Este é um cliente não oficial, construído pela comunidade, da API
+> pública do ILOSTAT — sem afiliação nem endosso da Organização Internacional do Trabalho.
+> Os dados permanecem © OIT sob CC BY 4.0; ver [Licença dos dados e atribuição](#licença-dos-dados-e-atribuição).
+
 Toda resposta carrega um **bloco de proveniência** (URL da fonte, vintage dos dados, instante
 real da extração, licença, citação da OIT) — números exatos com trilha de auditoria, não
 palpites da base de treino.
