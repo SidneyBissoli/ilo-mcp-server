@@ -1,6 +1,7 @@
 # Estatísticas do Trabalho da OIT (ILOSTAT) — MCP Server
 
 ![MCP](https://img.shields.io/badge/MCP-Streamable%20HTTP-1f6feb)
+[![CI](https://github.com/SidneyBissoli/ilo-mcp-server/actions/workflows/ci.yml/badge.svg)](https://github.com/SidneyBissoli/ilo-mcp-server/actions/workflows/ci.yml)
 [![Version](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Filo.sidneybissoli.com%2Fstatus&query=%24.version&label=version&color=1f6feb)](https://ilo.sidneybissoli.com/status)
 [![Tools](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Filo.sidneybissoli.com%2Fstatus&query=%24.tools&label=tools&color=2ea44f)](https://ilo.sidneybissoli.com/status)
 [![MCP Registry](https://img.shields.io/badge/MCP%20Registry-listed-blue)](https://registry.modelcontextprotocol.io/v0.1/servers/io.github.SidneyBissoli%2Filo-mcp-server/versions)

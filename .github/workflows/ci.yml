@@ -1,0 +1,31 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+      # The stdio runtime must at least start and answer initialize offline.
+      - name: stdio smoke (initialize)
+        run: |
+          node -e '
+          const { spawn } = require("node:child_process");
+          const p = spawn("node", ["dist/cli.js"], { stdio: ["pipe", "pipe", "inherit"] });
+          let out = "";
+          p.stdout.on("data", (d) => { out += d; if (out.includes("\"serverInfo\"")) { console.log(out.trim()); p.kill(); process.exit(0); } });
+          p.stdin.write(JSON.stringify({ jsonrpc: "2.0", id: 1, method: "initialize", params: { protocolVersion: "2025-06-18", capabilities: {}, clientInfo: { name: "ci", version: "0" } } }) + "\n");
+          setTimeout(() => { console.error("no initialize response"); p.kill(); process.exit(1); }, 15000);
+          '
