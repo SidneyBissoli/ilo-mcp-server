@@ -23,7 +23,14 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const CATALOG_URL = "https://sdmx.ilo.org/rest/dataflow/ILO?detail=allstubs";
-const OUT = join(dirname(fileURLToPath(import.meta.url)), "seed-catalog.sql");
+const HERE = dirname(fileURLToPath(import.meta.url));
+const OUT = join(HERE, "seed-catalog.sql");
+/**
+ * Lista compacta de ids (versionada, ~30 KB): a suíte de testes prova que todo
+ * dataflow citado nas resources/prompts existe no catálogo — o SQL completo é
+ * gitignorado, então o CI precisa desta lista. Regenerada junto com o SQL.
+ */
+const IDS_OUT = join(HERE, "..", "tests", "fixtures", "catalog-ids.txt");
 
 // JSON só via header Accept — ?format= é ignorado pelo endpoint (decisão do spike).
 let body;
@@ -86,8 +93,16 @@ lines.push(
 );
 
 writeFileSync(OUT, lines.join("\n") + "\n", "utf8");
+writeFileSync(
+  IDS_OUT,
+  `# ids do catálogo ILOSTAT — gerado por scripts/seed-catalog.mjs em ${retrievedAt}; não editar à mão.\n` +
+    dataflows.map((df) => df.id).sort().join("\n") +
+    "\n",
+  "utf8",
+);
 console.log(`OK: ${dataflows.length} dataflows, extraído em ${retrievedAt}`);
 console.log(`SQL: ${OUT}`);
+console.log(`IDs: ${IDS_OUT}`);
 console.log("Aplicar com:");
 console.log("  npx wrangler d1 execute ilostat-catalog --local  --file=scripts/seed-catalog.sql");
 console.log("  npx wrangler d1 execute ilostat-catalog --remote --file=scripts/seed-catalog.sql");

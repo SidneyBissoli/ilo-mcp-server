@@ -191,6 +191,7 @@ npx wrangler d1 execute ilostat-catalog --remote --file=scripts/seed-catalog.sql
 npm run deploy
 node scripts/smoke-mcp.mjs      # smoke test against production (initialize → 4 tools → errors)
 npm run manifest:lhm            # regenerate tools/resources/prompts in lhm.plugin.json from the real server
+# (the seed also writes tests/fixtures/catalog-ids.txt — the versioned id list the tests check resources/prompts against)
 ```
 
 Bindings (see `wrangler.jsonc`): KV `SDMX_CACHE`, D1 `CATALOG_DB`, Durable Object `USAGE`

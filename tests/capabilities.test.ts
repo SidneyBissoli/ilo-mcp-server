@@ -3,8 +3,9 @@
  * anuncia exatamente as listas canônicas (RESOURCE_URIS / PROMPT_NAMES), toda
  * resource lê como markdown não vazio, todo prompt devolve uma mensagem de
  * usuário que cita as tools, e todo dataflow id citado nas resources/prompts
- * existe no seed do catálogo — para que a documentação nunca aponte para um id
- * que a busca não encontraria. A rede nunca é tocada.
+ * existe no seed do catálogo (tests/fixtures/catalog-ids.txt, gerado pelo seed) —
+ * para que a documentação nunca aponte para um id que a busca não encontraria.
+ * A rede nunca é tocada.
  */
 
 /// <reference types="node" />
@@ -114,9 +115,13 @@ describe("prompts", () => {
 });
 
 describe("dataflow ids citados existem no seed do catálogo", () => {
+  // Lista compacta versionada, gerada junto com o SQL do seed (scripts/seed-catalog.mjs).
   // cwd = raiz do repo (vitest.config.ts).
-  const seed = readFileSync("scripts/seed-catalog.sql", "utf-8");
-  const idsNoSeed = new Set([...seed.matchAll(/^\('(DF_[A-Z0-9_]+)'/gm)].map((m) => m[1]));
+  const idsNoSeed = new Set(
+    readFileSync("tests/fixtures/catalog-ids.txt", "utf-8")
+      .split(/\r?\n/)
+      .filter((l) => l && !l.startsWith("#")),
+  );
 
   it("seed carregado", () => {
     expect(idsNoSeed.size).toBeGreaterThan(1000);
