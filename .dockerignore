@@ -1,0 +1,9 @@
+node_modules
+.wrangler
+.git
+.env
+.dev.vars
+.mcpregistry_*
+evals/results
+security
+tests
