@@ -152,9 +152,13 @@ export function registerMetadataTools(server: McpServer, env: Env, record: Recor
       title: "List valid codes of a dimension",
       description:
         "Valid codes (id + label) of one dimension of an ILOSTAT dataflow — e.g. the country/area " +
-        "codes of REF_AREA or the sex categories of SEX. Use to build correct ilo_get_data filters. " +
-        "Does not return statistical values; not applicable to the time dimension (filter it via " +
-        "start_period/end_period in ilo_get_data).",
+        "codes of REF_AREA (ISO 3166-1 alpha-3 such as BRA, plus X-codes for aggregates such as " +
+        "X01 World) or the categories of SEX (SEX_T/SEX_M/SEX_F) and AGE. Use `search` to resolve " +
+        "a name to a code (e.g. search \"Brazil\") instead of paging through hundreds of codes; " +
+        "codelists are shared across dataflows, so a code found here is valid wherever the same " +
+        "codelist is used. Use to build correct ilo_get_data filters. Does not return statistical " +
+        "values, does not say which codes actually have data for a given dataflow, and is not " +
+        "applicable to the time dimension (filter it via start_period/end_period in ilo_get_data).",
       inputSchema: z.object({
         dataflow: z.string().min(1).describe("Dataflow id the dimension belongs to"),
         dimension: z.string().min(1).describe('Dimension id from ilo_get_indicator_metadata (e.g. "REF_AREA", "SEX")'),

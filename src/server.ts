@@ -9,11 +9,15 @@
  *  - instrumentação de uso fora do caminho crítico (withUsage → Durable Object).
  *
  * As tools vivem em src/tools/ (um módulo por grupo — os grupos são também as
- * áreas do catálogo de evals em evals/catalog.ts).
+ * áreas do catálogo de evals em evals/catalog.ts). Resources (documentação de
+ * referência) e prompts (workflows) vivem em src/resources.ts e src/prompts.ts —
+ * ambos offline, sem estado e sem instrumentação de uso.
  */
 
 import { McpServer } from "@modelcontextprotocol/server";
 import { SERVER_CONFIG } from "./config.js";
+import { registerPrompts } from "./prompts.js";
+import { registerResources } from "./resources.js";
 import { registerCatalogTools } from "./tools/catalog.js";
 import { registerDataTools } from "./tools/data.js";
 import { registerMetadataTools } from "./tools/metadata.js";
@@ -32,6 +36,8 @@ export function buildServer(env: Env, record: RecordUsage = () => {}): McpServer
   registerCatalogTools(server, env, record);
   registerMetadataTools(server, env, record);
   registerDataTools(server, env, record);
+  registerResources(server);
+  registerPrompts(server);
 
   return server;
 }

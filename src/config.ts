@@ -13,7 +13,7 @@ export const SERVER_CONFIG = {
   /** Nome curto do servidor (handshake MCP, /status, landing). */
   name: "ilo-mcp-server",
   /** Versão do servidor — manter em sincronia com package.json. */
-  version: "0.2.2",
+  version: "0.3.0",
   /** Título de exibição (clientes MCP mostram ao usuário). */
   title: "ILO Labour Statistics (ILOSTAT)",
   /** Uma frase: o que o servidor serve e de qual fonte. */
@@ -39,8 +39,11 @@ export const SERVER_CONFIG = {
     "country, year and disaggregations such as sex and age. Typical flow: " +
     "ilo_search_indicators to find a dataflow, then ilo_get_data with country and period " +
     "filters; use ilo_get_indicator_metadata / ilo_list_dimension_values to discover valid " +
-    "filter codes. Do not use this server for non-labour statistics (education, health, " +
-    "trade) or for data not published by the ILO.",
+    "filter codes. Resources ilostat://guide (code conventions, limits) and " +
+    "ilostat://reference/key-dataflows (verified dataflow ids by topic) save discovery calls; " +
+    "prompts ilo_country_labour_profile, ilo_compare_countries and ilo_indicator_trend are " +
+    "ready-made workflows. Do not use this server for non-labour statistics (education, " +
+    "health, trade) or for data not published by the ILO.",
   /**
    * Hostnames aceitos no header Host. A lista SUBSTITUI os defaults do
    * createMcpHandler (localhost e *.workers.dev) — por isso inclui também o

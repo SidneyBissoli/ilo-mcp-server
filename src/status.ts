@@ -8,6 +8,8 @@
 
 import { CONTRACT_VERSION } from "@sbissoli/mcp-provenance";
 import { SERVER_CONFIG } from "./config.js";
+import { PROMPT_NAMES } from "./prompts.js";
+import { RESOURCE_URIS } from "./resources.js";
 import { TOOL_NAMES } from "./tools/index.js";
 import type { Env } from "./types.js";
 
@@ -22,6 +24,10 @@ export function buildStatus(env: Env) {
      *  badges dinâmicos do README (shields.io dynamic/json), por isso ficam aqui. */
     tools: TOOL_NAMES.length,
     tool_names: [...TOOL_NAMES],
+    resources: RESOURCE_URIS.length,
+    resource_uris: [...RESOURCE_URIS],
+    prompts: PROMPT_NAMES.length,
+    prompt_names: [...PROMPT_NAMES],
     provenance_contract: CONTRACT_VERSION,
     ...(meta
       ? { deploy: { id: meta.id, tag: meta.tag || null, timestamp: meta.timestamp } }

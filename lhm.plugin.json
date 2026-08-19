@@ -1,9 +1,9 @@
 {
   "identifier": "sidneybissoli-ilo-mcp-server",
   "name": "ILO Labour Statistics (ILOSTAT) MCP Server",
-  "version": "0.2.2",
+  "version": "0.3.0",
   "icon": "📊",
-  "description": "ILO labour statistics (ILOSTAT) with full provenance: source URL, data vintage, retrieval timestamp, license and ILO citation on every response. 4 tools: search indicators, indicator metadata, dimension codes, data. Hosted on Cloudflare Workers (Streamable HTTP, no auth) or local stdio. Not affiliated with or endorsed by the ILO. MIT licensed.",
+  "description": "ILO labour statistics (ILOSTAT) with full provenance: source URL, data vintage, retrieval timestamp, license and ILO citation on every response. 4 tools (search indicators, indicator metadata, dimension codes, data), 3 reference resources (query guide, key dataflows by topic, provenance contract) and 3 workflow prompts (country profile, compare countries, indicator trend). Hosted on Cloudflare Workers (Streamable HTTP, no auth) or local stdio. Not affiliated with or endorsed by the ILO. MIT licensed.",
   "author": "Sidney da S. P. Bissoli",
   "authorUrl": "https://github.com/SidneyBissoli",
   "homepage": "https://github.com/SidneyBissoli/ilo-mcp-server",
@@ -26,7 +26,7 @@
     {
       "name": "ilo_search_indicators",
       "title": "Search ILOSTAT indicators",
-      "description": "Search the ILOSTAT catalogue of ~1,200 indicator dataflows by keywords in the name or id (e.g. \"unemployment rate sex age\"). Returns dataflow ids to use with ilo_get_data / ilo_get_indicator_metadata. Searches the catalogue only — it does not return statistical values (use ilo_get_data) and does not cover non-ILO sources.",
+      "description": "Search the ILOSTAT catalogue of ~1,200 indicator dataflows by keywords in the name or id (e.g. \"unemployment rate sex age\"). All terms must match (AND, case-insensitive), so start with 2–3 English words and drop terms if you get 0 results; results are ranked by ILO relevance weight, not by match count. Reading the id tells you the shape: suffix _RT = rate/ratio, _NB = number (usually thousands); dataflows whose second token starts with 2 (e.g. DF_UNE_2EAP_…) are ILO modelled estimates with full country/year coverage, the others are reported national data. Returns dataflow ids to use with ilo_get_data / ilo_get_indicator_metadata. Searches the local catalogue only — it does not return statistical values (use ilo_get_data), does not search dimension codes such as countries (use ilo_list_dimension_values) and does not cover non-ILO sources.",
       "inputSchema": {
         "type": "object",
         "properties": {
@@ -251,7 +251,7 @@
     {
       "name": "ilo_list_dimension_values",
       "title": "List valid codes of a dimension",
-      "description": "Valid codes (id + label) of one dimension of an ILOSTAT dataflow — e.g. the country/area codes of REF_AREA or the sex categories of SEX. Use to build correct ilo_get_data filters. Does not return statistical values; not applicable to the time dimension (filter it via start_period/end_period in ilo_get_data).",
+      "description": "Valid codes (id + label) of one dimension of an ILOSTAT dataflow — e.g. the country/area codes of REF_AREA (ISO 3166-1 alpha-3 such as BRA, plus X-codes for aggregates such as X01 World) or the categories of SEX (SEX_T/SEX_M/SEX_F) and AGE. Use `search` to resolve a name to a code (e.g. search \"Brazil\") instead of paging through hundreds of codes; codelists are shared across dataflows, so a code found here is valid wherever the same codelist is used. Use to build correct ilo_get_data filters. Does not return statistical values, does not say which codes actually have data for a given dataflow, and is not applicable to the time dimension (filter it via start_period/end_period in ilo_get_data).",
       "inputSchema": {
         "type": "object",
         "properties": {
@@ -519,6 +519,105 @@
       }
     }
   ],
-  "resources": [],
-  "prompts": []
+  "resources": [
+    {
+      "name": "ilostat-guide",
+      "title": "ILOSTAT query guide",
+      "uri": "ilostat://guide",
+      "description": "How to query ILOSTAT with this server: tool workflow, stable code conventions (REF_AREA ISO3 and X-aggregates, SEX, AGE, FREQ, dataflow id suffixes), limits and reporting rules. Read once per session to save discovery calls.",
+      "mimeType": "text/markdown"
+    },
+    {
+      "name": "ilostat-key-dataflows",
+      "title": "Key ILOSTAT dataflows by topic",
+      "uri": "ilostat://reference/key-dataflows",
+      "description": "Verified dataflow ids for the most common indicators (unemployment, employment, participation, wages, working time, informality, NEET, SDG 8, productivity) — usable directly in ilo_get_data without searching.",
+      "mimeType": "text/markdown"
+    },
+    {
+      "name": "ilostat-provenance",
+      "title": "Provenance and citation contract",
+      "uri": "ilostat://reference/provenance",
+      "description": "Meaning of every provenance field returned with the data (source_url, data_vintage, retrieved_at, notices, license, citation) and how to cite the ILO correctly.",
+      "mimeType": "text/markdown"
+    }
+  ],
+  "prompts": [
+    {
+      "name": "ilo_country_labour_profile",
+      "title": "Country labour-market profile",
+      "description": "Step-by-step workflow that assembles a labour-market profile of one country from ILOSTAT (unemployment, participation, employment ratio, informality, NEET, earnings, hours) with ILO citations.",
+      "arguments": [
+        {
+          "name": "country",
+          "description": "Country name or ISO3 code, e.g. \"Brazil\" or \"BRA\"",
+          "required": true
+        },
+        {
+          "name": "start_period",
+          "description": "First year, e.g. \"2015\" (optional)",
+          "required": false
+        },
+        {
+          "name": "end_period",
+          "description": "Last year, e.g. \"2024\" (optional)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "ilo_compare_countries",
+      "title": "Compare countries on an indicator",
+      "description": "Workflow that compares several countries (or regional aggregates) on one ILOSTAT indicator in a single data call, flagging modelled estimates versus reported data.",
+      "arguments": [
+        {
+          "name": "countries",
+          "description": "Comma-separated country names or ISO3 codes, e.g. \"BRA, ARG, CHL\"",
+          "required": true
+        },
+        {
+          "name": "indicator",
+          "description": "Indicator in plain words, e.g. \"youth unemployment rate\"",
+          "required": true
+        },
+        {
+          "name": "start_period",
+          "description": "First year, e.g. \"2015\" (optional)",
+          "required": false
+        },
+        {
+          "name": "end_period",
+          "description": "Last year, e.g. \"2024\" (optional)",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "ilo_indicator_trend",
+      "title": "Indicator trend for a country",
+      "description": "Workflow that retrieves the time series of one ILOSTAT indicator for one country and describes the trend (first/last, peak/trough, breaks in series) with citations.",
+      "arguments": [
+        {
+          "name": "indicator",
+          "description": "Indicator in plain words, e.g. \"labour force participation rate\"",
+          "required": true
+        },
+        {
+          "name": "country",
+          "description": "Country name or ISO3 code, e.g. \"India\" or \"IND\"",
+          "required": true
+        },
+        {
+          "name": "start_period",
+          "description": "First year, e.g. \"2015\" (optional)",
+          "required": false
+        },
+        {
+          "name": "end_period",
+          "description": "Last year, e.g. \"2024\" (optional)",
+          "required": false
+        }
+      ]
+    }
+  ]
 }

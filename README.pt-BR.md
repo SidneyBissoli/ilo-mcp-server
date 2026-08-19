@@ -4,6 +4,8 @@
 [![CI](https://github.com/SidneyBissoli/ilo-mcp-server/actions/workflows/ci.yml/badge.svg)](https://github.com/SidneyBissoli/ilo-mcp-server/actions/workflows/ci.yml)
 [![Version](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Filo.sidneybissoli.com%2Fstatus&query=%24.version&label=version&color=1f6feb)](https://ilo.sidneybissoli.com/status)
 [![Tools](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Filo.sidneybissoli.com%2Fstatus&query=%24.tools&label=tools&color=2ea44f)](https://ilo.sidneybissoli.com/status)
+[![Resources](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Filo.sidneybissoli.com%2Fstatus&query=%24.resources&label=resources&color=2ea44f)](https://ilo.sidneybissoli.com/status)
+[![Prompts](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Filo.sidneybissoli.com%2Fstatus&query=%24.prompts&label=prompts&color=2ea44f)](https://ilo.sidneybissoli.com/status)
 [![MCP Registry](https://img.shields.io/badge/MCP%20Registry-listed-blue)](https://registry.modelcontextprotocol.io/v0.1/servers/io.github.SidneyBissoli%2Filo-mcp-server/versions)
 [![ilo-mcp-server MCP server](https://glama.ai/mcp/servers/SidneyBissoli/ilo-mcp-server/badges/score.svg)](https://glama.ai/mcp/servers/SidneyBissoli/ilo-mcp-server)
 [![License: MIT](https://img.shields.io/badge/license-MIT-yellow)](LICENSE.md)
@@ -61,8 +63,8 @@ O hostname `ilo-mcp-server.sidneybissoli.workers.dev` também é servido, como s
 ## Rodar localmente (stdio)
 
 Prefere não passar suas consultas por um host de terceiros? O **mesmo servidor** também roda
-como **processo stdio local**, falando direto com a API oficial do ILOSTAT — mesmas 4 tools,
-mesmos limites, mesmo bloco de proveniência, sem Cloudflare no caminho.
+como **processo stdio local**, falando direto com a API oficial do ILOSTAT — mesmas 4 tools, resources e
+prompts, mesmos limites, mesmo bloco de proveniência, sem Cloudflare no caminho.
 
 ```bash
 git clone https://github.com/SidneyBissoli/ilo-mcp-server
@@ -108,6 +110,30 @@ Toda resposta carrega o **bloco de proveniência v1.0**
 ([`@sbissoli/mcp-provenance`](https://www.npmjs.com/package/@sbissoli/mcp-provenance), modos
 `concise`/`detailed` via parâmetro `provenance_mode`) em três canais: `structuredContent`,
 `_meta` com namespace (`com.sidneybissoli.ilostat/*`) e rodapé de texto.
+
+## Resources e prompts
+
+Três **resources** (estáticas, `text/markdown`, sem chamada à fonte) que o cliente pode anexar ao
+contexto antes de chamar tools — poupam as 2–3 chamadas de descoberta ("qual dataflow, quais
+códigos") que a maioria das sessões gasta:
+
+| URI | Conteúdo |
+|---|---|
+| `ilostat://guide` | fluxo das tools, convenções estáveis de códigos (`REF_AREA` ISO3 + agregados `X`, `SEX`, `AGE`, `FREQ`, sufixos dos ids de dataflow), limites, regras de citação |
+| `ilostat://reference/key-dataflows` | ids de dataflow verificados, por tema (desemprego, emprego, participação, salários, horas, informalidade, NEET, ODS 8, produtividade) |
+| `ilostat://reference/provenance` | significado de cada campo de proveniência e como citar a OIT |
+
+Três **prompts** — workflows prontos que encadeiam as tools e terminam nas regras de citação
+(argumentos são strings; os de período são opcionais):
+
+| Prompt | Argumentos | Resultado |
+|---|---|---|
+| `ilo_country_labour_profile` | `country`, `start_period`, `end_period` | perfil do mercado de trabalho de um país (desemprego, participação, razão emprego/população, informalidade, NEET, rendimentos, horas) |
+| `ilo_compare_countries` | `countries`, `indicator`, `start_period`, `end_period` | tabela comparativa entre países/agregados numa única chamada de dados, sinalizando estimativas modeladas vs. dados reportados |
+| `ilo_indicator_trend` | `indicator`, `country`, `start_period`, `end_period` | série temporal de um indicador com primeiro/último valor, pico/vale e quebras (`OBS_STATUS`) |
+
+Todo id de dataflow citado nas resources e prompts é conferido contra o seed do catálogo pela
+suíte de testes — a documentação nunca aponta para um id que a busca não encontraria.
 
 ## Comportamento e limites
 
@@ -155,7 +181,7 @@ servidor público.
 
 ```bash
 npm install
-npm run typecheck && npm test   # 83 testes offline (parsers, chave, tools, contrato de saída, catálogo em memória, fixtures de evals)
+npm run typecheck && npm test   # 96 testes offline (parsers, chave, tools, contrato de saída, resources/prompts, catálogo em memória, fixtures de evals)
 npm run dev                     # http://localhost:8787/mcp (Worker)
 npm run build && npm start      # runtime stdio (dist/cli.js)
 
@@ -166,6 +192,7 @@ npx wrangler d1 execute ilostat-catalog --remote --file=scripts/seed-catalog.sql
 
 npm run deploy
 node scripts/smoke-mcp.mjs      # smoke test contra a produção (initialize → 4 tools → erros)
+npm run manifest:lhm            # regenera tools/resources/prompts do lhm.plugin.json a partir do servidor real
 ```
 
 Bindings (ver `wrangler.jsonc`): KV `SDMX_CACHE`, D1 `CATALOG_DB`, Durable Object `USAGE`
@@ -203,7 +230,7 @@ instruções). Rodada de 07/08/2026: **top-1 100% (24/24)** — `evals/results/`
 |---|---|
 | `/` | landing page (identidade do serviço + contato — pública) |
 | `/health` | liveness |
-| `/status` | versão, contagem/nomes das tools, versão do contrato de proveniência, deploy corrente (alimenta os badges do README) |
+| `/status` | versão, contagens/nomes de tools, resources e prompts, versão do contrato de proveniência, deploy corrente (alimenta os badges do README) |
 | `/metrics` | uso agregado (só o endpoint MCP; sem IPs, sem conteúdo de consulta) |
 | `/mcp` | MCP Streamable HTTP |
 

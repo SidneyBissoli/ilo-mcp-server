@@ -1,7 +1,7 @@
 {
   "name": "ilo-mcp-server",
   "private": true,
-  "version": "0.2.2",
+  "version": "0.3.0",
   "license": "MIT",
   "description": "Provenance-first MCP server for ILOSTAT (ILO labour statistics): search indicators and retrieve labour data by country, year, sex and age, with source URL, data vintage, retrieval timestamp and license on every response. Hosted on Cloudflare Workers (Streamable HTTP) or local stdio.",
   "type": "module",
@@ -21,6 +21,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "seed:sql": "node scripts/seed-catalog.mjs",
+    "manifest:lhm": "tsx scripts/gen-lhm-manifest.mts",
     "eval": "tsx evals/run.ts"
   },
   "dependencies": {
@@ -32,6 +33,7 @@
   "devDependencies": {
     "@cloudflare/workers-types": "^5.20260818.1",
     "@sbissoli/mcp-evals": "^0.1.0",
+    "@types/node": "^22.20.1",
     "tsx": "^4.23.12",
     "typescript": "^5.7.0",
     "vitest": "^4.1.11",

@@ -59,9 +59,15 @@ export function registerCatalogTools(server: McpServer, env: Env, record: Record
       title: "Search ILOSTAT indicators",
       description:
         "Search the ILOSTAT catalogue of ~1,200 indicator dataflows by keywords in the name or id " +
-        "(e.g. \"unemployment rate sex age\"). Returns dataflow ids to use with ilo_get_data / " +
-        "ilo_get_indicator_metadata. Searches the catalogue only — it does not return statistical " +
-        "values (use ilo_get_data) and does not cover non-ILO sources.",
+        "(e.g. \"unemployment rate sex age\"). All terms must match (AND, case-insensitive), so " +
+        "start with 2–3 English words and drop terms if you get 0 results; results are ranked by " +
+        "ILO relevance weight, not by match count. Reading the id tells you the shape: suffix _RT " +
+        "= rate/ratio, _NB = number (usually thousands); dataflows whose second token starts with 2 " +
+        "(e.g. DF_UNE_2EAP_…) are ILO modelled estimates with full country/year coverage, the " +
+        "others are reported national data. Returns dataflow ids to use with ilo_get_data / " +
+        "ilo_get_indicator_metadata. Searches the local catalogue only — it does not return " +
+        "statistical values (use ilo_get_data), does not search dimension codes such as countries " +
+        "(use ilo_list_dimension_values) and does not cover non-ILO sources.",
       inputSchema: z.object({
         query: z.string().min(1).describe("Keywords, matched against dataflow name and id (AND between terms)"),
         limit: z.number().int().min(1).max(100).optional().describe("Maximum results (default 20)"),

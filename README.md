@@ -4,6 +4,8 @@
 [![CI](https://github.com/SidneyBissoli/ilo-mcp-server/actions/workflows/ci.yml/badge.svg)](https://github.com/SidneyBissoli/ilo-mcp-server/actions/workflows/ci.yml)
 [![Version](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Filo.sidneybissoli.com%2Fstatus&query=%24.version&label=version&color=1f6feb)](https://ilo.sidneybissoli.com/status)
 [![Tools](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Filo.sidneybissoli.com%2Fstatus&query=%24.tools&label=tools&color=2ea44f)](https://ilo.sidneybissoli.com/status)
+[![Resources](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Filo.sidneybissoli.com%2Fstatus&query=%24.resources&label=resources&color=2ea44f)](https://ilo.sidneybissoli.com/status)
+[![Prompts](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Filo.sidneybissoli.com%2Fstatus&query=%24.prompts&label=prompts&color=2ea44f)](https://ilo.sidneybissoli.com/status)
 [![MCP Registry](https://img.shields.io/badge/MCP%20Registry-listed-blue)](https://registry.modelcontextprotocol.io/v0.1/servers/io.github.SidneyBissoli%2Filo-mcp-server/versions)
 [![ilo-mcp-server MCP server](https://glama.ai/mcp/servers/SidneyBissoli/ilo-mcp-server/badges/score.svg)](https://glama.ai/mcp/servers/SidneyBissoli/ilo-mcp-server)
 [![License: MIT](https://img.shields.io/badge/license-MIT-yellow)](LICENSE.md)
@@ -61,8 +63,8 @@ The `ilo-mcp-server.sidneybissoli.workers.dev` hostname is also served, as a sec
 ## Run locally (stdio)
 
 Prefer not to route queries through a third-party host? The **same server** also runs as a
-**local stdio process** that talks directly to the official ILOSTAT API — same 4 tools, same
-limits, same provenance block, no Cloudflare in the loop.
+**local stdio process** that talks directly to the official ILOSTAT API — same 4 tools, resources and prompts,
+same limits, same provenance block, no Cloudflare in the loop.
 
 ```bash
 git clone https://github.com/SidneyBissoli/ilo-mcp-server
@@ -109,6 +111,30 @@ Every response carries the **provenance block v1.0**
 `concise`/`detailed` via the `provenance_mode` parameter) on three channels:
 `structuredContent`, namespaced `_meta` (`com.sidneybissoli.ilostat/*`) and a text footer.
 
+## Resources and prompts
+
+Three **resources** (static, `text/markdown`, no upstream call) that a client can attach to the
+context before calling tools — they save the 2–3 discovery calls most sessions spend on
+"which dataflow, which codes":
+
+| URI | Content |
+|---|---|
+| `ilostat://guide` | tool workflow, stable code conventions (`REF_AREA` ISO3 + `X`-aggregates, `SEX`, `AGE`, `FREQ`, dataflow id suffixes), limits, reporting rules |
+| `ilostat://reference/key-dataflows` | verified dataflow ids by topic (unemployment, employment, participation, wages, hours, informality, NEET, SDG 8, productivity) |
+| `ilostat://reference/provenance` | meaning of every provenance field and how to cite the ILO |
+
+Three **prompts** — ready-made workflows that chain the tools and end with the citation rules
+(arguments are strings; period arguments optional):
+
+| Prompt | Arguments | Result |
+|---|---|---|
+| `ilo_country_labour_profile` | `country`, `start_period`, `end_period` | labour-market profile of one country (unemployment, participation, employment ratio, informality, NEET, earnings, hours) |
+| `ilo_compare_countries` | `countries`, `indicator`, `start_period`, `end_period` | comparison table across countries/aggregates in one data call, flagging modelled estimates vs reported data |
+| `ilo_indicator_trend` | `indicator`, `country`, `start_period`, `end_period` | time series of one indicator with first/last, peak/trough and `OBS_STATUS` breaks |
+
+Every dataflow id quoted in the resources and prompts is checked against the catalogue seed by
+the test suite, so the documentation cannot point at an id the search would not find.
+
 ## Behaviour and limits
 
 - **`REF_AREA` is required in `ilo_get_data`, up to 30 areas per call.** The ILO gateway times
@@ -153,7 +179,7 @@ public server.
 
 ```bash
 npm install
-npm run typecheck && npm test   # 83 offline tests (parsers, key, tools, output contract, in-memory catalogue, eval fixtures)
+npm run typecheck && npm test   # 96 offline tests (parsers, key, tools, output contract, resources/prompts, in-memory catalogue, eval fixtures)
 npm run dev                     # http://localhost:8787/mcp (Worker)
 npm run build && npm start      # stdio runtime (dist/cli.js)
 
@@ -164,6 +190,7 @@ npx wrangler d1 execute ilostat-catalog --remote --file=scripts/seed-catalog.sql
 
 npm run deploy
 node scripts/smoke-mcp.mjs      # smoke test against production (initialize → 4 tools → errors)
+npm run manifest:lhm            # regenerate tools/resources/prompts in lhm.plugin.json from the real server
 ```
 
 Bindings (see `wrangler.jsonc`): KV `SDMX_CACHE`, D1 `CATALOG_DB`, Durable Object `USAGE`
@@ -199,7 +226,7 @@ answers validated manually against production (`evals/e2e/validacao-respostas.md
 |---|---|
 | `/` | landing page (service identity + contact — public) |
 | `/health` | liveness |
-| `/status` | version, tool count/names, provenance contract version, current deploy (feeds the README badges) |
+| `/status` | version, tool/resource/prompt counts and names, provenance contract version, current deploy (feeds the README badges) |
 | `/metrics` | aggregated usage (MCP endpoint only; no IPs, no query content) |
 | `/mcp` | MCP Streamable HTTP |
 

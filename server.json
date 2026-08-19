@@ -8,7 +8,7 @@
     "url": "https://github.com/SidneyBissoli/ilo-mcp-server",
     "source": "github"
   },
-  "version": "0.2.2",
+  "version": "0.3.0",
   "remotes": [
     {
       "type": "streamable-http",

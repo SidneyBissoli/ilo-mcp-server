@@ -4,6 +4,8 @@ import { InMemoryTransport } from "@modelcontextprotocol/server";
 import { CONTRACT_VERSION } from "@sbissoli/mcp-provenance";
 import { SERVER_CONFIG } from "../src/config.js";
 import { buildServer } from "../src/server.js";
+import { PROMPT_NAMES } from "../src/prompts.js";
+import { RESOURCE_URIS } from "../src/resources.js";
 import { buildStatus } from "../src/status.js";
 import { TOOL_NAMES } from "../src/tools/index.js";
 
@@ -17,6 +19,10 @@ describe("buildStatus", () => {
       mcp: SERVER_CONFIG.mcpRoute,
       tools: TOOL_NAMES.length,
       tool_names: [...TOOL_NAMES],
+      resources: RESOURCE_URIS.length,
+      resource_uris: [...RESOURCE_URIS],
+      prompts: PROMPT_NAMES.length,
+      prompt_names: [...PROMPT_NAMES],
       provenance_contract: CONTRACT_VERSION,
     });
   });
