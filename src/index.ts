@@ -12,6 +12,7 @@ import { SERVER_CONFIG } from "./config.js";
 import { landingResponse } from "./landing.js";
 import { logger } from "./logger.js";
 import { checkRateLimit } from "./rate-limit.js";
+import { tagRequest, withAnalytics } from "./analytics.js";
 import { buildServer } from "./server.js";
 import { buildStatus } from "./status.js";
 import type { Env } from "./types.js";
@@ -75,7 +76,11 @@ export default {
     // bots) inflavam "request"/"rate_limited" em ordens de grandeza sobre o uso real.
     if (isMcp) record("request", url.pathname);
 
-    const handler = createMcpHandler(() => buildServer(env, record), {
+    // Contexto da requisição (país/AS/marcador self) + escrita no Analytics
+    // Engine pegando carona no hook de uso — ver src/analytics.ts.
+    const recordWithAnalytics = withAnalytics(record, env.ANALYTICS, tagRequest(request, env.SELF_MARKER));
+
+    const handler = createMcpHandler(() => buildServer(env, recordWithAnalytics), {
       route: SERVER_CONFIG.mcpRoute,
       // Sem a opção, o handler aceita localhost e *.workers.dev. Ao definir
       // extraAllowedHostnames (domínio próprio), a lista SUBSTITUI os defaults —
