@@ -1,0 +1,37 @@
+name: Integration tests (live ILO SDMX API)
+
+# Contrato dos dataflows curados (resource key-dataflows) contra o catálogo
+# real do SDMX da OIT: cada id precisa existir e o nome vivo precisa ser
+# compatível com o curado (tests/key-dataflows-contract.integration.test.ts —
+# o porquê está lá; regra de autoria do portfólio, caso ibge-br-mcp 2026-08).
+# Cron semanal; a falha vira pendência no painel do portfolio-monitor.
+
+on:
+  # segunda 08:00 UTC = 05:00 BRT, antes da rodada semanal do monitor (09:00 BRT)
+  schedule:
+    - cron: '0 8 * * 1'
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
+jobs:
+  integration:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Key-dataflows contract against live ILO SDMX
+        env:
+          INTEGRATION_TESTS: '1'
+        run: npx vitest run tests/key-dataflows-contract.integration.test.ts
