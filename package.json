@@ -1,6 +1,6 @@
 {
   "name": "ilo-mcp-server",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "mcpName": "io.github.SidneyBissoli/ilo-mcp-server",
   "license": "MIT",
   "description": "Provenance-first MCP server for ILOSTAT (ILO labour statistics): search indicators and retrieve labour data by country, year, sex and age, with source URL, data vintage, retrieval timestamp and license on every response. Hosted on Cloudflare Workers (Streamable HTTP) or local stdio.",
