@@ -13,7 +13,7 @@ export function landingHtml(): string {
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>${c.title}</title>
+<title>${c.name} — ${c.title}</title>
 <style>
   body { font-family: system-ui, sans-serif; max-width: 42rem; margin: 3rem auto; padding: 0 1rem; line-height: 1.6; }
   code { background: #eee; padding: 0.1rem 0.35rem; border-radius: 4px; }
