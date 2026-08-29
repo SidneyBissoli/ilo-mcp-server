@@ -29,14 +29,24 @@ import { describe, expect, it } from "vitest";
 import { ICON_PNG_BASE64 } from "../src/icon.js";
 
 const raiz = join(__dirname, "..");
-const bytesDoIcone = (): Buffer => Buffer.from(ICON_PNG_BASE64, "base64");
+
+// Uint8Array + DataView, e nao Buffer: este repositorio e um Worker, entao o
+// `Buffer` que o TypeScript resolve aqui NAO tem os metodos do Node
+// (readUInt32BE, toString("hex")). Usa-los compila na maquina e quebra o
+// typecheck do CI — foi o que aconteceu em 29/08/2026. As primitivas padrao
+// funcionam nos dois lados.
+const bytesDoIcone = (): Uint8Array =>
+  Uint8Array.from(atob(ICON_PNG_BASE64), (c) => c.charCodeAt(0));
+
+const ASSINATURA_PNG = [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a];
 
 /** Dimensões lidas do cabeçalho IHDR do PNG — sem dependência de imagem. */
-function dimensoesPng(buf: Buffer): { largura: number; altura: number } {
-  if (buf.subarray(0, 8).toString("hex") !== "89504e470d0a1a0a") {
+function dimensoesPng(buf: Uint8Array): { largura: number; altura: number } {
+  if (!ASSINATURA_PNG.every((b, i) => buf[i] === b)) {
     throw new Error("não é um PNG");
   }
-  return { largura: buf.readUInt32BE(16), altura: buf.readUInt32BE(20) };
+  const dv = new DataView(buf.buffer, buf.byteOffset, buf.byteLength);
+  return { largura: dv.getUint32(16), altura: dv.getUint32(20) };
 }
 
 interface ManifestoIcone {
