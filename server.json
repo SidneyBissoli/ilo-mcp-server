@@ -4,6 +4,13 @@
   "title": "ILO Labour Statistics (ILOSTAT)",
   "description": "ILO labour statistics (ILOSTAT) with full provenance: source, vintage, license. 4 tools.",
   "websiteUrl": "https://ilo.sidneybissoli.com",
+  "icons": [
+    {
+      "src": "https://ilo.sidneybissoli.com/icon.png",
+      "mimeType": "image/png",
+      "sizes": ["512x512"]
+    }
+  ],
   "repository": {
     "url": "https://github.com/SidneyBissoli/ilo-mcp-server",
     "source": "github"

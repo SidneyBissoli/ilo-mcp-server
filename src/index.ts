@@ -9,6 +9,7 @@
 import { createMcpHandler } from "agents/mcp/server";
 import { checkAuth } from "./auth.js";
 import { SERVER_CONFIG } from "./config.js";
+import { ICON_PNG_BASE64 } from "./icon.js";
 import { landingResponse } from "./landing.js";
 import { logger } from "./logger.js";
 import { checkRateLimit } from "./rate-limit.js";
@@ -28,6 +29,9 @@ function json(data: unknown, extraHeaders: Record<string, string> = {}): Respons
   });
 }
 
+// Decodificado uma vez por isolate, nao por request.
+const ICON_PNG = Uint8Array.from(atob(ICON_PNG_BASE64), (c) => c.charCodeAt(0));
+
 export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     const url = new URL(request.url);
@@ -42,6 +46,14 @@ export default {
     }
     if (url.pathname === "/status") {
       return json(buildStatus(env), { "Cache-Control": "no-store" });
+    }
+    // Icone do servidor — publico: e o que server.json declara e o que os
+    // diretorios buscam. Mesmo host do servidor, como o schema do MCP recomenda.
+    if (url.pathname === "/icon.png") {
+      return new Response(ICON_PNG, {
+        status: 200,
+        headers: { "Content-Type": "image/png", "Cache-Control": "public, max-age=86400" },
+      });
     }
     if (url.pathname === "/metrics") {
       const snap = await usageSnapshot(env);
