@@ -1,0 +1,112 @@
+name: Deploy to Cloudflare Workers
+
+# POR QUE ESTE WORKFLOW EXISTE
+#
+# O deploy do Worker era manual, e a deriva que isso produz foi MEDIDA em
+# 29/08/2026: npm em 0.3.1, endpoint hospedado em 0.3.0. O `publish.yml` publica
+# no npm e no MCP Registry e nunca tocou no Worker — então toda release deixava
+# produção para trás até alguém lembrar de rodar `wrangler deploy` na mão.
+#
+# Não é caso isolado: no mesmo dia, a mesma varredura achou npm 4.0.2 contra
+# hospedado 4.0.1 no ibge-br-mcp e npm 3.5.1 contra hospedado 3.5.0 no
+# senado-br-mcp-cloudflare. No bcb-br-mcp a mesma classe já tinha custado npm
+# 1.3.5 contra hospedado 1.3.1, servindo descrições de tool 12x menores em
+# produção do que as do fonte. Deploy manual sempre acaba assim; a correção é
+# estrutural.
+#
+# FORMATO DESTE REPOSITÓRIO: o repositório INTEIRO é o Worker (wrangler.jsonc na
+# raiz, `main` apontando para src/index.ts, transpilado pelo próprio wrangler).
+# Não há subprojeto `worker/` nem passo de "buildar a raiz antes", que nos
+# irmãos bcb e ibge é obrigatório porque lá o Worker importa de ../../dist.
+#
+# Dois gatilhos:
+#  - push em main nos caminhos que afetam o Worker;
+#  - workflow_dispatch, para redeploy sem mudança de código.
+#
+# Secrets necessários no GitHub (ainda NÃO cadastrados neste repositório — o
+# job se pula sozinho enquanto faltarem):
+#   CLOUDFLARE_API_TOKEN  — token com permissão "Workers Scripts: Edit"
+#   CLOUDFLARE_ACCOUNT_ID — conta em que o worker é publicado
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "src/**"
+      - "package.json"
+      - "package-lock.json"
+      - "wrangler.jsonc"
+      - ".github/workflows/deploy-worker.yml"
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      # Sem o token, o job é PULADO em vez de falhar: main vermelho por
+      # credencial ausente esconde falha de verdade. O deploy segue possível na
+      # mão (`npm run deploy` com login local do wrangler).
+      - name: Verificar credencial da Cloudflare
+        id: cf
+        run: |
+          if [ -n "${{ secrets.CLOUDFLARE_API_TOKEN }}" ]; then
+            echo "ok=true" >> $GITHUB_OUTPUT
+          else
+            echo "ok=false" >> $GITHUB_OUTPUT
+            echo "::warning::CLOUDFLARE_API_TOKEN ausente — deploy pulado. Cadastre o secret para ligar o deploy contínuo."
+          fi
+
+      - if: steps.cf.outputs.ok == 'true'
+        uses: actions/checkout@v4
+
+      # NODE 22, NÃO o piso do projeto. `engines.node` é ">=20", mas o wrangler
+      # 4.x recusa Node < 22 ("Wrangler requires at least Node.js v22.0.0") e o
+      # deploy morre antes de autenticar — medido no senado-br-mcp-cloudflare em
+      # 29/08/2026, com este mesmo arquivo fixado em 20.x.
+      - if: steps.cf.outputs.ok == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+
+      - if: steps.cf.outputs.ok == 'true'
+        name: Install
+        run: npm ci
+
+      # Não deployar o que não compila: o wrangler transpila na hora e um erro
+      # de tipo chegaria a produção como erro de runtime.
+      - if: steps.cf.outputs.ok == 'true'
+        name: Typecheck
+        run: npm run typecheck
+
+      - if: steps.cf.outputs.ok == 'true'
+        name: Deploy via Wrangler
+        uses: cloudflare/wrangler-action@v4
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+      # A GUARDA QUE O SMOKE NÃO DÁ. O smoke abaixo exercita a superfície, mas
+      # passaria IGUAL servindo a versão anterior — que é justamente a deriva
+      # que este workflow existe para impedir, e foi assim que a 0.3.0 ficou no
+      # ar sem ninguém notar. Comparar o que /status reporta com o package.json
+      # torna a deriva vermelha em vez de silenciosa.
+      - if: steps.cf.outputs.ok == 'true'
+        name: Versão hospedada bate com o package.json
+        run: |
+          sleep 20
+          ESPERADA=$(node -p "require('./package.json').version")
+          NO_AR=$(curl -sS --max-time 30 https://ilo.sidneybissoli.com/status | node -p "JSON.parse(require('fs').readFileSync(0,'utf8')).version")
+          echo "package.json=$ESPERADA  hospedado=$NO_AR"
+          if [ "$ESPERADA" != "$NO_AR" ]; then
+            echo "::error::deriva: o endpoint serve $NO_AR e o repositório está em $ESPERADA"
+            exit 1
+          fi
+
+      # Fecha o ciclo: se o deploy subir um Worker quebrado, o job falha aqui e
+      # não em silêncio na próxima vez que alguém abrir o endpoint.
+      - if: steps.cf.outputs.ok == 'true'
+        name: Smoke em produção
+        run: node scripts/smoke-mcp.mjs
