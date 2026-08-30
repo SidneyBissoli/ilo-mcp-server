@@ -16,6 +16,14 @@ export const SERVER_CONFIG = {
   version: "0.3.2",
   /** Título de exibição (clientes MCP mostram ao usuário). */
   title: "ILO Labour Statistics (ILOSTAT)",
+  /**
+   * Site do servidor. Declarado em TRÊS lugares que não podem discordar —
+   * `server.json` (o que o registry publica), `package.json` (homepage) e
+   * `serverInfo.websiteUrl` do handshake. Era o mesmo par desalinhado dos
+   * ícones: o manifesto declarava, o handshake calava.
+   * Preso por tests/serverinfo-sync.test.ts.
+   */
+  websiteUrl: "https://ilo.sidneybissoli.com",
   /** Uma frase: o que o servidor serve e de qual fonte. */
   description:
     "MCP server for ILOSTAT, the International Labour Organization's statistical database: " +
