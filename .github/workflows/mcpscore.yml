@@ -21,24 +21,41 @@ name: mcpscore (contrato de qualidade)
 #  - 30/08/2026: fechados websiteUrl no handshake, os quatro cursores de
 #    paginação e a validação de Origin. Stdio medido em 127/144 = 88,2% → piso
 #    88. O piso remoto ficou em 94 até o deploy sair, porque o job remoto mede o
-#    que ESTÁ NO AR e o deploy deste repositório é manual (ver
-#    deploy-worker.yml): subi-lo antes reprovaria o push contra o código antigo.
-#    Feito o `wrangler deploy` (versão 1e0aca6f), produção mediu 172/173 = 99,4%
-#    → piso 99. Resta só o achado de `server/discover`, que é decisão do SDK e
-#    não tem correção nesta camada — ver ROADMAP.md.
+#    que ESTÁ NO AR: subi-lo antes reprovaria o push contra o código antigo.
+#    Feito o deploy, produção mediu 172/173 = 99,4% → piso 99. Resta só o achado
+#    de `server/discover`, que é decisão do SDK e não tem correção nesta camada
+#    — ver ROADMAP.md.
 #
 # O gate do PR mede o CÓDIGO DO PR (stdio, servidor local). O pós-deploy mede
 # o que FOI AO AR. São perguntas diferentes e por isso são dois jobs.
 
+# QUANDO CADA JOB RODA, e por que não é o mesmo gatilho.
+#
+# O job remoto ESPERA O DEPLOY. Ele mede o endpoint, e o deploy contínuo
+# (deploy-worker.yml) roda no MESMO push — em paralelo, sem ordem garantida.
+# Enquanto o piso remoto era 94 contra uma nota de 94,8% a corrida não aparecia;
+# com o piso em 99 ela reprovaria o push que mede produção antes do deploy
+# terminar, e o vermelho seria do relógio, não do servidor. Por isso o gatilho
+# do job remoto é o TÉRMINO do workflow de deploy, e não o push.
+#
+# Consequência aceita: push que não mexe no Worker não dispara deploy e, logo,
+# não dispara auditoria remota. É o correto — produção não mudou, e reauditar
+# mediria a mesma coisa de novo.
 on:
   pull_request:
   push:
     branches: [main, master]
+  workflow_run:
+    workflows: ["Deploy to Cloudflare Workers"]
+    types: [completed]
   workflow_dispatch:
 
 jobs:
   stdio:
     name: contrato no código do PR (stdio)
+    # O eco do deploy não traz código novo para medir aqui — o PR e o push já
+    # mediram este mesmo commit.
+    if: github.event_name != 'workflow_run'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -55,9 +72,11 @@ jobs:
 
   remoto:
     name: contrato no que está no ar (streamable http)
-    # Só no push: num PR o endpoint ainda serve o código anterior, e reprovar
-    # o PR por isso mediria a coisa errada.
-    if: github.event_name != 'pull_request'
+    # Depois do deploy, nunca no PR: num PR o endpoint ainda serve o código
+    # anterior, e reprovar o PR por isso mediria a coisa errada.
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

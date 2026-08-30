@@ -23,10 +23,13 @@ name: Deploy to Cloudflare Workers
 #  - push em main nos caminhos que afetam o Worker;
 #  - workflow_dispatch, para redeploy sem mudança de código.
 #
-# Secrets necessários no GitHub (ainda NÃO cadastrados neste repositório — o
-# job se pula sozinho enquanto faltarem):
+# Secrets no GitHub (CADASTRADOS e funcionando — a primeira execução real foi em
+# 30/08/2026, run 33315235704, versão 04de9465; o comentário anterior dizia que
+# faltavam, e essa afirmação virou premissa errada em outro arquivo antes de
+# alguém conferir):
 #   CLOUDFLARE_API_TOKEN  — token com permissão "Workers Scripts: Edit"
 #   CLOUDFLARE_ACCOUNT_ID — conta em que o worker é publicado
+# O job segue se pulando sozinho se um dia sumirem.
 
 on:
   push:
