@@ -13,7 +13,7 @@ export const SERVER_CONFIG = {
   /** Nome curto do servidor (handshake MCP, /status, landing). */
   name: "ilo-mcp-server",
   /** Versão do servidor — manter em sincronia com package.json. */
-  version: "0.3.2",
+  version: "0.4.0",
   /** Título de exibição (clientes MCP mostram ao usuário). */
   title: "ILO Labour Statistics (ILOSTAT)",
   /**
