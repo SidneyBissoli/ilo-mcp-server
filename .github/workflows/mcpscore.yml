@@ -20,12 +20,12 @@ name: mcpscore (contrato de qualidade)
 #  - 29/08/2026: stdio 121/144 = 84,0%; remoto 94,8% → pisos 84 e 94.
 #  - 30/08/2026: fechados websiteUrl no handshake, os quatro cursores de
 #    paginação e a validação de Origin. Stdio medido em 127/144 = 88,2% → piso
-#    88. O piso REMOTO continua em 94 de propósito: este repositório não tem os
-#    secrets da Cloudflare (ver deploy-worker.yml), o deploy segue manual, e o
-#    job remoto mede o que ESTÁ NO AR — subir o piso antes do `wrangler deploy`
-#    reprovaria o push contra o código antigo. Depois do deploy, medir de novo
-#    e subir para 99 (previsão: 172/173, restando só o achado de
-#    `server/discover`, que é decisão do SDK — ver ROADMAP.md).
+#    88. O piso remoto ficou em 94 até o deploy sair, porque o job remoto mede o
+#    que ESTÁ NO AR e o deploy deste repositório é manual (ver
+#    deploy-worker.yml): subi-lo antes reprovaria o push contra o código antigo.
+#    Feito o `wrangler deploy` (versão 1e0aca6f), produção mediu 172/173 = 99,4%
+#    → piso 99. Resta só o achado de `server/discover`, que é decisão do SDK e
+#    não tem correção nesta camada — ver ROADMAP.md.
 #
 # O gate do PR mede o CÓDIGO DO PR (stdio, servidor local). O pós-deploy mede
 # o que FOI AO AR. São perguntas diferentes e por isso são dois jobs.
@@ -63,4 +63,4 @@ jobs:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v5
       - name: Auditar o endpoint em produção
-        run: uvx mcpscore --fail-under 94 https://ilo.sidneybissoli.com/mcp
+        run: uvx mcpscore --fail-under 99 https://ilo.sidneybissoli.com/mcp
