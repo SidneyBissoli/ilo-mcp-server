@@ -12,6 +12,8 @@ import { SERVER_CONFIG } from "./config.js";
 import { ICON_PNG_BASE64 } from "./icon.js";
 import { landingResponse } from "./landing.js";
 import { logger } from "./logger.js";
+import { allowedOriginHostnames, origemAceita } from "./origin.js";
+import { cursorRejection } from "./pagination.js";
 import { checkRateLimit } from "./rate-limit.js";
 import { tagRequest, withAnalytics } from "./analytics.js";
 import { buildServer } from "./server.js";
@@ -92,6 +94,22 @@ export default {
     // Engine pegando carona no hook de uso — ver src/analytics.ts.
     const recordWithAnalytics = withAnalytics(record, env.ANALYTICS, tagRequest(request, env.SELF_MARKER));
 
+    const origensAceitas = allowedOriginHostnames(env.ALLOWED_ORIGIN);
+
+    // Cursor de paginação inválido → -32602 (ver src/pagination.ts: os handlers
+    // de lista do SDK ignoram o cursor). Só depois do guarda de Origin abaixo é
+    // que o handler recusaria a requisição estrangeira; para a ordem não
+    // inverter (recusa de protocolo ANTES da recusa de segurança), a mesma
+    // lista de origens vale aqui: Origin estrangeiro cai direto no handler, que
+    // devolve o 403.
+    if (isMcp && request.method === "POST" && origemAceita(request, origensAceitas)) {
+      const recusa = await cursorRejection(request, env.ALLOWED_ORIGIN || "*");
+      if (recusa) {
+        logger.info("invalid_cursor", { path: url.pathname });
+        return recusa;
+      }
+    }
+
     const handler = createMcpHandler(() => buildServer(env, recordWithAnalytics), {
       route: SERVER_CONFIG.mcpRoute,
       // Sem a opção, o handler aceita localhost e *.workers.dev. Ao definir
@@ -100,10 +118,24 @@ export default {
       ...(SERVER_CONFIG.extraAllowedHostnames.length
         ? { allowedHostnames: [...SERVER_CONFIG.extraAllowedHostnames] }
         : {}),
-      // agents >= 0.21 valida também o header Origin (só clientes de navegador o
-      // enviam). Coerente com o CORS: origem "*" = qualquer Origin; origem concreta
-      // = só o hostname dela (default do handler, derivado de corsOptions.origin).
-      ...(!env.ALLOWED_ORIGIN || env.ALLOWED_ORIGIN === "*" ? { allowedOriginHostnames: "*" as const } : {}),
+      // Header Origin (só clientes de NAVEGADOR o enviam; cliente MCP comum não
+      // manda nenhum, e requisição sem Origin segue válida). A spec 2026-07-28
+      // §Security exige 403 para Origin estrangeiro: é a defesa contra DNS
+      // rebinding — a página maliciosa que, no navegador da vítima, resolve o
+      // nome dela para este servidor e conversa com ele.
+      //
+      // Aqui havia `allowedOriginHostnames: "*"` sempre que ALLOWED_ORIGIN era
+      // "*", e "*" DESLIGA a validação (o handler só a dispensa quando ela roda
+      // em middleware confiável antes) — o mcpscore media 200 para Origin
+      // estrangeiro, achado de severidade HIGH em 29/08/2026. O CORS e o Origin
+      // respondem a perguntas diferentes: CORS "*" diz quem pode LER a resposta,
+      // esta lista diz de qual página o servidor aceita ser chamado.
+      //
+      // Também não serve deixar em branco: o default do handler é localhost +
+      // o hostname de um corsOptions.origin concreto, e com "*" isso deixaria o
+      // próprio domínio de fora. A lista é a mesma do header Host, mais a origem
+      // configurada quando ALLOWED_ORIGIN nomeia uma.
+      allowedOriginHostnames: origensAceitas,
       corsOptions: {
         origin: env.ALLOWED_ORIGIN || "*",
         methods: "GET, POST, DELETE, OPTIONS",

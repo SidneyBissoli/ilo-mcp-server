@@ -18,6 +18,7 @@ import { StdioServerTransport } from "@modelcontextprotocol/server/stdio";
 import { SERVER_CONFIG } from "./config.js";
 import { InMemoryCatalog } from "./ilostat/catalog-memory.js";
 import { SDMX_BASE } from "./ilostat/sdmx.js";
+import { unknownCursorError } from "./pagination.js";
 import { buildServer } from "./server.js";
 import type { Env, SdmxCache } from "./types.js";
 
@@ -49,6 +50,21 @@ async function main(): Promise<void> {
   const server = buildServer(localEnv());
   const transport = new StdioServerTransport();
   await server.connect(transport);
+
+  // Cursor de paginação inválido → -32602, o mesmo guarda que o Worker aplica
+  // no POST (src/pagination.ts). Aqui ele entra DEPOIS do connect porque é o
+  // connect que instala o onmessage do Protocol: envolvê-lo antes só somaria um
+  // ouvinte, sem poder de interromper a entrega ao SDK.
+  const entregaAoServidor = transport.onmessage;
+  transport.onmessage = (message) => {
+    const recusa = unknownCursorError(message);
+    if (recusa) {
+      void transport.send(recusa);
+      return;
+    }
+    entregaAoServidor?.(message);
+  };
+
   console.error(`${SERVER_CONFIG.name} ${SERVER_CONFIG.version} — stdio, upstream ${SDMX_BASE}`);
 }
 
