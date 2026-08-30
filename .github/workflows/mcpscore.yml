@@ -22,9 +22,14 @@ name: mcpscore (contrato de qualidade)
 #    paginação e a validação de Origin. Stdio medido em 127/144 = 88,2% → piso
 #    88. O piso remoto ficou em 94 até o deploy sair, porque o job remoto mede o
 #    que ESTÁ NO AR: subi-lo antes reprovaria o push contra o código antigo.
-#    Feito o deploy, produção mediu 172/173 = 99,4% → piso 99. Resta só o achado
-#    de `server/discover`, que é decisão do SDK e não tem correção nesta camada
-#    — ver ROADMAP.md.
+#    Feito o deploy, produção mediu 172/173 = 99,4% → piso 99.
+#  - 30/08/2026, mesmo dia, release 0.4.0: fechado também o `server/discover`
+#    (src/discover.ts). Produção mediu **173/173**, prontidão 48/48 → piso 100.
+#
+# UM PISO DE 100 É DESCONFORTÁVEL DE PROPÓSITO. Ele fica vermelho tanto numa
+# regressão nossa quanto numa REGRA NOVA do auditor que ainda não atendemos —
+# e a segunda também é notícia, não ruído: é uma exigência de conformidade que
+# passou a existir. Quem baixar este piso está decidindo não saber.
 #
 # O gate do PR mede o CÓDIGO DO PR (stdio, servidor local). O pós-deploy mede
 # o que FOI AO AR. São perguntas diferentes e por isso são dois jobs.
@@ -82,4 +87,4 @@ jobs:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v5
       - name: Auditar o endpoint em produção
-        run: uvx mcpscore --fail-under 99 https://ilo.sidneybissoli.com/mcp
+        run: uvx mcpscore --fail-under 100 https://ilo.sidneybissoli.com/mcp
