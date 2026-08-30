@@ -8,15 +8,24 @@ name: mcpscore (contrato de qualidade)
 # o SERVIDOR RODANDO — mcpindex, Glama e LobeHub leem ficha e repositório.
 # Por isso aqui ele deixa de ser número no painel e vira gate.
 #
-# CATRACA, não meta. O piso é o valor MEDIDO em 29/08/2026, arredondado para
-# baixo: impede regressão sem prometer melhora. Ao subir a nota de verdade,
-# suba o piso na mesma passada — senão a catraca protege um patamar que o
-# servidor já não tem.
+# CATRACA, não meta. O piso é o valor MEDIDO, arredondado para baixo: impede
+# regressão sem prometer melhora. Ao subir a nota de verdade, suba o piso na
+# mesma passada — senão a catraca protege um patamar que o servidor já não tem.
 #
 # DOIS PISOS, e a diferença não é arbitrária: no stdio várias regras de HTTP
 # não se aplicam e o denominador muda, então a mesma implementação pontua
-# diferente nos dois transportes. Medido aqui: stdio 121/144 = 84,0%; remoto 94,8%.
-# Um piso único reprovaria o stdio no primeiro PR.
+# diferente nos dois transportes. Um piso único reprovaria o stdio no primeiro PR.
+#
+# HISTÓRICO DOS PISOS
+#  - 29/08/2026: stdio 121/144 = 84,0%; remoto 94,8% → pisos 84 e 94.
+#  - 30/08/2026: fechados websiteUrl no handshake, os quatro cursores de
+#    paginação e a validação de Origin. Stdio medido em 127/144 = 88,2% → piso
+#    88. O piso REMOTO continua em 94 de propósito: este repositório não tem os
+#    secrets da Cloudflare (ver deploy-worker.yml), o deploy segue manual, e o
+#    job remoto mede o que ESTÁ NO AR — subir o piso antes do `wrangler deploy`
+#    reprovaria o push contra o código antigo. Depois do deploy, medir de novo
+#    e subir para 99 (previsão: 172/173, restando só o achado de
+#    `server/discover`, que é decisão do SDK — ver ROADMAP.md).
 #
 # O gate do PR mede o CÓDIGO DO PR (stdio, servidor local). O pós-deploy mede
 # o que FOI AO AR. São perguntas diferentes e por isso são dois jobs.
@@ -42,7 +51,7 @@ jobs:
         run: npm run build
       - uses: astral-sh/setup-uv@v5
       - name: Auditar o servidor local
-        run: uvx mcpscore --fail-under 84 --stdio node dist/cli.js
+        run: uvx mcpscore --fail-under 88 --stdio node dist/cli.js
 
   remoto:
     name: contrato no que está no ar (streamable http)
