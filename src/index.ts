@@ -11,6 +11,7 @@ import { checkAuth } from "./auth.js";
 import { SERVER_CONFIG } from "./config.js";
 import { ICON_PNG_BASE64 } from "./icon.js";
 import { landingResponse } from "./landing.js";
+import { discoveryResponseForPath } from "./discovery.js";
 import { logger } from "./logger.js";
 import { allowedOriginHostnames, origemAceita } from "./origin.js";
 import { cursorRejection } from "./pagination.js";
@@ -43,6 +44,11 @@ export default {
 
     // --- Rotas públicas, servidas antes de qualquer auth ---
     if (url.pathname === "/") return landingResponse();
+    // robots.txt, sitemap.xml e a chave do IndexNow vêm ANTES da auth: um
+    // rastreador não tem credencial, e robots.txt atrás de Bearer é o mesmo que
+    // não ter robots.txt.
+    const descoberta = discoveryResponseForPath(url.pathname);
+    if (descoberta) return descoberta;
     if (url.pathname === "/health") {
       return new Response("ok", { status: 200, headers: { "Content-Type": "text/plain" } });
     }

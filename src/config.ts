@@ -35,6 +35,11 @@ export const SERVER_CONFIG = {
    */
   contactName: "Sidney da S. P. Bissoli",
   contactEmail: "sbissoli76@gmail.com",
+  /**
+   * Chave do IndexNow. É PÚBLICA por desenho: ela prova posse do domínio por
+   * estar servida em `/<chave>.txt`, então versionar aqui não é vazamento.
+   */
+  indexNowKey: "a7951dd3a7d70075e7f777128ba75eab",
   /** Rota do endpoint MCP (Streamable HTTP). */
   mcpRoute: "/mcp",
   /**
