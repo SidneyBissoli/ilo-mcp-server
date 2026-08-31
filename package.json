@@ -55,17 +55,17 @@
   "dependencies": {
     "@modelcontextprotocol/server": "^2.0.0",
     "@sbissoli/mcp-provenance": "^0.1.0",
-    "zod": "^4.0.0"
+    "zod": "^4.5.4"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "^5.20260818.1",
+    "@cloudflare/workers-types": "^5.20260830.1",
     "@modelcontextprotocol/client": "^2.0.0",
     "@sbissoli/mcp-evals": "^0.1.0",
     "@types/node": "^26.4.0",
     "agents": "^0.22.0",
-    "tsx": "^4.23.12",
+    "tsx": "^4.23.13",
     "typescript": "^7.0.2",
     "vitest": "^4.1.11",
-    "wrangler": "^4.124.0"
+    "wrangler": "^4.127.1"
   }
 }
