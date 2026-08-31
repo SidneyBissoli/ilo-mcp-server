@@ -95,3 +95,44 @@ export const ILOSTAT_LIMITS = {
   /** TTL do cache KV de estrutura de dataflow (24 h — fonte do data_vintage). */
   structureTtlSeconds: 24 * 3600,
 } as const;
+
+/**
+ * Texto da LANDING PAGE — a única superfície própria do produto, e por isso a
+ * única que responde por ele numa busca. Até 2026-08-31 a página tinha oito
+ * linhas de corpo, sem `meta description`, sem og:, sem dado estruturado e sem
+ * link para o repositório: não havia o que indexar.
+ *
+ * `lang` segue o PÚBLICO do produto, não a língua do código. O bloco
+ * `emOutroIdioma` não é rodapé de cortesia: é seção com resumo e exemplos
+ * próprios, porque é texto indexável.
+ */
+export const LANDING = {
+  lang: "en" as "pt-BR" | "en",
+  resumo:
+    "MCP server for ILOSTAT, the International Labour Organization statistical " +
+    "database: 1,200+ indicator dataflows, by country, year, sex and age.",
+  exemplos: [
+    "“What is the unemployment rate in Brazil, latest year, by sex?”",
+    "“Compare youth unemployment across the Mercosur countries.”",
+    "“Which ILOSTAT dataflows cover informal employment?”",
+  ] as readonly string[],
+  destaques: [
+    "Every response carries a deterministic provenance and attribution block — source, canonical URL, extraction date and licence.",
+    "Search the dataflows before pulling data, so you never have to guess an indicator code.",
+    "ILO data is CC BY 4.0 and the attribution travels with the numbers, ready to paste into a paper.",
+  ] as readonly string[],
+  repoUrl: "https://github.com/SidneyBissoli/ilo-mcp-server",
+  npmUrl: "https://www.npmjs.com/package/ilo-mcp-server",
+  docsUrl: "https://github.com/SidneyBissoli/ilo-mcp-server/blob/main/README.pt-BR.md",
+  emOutroIdioma: {
+    lang: "pt-BR" as "pt-BR" | "en",
+    resumo:
+      "Em português: estatísticas do trabalho da OIT (ILOSTAT) para o seu assistente de " +
+      "IA — desemprego, ocupação, informalidade e rendimento por país, ano, sexo e " +
+      "faixa etária, com procedência e atribuição em toda resposta.",
+    exemplos: [
+      "“Qual a taxa de desemprego no Brasil no ano mais recente, por sexo?”",
+      "“Compare a informalidade entre os países do Mercosul.”",
+    ] as readonly string[],
+  },
+} as const;
