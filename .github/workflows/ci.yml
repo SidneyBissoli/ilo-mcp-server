@@ -8,11 +8,18 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    # Matriz nas DUAS linhas de LTS vivas, não só na de baixo: até 31/08/2026
+    # este job rodava só em 22 e o `engines.node` do pacote era promessa que
+    # nenhum job exercitava — foi assim que o `>=18` do sih-br-mcp sobreviveu
+    # sem ninguém notar.
+    strategy:
+      matrix:
+        node-version: ["22", "24"]
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
         with:
-          node-version: 22
+          node-version: ${{ matrix.node-version }}
           cache: npm
       - run: npm ci
       - run: npm run typecheck
