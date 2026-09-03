@@ -1,0 +1,720 @@
+{
+  "prompts": [
+    {
+      "arguments": [
+        {
+          "description": "Comma-separated country names or ISO3 codes, e.g. \"BRA, ARG, CHL\"",
+          "name": "countries",
+          "required": true
+        },
+        {
+          "description": "Indicator in plain words, e.g. \"youth unemployment rate\"",
+          "name": "indicator",
+          "required": true
+        },
+        {
+          "description": "First year, e.g. \"2015\" (optional)",
+          "name": "start_period",
+          "required": false
+        },
+        {
+          "description": "Last year, e.g. \"2024\" (optional)",
+          "name": "end_period",
+          "required": false
+        }
+      ],
+      "description": "Workflow that compares several countries (or regional aggregates) on one ILOSTAT indicator in a single data call, flagging modelled estimates versus reported data.",
+      "name": "ilo_compare_countries",
+      "title": "Compare countries on an indicator"
+    },
+    {
+      "arguments": [
+        {
+          "description": "Country name or ISO3 code, e.g. \"Brazil\" or \"BRA\"",
+          "name": "country",
+          "required": true
+        },
+        {
+          "description": "First year, e.g. \"2015\" (optional)",
+          "name": "start_period",
+          "required": false
+        },
+        {
+          "description": "Last year, e.g. \"2024\" (optional)",
+          "name": "end_period",
+          "required": false
+        }
+      ],
+      "description": "Step-by-step workflow that assembles a labour-market profile of one country from ILOSTAT (unemployment, participation, employment ratio, informality, NEET, earnings, hours) with ILO citations.",
+      "name": "ilo_country_labour_profile",
+      "title": "Country labour-market profile"
+    },
+    {
+      "arguments": [
+        {
+          "description": "Indicator in plain words, e.g. \"labour force participation rate\"",
+          "name": "indicator",
+          "required": true
+        },
+        {
+          "description": "Country name or ISO3 code, e.g. \"India\" or \"IND\"",
+          "name": "country",
+          "required": true
+        },
+        {
+          "description": "First year, e.g. \"2015\" (optional)",
+          "name": "start_period",
+          "required": false
+        },
+        {
+          "description": "Last year, e.g. \"2024\" (optional)",
+          "name": "end_period",
+          "required": false
+        }
+      ],
+      "description": "Workflow that retrieves the time series of one ILOSTAT indicator for one country and describes the trend (first/last, peak/trough, breaks in series) with citations.",
+      "name": "ilo_indicator_trend",
+      "title": "Indicator trend for a country"
+    }
+  ],
+  "resources": [
+    {
+      "description": "How to query ILOSTAT with this server: tool workflow, stable code conventions (REF_AREA ISO3 and X-aggregates, SEX, AGE, FREQ, dataflow id suffixes), limits and reporting rules. Read once per session to save discovery calls.",
+      "mimeType": "text/markdown",
+      "name": "ilostat-guide",
+      "title": "ILOSTAT query guide",
+      "uri": "ilostat://guide"
+    },
+    {
+      "description": "Verified dataflow ids for the most common indicators (unemployment, employment, participation, wages, working time, informality, NEET, SDG 8, productivity) — usable directly in ilo_get_data without searching.",
+      "mimeType": "text/markdown",
+      "name": "ilostat-key-dataflows",
+      "title": "Key ILOSTAT dataflows by topic",
+      "uri": "ilostat://reference/key-dataflows"
+    },
+    {
+      "description": "Meaning of every provenance field returned with the data (source_url, data_vintage, retrieved_at, notices, license, citation) and how to cite the ILO correctly.",
+      "mimeType": "text/markdown",
+      "name": "ilostat-provenance",
+      "title": "Provenance and citation contract",
+      "uri": "ilostat://reference/provenance"
+    }
+  ],
+  "serverName": "ilo-mcp-server",
+  "toolCount": 6,
+  "tools": [
+    {
+      "annotations": {
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true,
+        "readOnlyHint": true
+      },
+      "description": "Returns the full document for an id obtained from `search`, as { id, title, text, url, metadata }: `text` is the readable content (Markdown) and `url` the canonical public page to cite.\n\nCompanion of `search` in the OpenAI Deep Research contract, over the ILOSTAT labour statistics (≈1,200 SDMX dataflows: employment, unemployment, wages, working time, informality, SDG labour indicators) catalog. Only ids returned by `search` are valid; an unknown id returns an error.\nThe `ilo_*` tools remain the tools for data queries.\n\nBehavior: read-only and idempotent — a live GET against the public source when the document needs it.",
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "properties": {
+          "id": {
+            "description": "Identifier of a document returned by `search`",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "type": "object"
+      },
+      "name": "fetch",
+      "outputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "additionalProperties": false,
+        "properties": {
+          "attribution": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "id": {
+            "description": "Unique identifier of the document on this server; what `fetch` takes",
+            "minLength": 1,
+            "type": "string"
+          },
+          "metadata": {
+            "additionalProperties": {},
+            "description": "Additional key/value pairs about the document (kind, source, period…)",
+            "propertyNames": {
+              "type": "string"
+            },
+            "type": "object"
+          },
+          "provenance": {},
+          "text": {
+            "description": "Full readable content of the document (Markdown)",
+            "type": "string"
+          },
+          "title": {
+            "description": "Human-readable title of the document",
+            "type": "string"
+          },
+          "url": {
+            "description": "Canonical public URL of the document — ChatGPT's citation depends on it",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "text",
+          "url",
+          "provenance",
+          "attribution"
+        ],
+        "type": "object"
+      },
+      "title": "Deep Research Document"
+    },
+    {
+      "annotations": {
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true,
+        "readOnlyHint": true
+      },
+      "description": "Statistical observations from one ILOSTAT dataflow, filtered by dimension codes (filters, e.g. {\"REF_AREA\": [\"BRA\",\"ARG\"], \"SEX\": \"SEX_T\"}) and period (start_period/end_period, e.g. \"2015\"/\"2024\"). REF_AREA is required, maximum 30 areas per call — for broad panels, split areas into batches and/or paginate by period. Unfiltered dimensions return all their categories. Does not aggregate, convert or otherwise transform values (raw ILOSTAT data only), and does not search indicators (use ilo_search_indicators).",
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "properties": {
+          "dataflow": {
+            "description": "Dataflow id from ilo_search_indicators (e.g. \"DF_UNE_DEAP_SEX_AGE_RT\")",
+            "minLength": 1,
+            "type": "string"
+          },
+          "end_period": {
+            "description": "Last period, e.g. \"2024\"",
+            "minLength": 1,
+            "type": "string"
+          },
+          "filters": {
+            "additionalProperties": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "items": {
+                    "type": "string"
+                  },
+                  "minItems": 1,
+                  "type": "array"
+                }
+              ]
+            },
+            "description": "Dimension id → code or list of codes (from ilo_list_dimension_values). REF_AREA is required (up to 30 area codes).",
+            "propertyNames": {
+              "type": "string"
+            },
+            "type": "object"
+          },
+          "last_n_observations": {
+            "description": "Alternative to periods: only the latest N observations per series",
+            "maximum": 100,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "provenance_mode": {
+            "description": "Provenance verbosity: 'concise' (default — source, url, vintage, retrieval date, citation, license) or 'detailed' (full canonical block with dataset, dimension key and notices)",
+            "enum": [
+              "concise",
+              "detailed"
+            ],
+            "type": "string"
+          },
+          "start_period": {
+            "description": "First period, e.g. \"2015\"",
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "dataflow"
+        ],
+        "type": "object"
+      },
+      "name": "ilo_get_data",
+      "outputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "additionalProperties": {},
+        "properties": {
+          "attribution": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "columns": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "dataflow": {
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "name": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "version": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "version",
+              "name"
+            ],
+            "type": "object"
+          },
+          "provenance": {},
+          "rows": {
+            "items": {
+              "additionalProperties": {},
+              "propertyNames": {
+                "type": "string"
+              },
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "rows_count": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "dataflow",
+          "columns",
+          "rows_count",
+          "rows",
+          "provenance",
+          "attribution"
+        ],
+        "type": "object"
+      },
+      "title": "Get ILOSTAT data"
+    },
+    {
+      "annotations": {
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true,
+        "readOnlyHint": true
+      },
+      "description": "Structure of one ILOSTAT dataflow: dimensions (in SDMX key order), their codelists, the time dimension, the source's default selection and the data vintage (last update at the ILO). Use before ilo_get_data to know which filters exist. Does not return statistical values and does not list the codes themselves (use ilo_list_dimension_values).",
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "properties": {
+          "dataflow": {
+            "description": "Dataflow id from ilo_search_indicators (e.g. \"DF_UNE_DEAP_SEX_AGE_RT\")",
+            "minLength": 1,
+            "type": "string"
+          },
+          "provenance_mode": {
+            "description": "Provenance verbosity: 'concise' (default — source, url, vintage, retrieval date, citation, license) or 'detailed' (full canonical block with dataset, dimension key and notices)",
+            "enum": [
+              "concise",
+              "detailed"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "dataflow"
+        ],
+        "type": "object"
+      },
+      "name": "ilo_get_indicator_metadata",
+      "outputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "additionalProperties": {},
+        "properties": {
+          "attribution": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "data_vintage": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "dimensions": {
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "codelist": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "id": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "codelist"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "provenance": {},
+          "time_dimension": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "version": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "version",
+          "name",
+          "data_vintage",
+          "dimensions",
+          "time_dimension",
+          "provenance",
+          "attribution"
+        ],
+        "type": "object"
+      },
+      "title": "Get ILOSTAT indicator metadata"
+    },
+    {
+      "annotations": {
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true,
+        "readOnlyHint": true
+      },
+      "description": "Valid codes (id + label) of one dimension of an ILOSTAT dataflow — e.g. the country/area codes of REF_AREA (ISO 3166-1 alpha-3 such as BRA, plus X-codes for aggregates such as X01 World) or the categories of SEX (SEX_T/SEX_M/SEX_F) and AGE. Use `search` to resolve a name to a code (e.g. search \"Brazil\") instead of paging through hundreds of codes; codelists are shared across dataflows, so a code found here is valid wherever the same codelist is used. Use to build correct ilo_get_data filters. Does not return statistical values, does not say which codes actually have data for a given dataflow, and is not applicable to the time dimension (filter it via start_period/end_period in ilo_get_data).",
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "properties": {
+          "dataflow": {
+            "description": "Dataflow id the dimension belongs to",
+            "minLength": 1,
+            "type": "string"
+          },
+          "dimension": {
+            "description": "Dimension id from ilo_get_indicator_metadata (e.g. \"REF_AREA\", \"SEX\")",
+            "minLength": 1,
+            "type": "string"
+          },
+          "limit": {
+            "description": "Maximum codes returned (default 200)",
+            "maximum": 500,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "offset": {
+            "description": "Codes to skip, for pagination (default 0)",
+            "maximum": 9007199254740991,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "provenance_mode": {
+            "description": "Provenance verbosity: 'concise' (default — source, url, vintage, retrieval date, citation, license) or 'detailed' (full canonical block with dataset, dimension key and notices)",
+            "enum": [
+              "concise",
+              "detailed"
+            ],
+            "type": "string"
+          },
+          "search": {
+            "description": "Case-insensitive filter on code id or label",
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "dataflow",
+          "dimension"
+        ],
+        "type": "object"
+      },
+      "name": "ilo_list_dimension_values",
+      "outputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "additionalProperties": {},
+        "properties": {
+          "attribution": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "codelist": {
+            "type": "string"
+          },
+          "dataflow": {
+            "type": "string"
+          },
+          "dimension": {
+            "type": "string"
+          },
+          "has_more": {
+            "type": "boolean"
+          },
+          "next_offset": {
+            "type": "number"
+          },
+          "offset": {
+            "type": "number"
+          },
+          "provenance": {},
+          "showing": {
+            "type": "number"
+          },
+          "total_codes": {
+            "type": "number"
+          },
+          "values": {
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "id",
+                "name"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "dataflow",
+          "dimension",
+          "codelist",
+          "total_codes",
+          "showing",
+          "offset",
+          "values",
+          "has_more",
+          "provenance",
+          "attribution"
+        ],
+        "type": "object"
+      },
+      "title": "List valid codes of a dimension"
+    },
+    {
+      "annotations": {
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "readOnlyHint": true
+      },
+      "description": "Search the ILOSTAT catalogue of ~1,200 indicator dataflows by keywords in the name or id (e.g. \"unemployment rate sex age\"). All terms must match (AND, case-insensitive), so start with 2–3 English words and drop terms if you get 0 results; results are ranked by ILO relevance weight, not by match count. Reading the id tells you the shape: suffix _RT = rate/ratio, _NB = number (usually thousands); dataflows whose second token starts with 2 (e.g. DF_UNE_2EAP_…) are ILO modelled estimates with full country/year coverage, the others are reported national data. Returns dataflow ids to use with ilo_get_data / ilo_get_indicator_metadata. Searches the local catalogue only — it does not return statistical values (use ilo_get_data), does not search dimension codes such as countries (use ilo_list_dimension_values) and does not cover non-ILO sources.",
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "properties": {
+          "limit": {
+            "description": "Maximum results (default 20)",
+            "maximum": 100,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "offset": {
+            "description": "Results to skip, for pagination (default 0)",
+            "maximum": 9007199254740991,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "provenance_mode": {
+            "description": "Provenance verbosity: 'concise' (default — source, url, vintage, retrieval date, citation, license) or 'detailed' (full canonical block with dataset, dimension key and notices)",
+            "enum": [
+              "concise",
+              "detailed"
+            ],
+            "type": "string"
+          },
+          "query": {
+            "description": "Keywords, matched against dataflow name and id (AND between terms)",
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "query"
+        ],
+        "type": "object"
+      },
+      "name": "ilo_search_indicators",
+      "outputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "additionalProperties": {},
+        "properties": {
+          "attribution": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "has_more": {
+            "type": "boolean"
+          },
+          "indicators": {
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "version": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "name",
+                "version"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "next_offset": {
+            "type": "number"
+          },
+          "offset": {
+            "type": "number"
+          },
+          "provenance": {},
+          "showing": {
+            "type": "number"
+          },
+          "total_matches": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "total_matches",
+          "showing",
+          "offset",
+          "indicators",
+          "has_more",
+          "provenance",
+          "attribution"
+        ],
+        "type": "object"
+      },
+      "title": "Search ILOSTAT indicators"
+    },
+    {
+      "annotations": {
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true,
+        "readOnlyHint": true
+      },
+      "description": "Searches the ILOSTAT labour statistics (≈1,200 SDMX dataflows: employment, unemployment, wages, working time, informality, SDG labour indicators) catalog and returns up to 10 matching documents as { id, title, url }, ordered by relevance (an empty list means nothing matched).\n\nThis tool exists for the OpenAI Deep Research contract: ChatGPT deep research, company knowledge and research workflows over the Responses API require exactly the tools `search` and `fetch`. Pass one of the returned ids to `fetch` to read the document.\nFor direct questions and for data (values, series, rankings) prefer the `ilo_*` tools, which return the actual data with provenance — this is a catalog index, not a data query.\n\nQuery: natural language or keywords, Portuguese or English; accents and case are ignored.\n\nBehavior: read-only and idempotent — the catalog comes from the public source and is cached in memory.",
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "properties": {
+          "query": {
+            "description": "Search terms, natural language or keywords (accents and case are ignored)",
+            "type": "string"
+          }
+        },
+        "required": [
+          "query"
+        ],
+        "type": "object"
+      },
+      "name": "search",
+      "outputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "additionalProperties": false,
+        "properties": {
+          "attribution": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "provenance": {},
+          "results": {
+            "description": "Matching documents, in relevance order",
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "id": {
+                  "description": "Unique identifier of the document on this server; what `fetch` takes",
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "title": {
+                  "description": "Human-readable title of the document",
+                  "type": "string"
+                },
+                "url": {
+                  "description": "Canonical public URL of the document — ChatGPT's citation depends on it",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "title",
+                "url"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "results",
+          "provenance",
+          "attribution"
+        ],
+        "type": "object"
+      },
+      "title": "Deep Research Search"
+    }
+  ]
+}
