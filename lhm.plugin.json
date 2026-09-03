@@ -1,7 +1,7 @@
 {
   "identifier": "sidneybissoli-ilo-mcp-server",
   "name": "ILO Labour Statistics (ILOSTAT) MCP Server",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "icon": "📊",
   "description": "ILO labour statistics (ILOSTAT) with full provenance: source URL, data vintage, retrieval timestamp, license and ILO citation on every response. Tools to search indicators, read indicator metadata and dimension codes, and fetch data; reference resources (query guide, key dataflows by topic, provenance contract) and workflow prompts (country profile, compare countries, indicator trend). Hosted on Cloudflare Workers (Streamable HTTP, no auth) or local stdio. Not affiliated with or endorsed by the ILO. MIT licensed.",
   "author": "Sidney da S. P. Bissoli",
