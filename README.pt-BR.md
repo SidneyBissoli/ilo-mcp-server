@@ -66,10 +66,20 @@ Para clientes que lançam servidores MCP como comando, use a ponte
 
 O hostname `ilo-mcp-server.sidneybissoli.workers.dev` também é servido, como secundário.
 
+### ChatGPT (Deep Research)
+
+O deep research do ChatGPT (e o company knowledge, e os workflows de pesquisa da API Responses) só usa um servidor MCP que exponha exatamente `search` e `fetch` — este servidor expõe, além das ferramentas `ilo_*`. Aponte o conector para o endpoint hospedado, sem chave:
+
+```
+https://ilo.sidneybissoli.com/mcp
+```
+
+`search` ranqueia a consulta contra o catálogo inteiro de dataflows do ILOSTAT (~1.200 dataflows SDMX — emprego, desemprego, salários, jornada, informalidade, indicadores de trabalho dos ODS) e devolve `{ id, title, url }` (`ind:<DATAFLOW_ID>`, ex. `ind:DF_UNE_2EAP_SEX_AGE_RT`); `fetch` devolve o dataflow em Markdown legível — nome, vintage dos dados, dimensões e codelists, a seleção padrão da OIT e como consultá-lo com `ilo_get_data` — com a página pública do data explorer do ILOSTAT como `url`, que é o que o ChatGPT cita. As duas carregam o mesmo bloco de proveniência das outras ferramentas, em `structuredContent` e `_meta` (o canal de texto é o JSON do contrato). No modo desenvolvedor do ChatGPT (Settings → Security and login → Developer mode) qualquer ferramenta é chamável — as `ilo_*` continuam sendo as ferramentas para dados.
+
 ## Rodar localmente (stdio)
 
 Prefere não passar suas consultas por um host de terceiros? O **mesmo servidor** também roda
-como **processo stdio local**, falando direto com a API oficial do ILOSTAT — mesmas 4 tools, resources e
+como **processo stdio local**, falando direto com a API oficial do ILOSTAT — mesmas 6 tools, resources e
 prompts, mesmos limites, mesmo bloco de proveniência, sem Cloudflare no caminho.
 
 Sem instalação — o pacote está no npm ([`ilo-mcp-server`](https://www.npmjs.com/package/ilo-mcp-server), Node ≥ 20):
@@ -112,6 +122,8 @@ repositório constrói este runtime (usado pelo registro Glama).
 | `ilo_get_indicator_metadata` | dimensões, codelists, vintage e seleção padrão de um dataflow | estrutura em cache (miss → fonte) |
 | `ilo_list_dimension_values` | códigos válidos de uma dimensão (paginação por `offset`) | codelist em cache (miss → fonte) |
 | `ilo_get_data` | observações filtradas por dimensão e período | 1 chamada REST ao vivo por consulta |
+| `search` | contrato Deep Research do ChatGPT: ranqueia a consulta contra o catálogo inteiro de dataflows, devolve `{ id, title, url }` (`ind:<DATAFLOW_ID>`) | índice em memória construído do catálogo local (24 h) |
+| `fetch` | contrato Deep Research do ChatGPT: um dataflow em Markdown legível com a página pública do data explorer como `url` | estrutura em cache (miss → fonte) |
 
 Fluxo típico: `ilo_search_indicators` → `ilo_get_indicator_metadata` / `ilo_list_dimension_values`
 para descobrir os códigos válidos de filtro → `ilo_get_data` com filtros de país e período.
@@ -191,7 +203,7 @@ servidor público.
 
 ```bash
 npm install
-npm run typecheck && npm test   # 96 testes offline (parsers, chave, tools, contrato de saída, resources/prompts, catálogo em memória, fixtures de evals)
+npm run typecheck && npm test   # 189 testes offline (parsers, chave, tools, contrato de saída, resources/prompts, catálogo em memória, fixtures de evals)
 npm run dev                     # http://localhost:8787/mcp (Worker)
 npm run build && npm start      # runtime stdio (dist/cli.js)
 
@@ -201,7 +213,7 @@ npx wrangler d1 execute ilostat-catalog --local  --file=scripts/seed-catalog.sql
 npx wrangler d1 execute ilostat-catalog --remote --file=scripts/seed-catalog.sql
 
 npm run deploy
-node scripts/smoke-mcp.mjs      # smoke test contra a produção (initialize → 4 tools → erros)
+node scripts/smoke-mcp.mjs      # smoke test contra a produção (initialize → 6 tools → search → fetch → erros)
 npm run manifest:lhm            # regenera tools/resources/prompts do lhm.plugin.json a partir do servidor real
 # (o seed também grava tests/fixtures/catalog-ids.txt — a lista de ids versionada contra a qual os testes conferem resources/prompts)
 ```

@@ -10,8 +10,9 @@ descrições 12× menores em produção). Nenhum teste unitário pega essa class
 
 | Arquivo | Como foi capturado | O que representa |
 |:--|:--|:--|
-| `surface-stdio-0.4.0.json` | `--stdio` sobre `dist/cli.js` do fonte atual | o que o canal npm (`ilo-mcp-server`) publica |
-| `surface-http-prod-0.4.0.json` | `--url https://ilo.sidneybissoli.com/mcp` | o que o endpoint hospedado serve DE FATO |
+| `surface-stdio-0.5.0.json` | `--stdio` sobre `dist/cli.js` do fonte atual | o que o canal npm (`ilo-mcp-server`) publica |
+| `surface-http-prod-0.5.0.json` | `--url https://ilo.sidneybissoli.com/mcp` | o que o endpoint hospedado serve DE FATO |
+| `surface-{stdio,http-prod}-0.4.0.json` | idem, na 0.4.0 | baseline anterior — o diff 0.4.0 → 0.5.0 é exatamente `search` e `fetch` |
 
 ## Medição da captura inicial (2026-09-01)
 
@@ -24,6 +25,14 @@ não toca a superfície. As divergências possíveis aqui são de DEPLOY (fonte 
 frente da produção), não de definição dupla como era no bcb pré-fundação —
 por isso o script não tem modo `--source`.
 
+## Captura da 0.5.0 (2026-09-03)
+
+`search` e `fetch` (contrato Deep Research do ChatGPT, `src/tools/deep-research.ts`)
+entram: 4 → 6 tools. As 4 tools `ilo_*`, as 3 resources e os 3 prompts ficaram
+byte a byte iguais ao baseline 0.4.0 (conferido por script antes do commit).
+`scripts/smoke-mcp.mjs` deriva a contagem esperada do `surface-stdio-<v>.json`
+mais recente — nunca de um literal.
+
 ## Como usar no gate
 
 Depois de qualquer mudança que possa mexer na superfície:
@@ -31,7 +40,7 @@ Depois de qualquer mudança que possa mexer na superfície:
 ```bash
 npm run build
 node scripts/dump-surface.mjs --stdio > depois.json
-# diff contra o baseline vigente (surface-stdio-0.4.0.json)
+# diff contra o baseline vigente (surface-stdio-0.5.0.json)
 ```
 
 Toda diferença precisa ser deliberada e listada no CHANGELOG. Depois de um

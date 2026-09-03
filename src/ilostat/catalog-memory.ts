@@ -9,7 +9,7 @@
  * download — o mesmo contrato do seed do D1.
  */
 
-import { CATALOG_SOURCE_URL, type CatalogEntry, type CatalogSearchResult } from "./catalog.js";
+import { CATALOG_SOURCE_URL, type CatalogEntry, type CatalogListing, type CatalogSearchResult } from "./catalog.js";
 import { IlostatUserError } from "./key.js";
 import { nowIso, upstreamHeaders } from "./sdmx.js";
 
@@ -87,6 +87,16 @@ export class InMemoryCatalog {
   async search(query: string, limit: number, offset = 0): Promise<CatalogSearchResult> {
     const { rows, retrievedAt } = await this.load();
     return { ...searchRows(rows, query, limit, offset), retrievedAt, sourceUrl: CATALOG_SOURCE_URL };
+  }
+
+  /** O catálogo inteiro — o mesmo contrato de `listCatalog` sobre o D1. */
+  async all(): Promise<CatalogListing> {
+    const { rows, retrievedAt } = await this.load();
+    return {
+      entries: rows.map(({ id, agency, version, name }) => ({ id, agency, version, name })),
+      retrievedAt,
+      sourceUrl: CATALOG_SOURCE_URL,
+    };
   }
 }
 

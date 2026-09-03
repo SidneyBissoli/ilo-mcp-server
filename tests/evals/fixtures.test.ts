@@ -4,12 +4,14 @@ import { CATALOG } from "../../evals/catalog.js";
 import { FIXTURES } from "../../evals/fixtures/queries.js";
 
 describe("evals: catálogo e fixtures", () => {
-  it("o catálogo vivo captura exatamente as 4 tools do servidor", () => {
+  it("o catálogo vivo captura exatamente as 6 tools do servidor", () => {
     expect([...CATALOG.toolNames].sort()).toEqual([
+      "fetch",
       "ilo_get_data",
       "ilo_get_indicator_metadata",
       "ilo_list_dimension_values",
       "ilo_search_indicators",
+      "search",
     ]);
   });
 

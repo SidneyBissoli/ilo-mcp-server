@@ -2,7 +2,7 @@
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "io.github.SidneyBissoli/ilo-mcp-server",
   "title": "ILO Labour Statistics (ILOSTAT)",
-  "description": "ILO labour statistics (ILOSTAT) with full provenance: source, vintage, license. 4 tools.",
+  "description": "ILO labour statistics (ILOSTAT) with full provenance: source, vintage, license. 6 tools (4 ilo_* + search/fetch for ChatGPT Deep Research).",
   "websiteUrl": "https://ilo.sidneybissoli.com",
   "icons": [
     {

@@ -7,6 +7,7 @@
 
 import { SEARCH_INDICATORS } from "./catalog.js";
 import { GET_DATA } from "./data.js";
+import { DEEP_RESEARCH_TOOLS } from "./deep-research.js";
 import { GET_INDICATOR_METADATA, LIST_DIMENSION_VALUES } from "./metadata.js";
 
 export const TOOL_NAMES: readonly string[] = [
@@ -14,4 +15,6 @@ export const TOOL_NAMES: readonly string[] = [
   GET_INDICATOR_METADATA,
   LIST_DIMENSION_VALUES,
   GET_DATA,
+  // search, fetch — the ChatGPT Deep Research contract (no ilo_ prefix by design).
+  ...DEEP_RESEARCH_TOOLS,
 ];

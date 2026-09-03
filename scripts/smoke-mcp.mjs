@@ -1,11 +1,31 @@
 /**
  * Smoke manual do endpoint MCP em produção (Streamable HTTP, JSON-RPC):
- * initialize → tools/list → as 4 tools ilo_* com consultas reais.
+ * initialize → tools/list (contagem DERIVADA do baseline stdio mais recente —
+ * nunca um literal) → as 4 tools ilo_* com consultas reais → search → fetch
+ * (contrato Deep Research) → id desconhecido.
  *
  * Uso: node scripts/smoke-mcp.mjs [base-url]
  */
 
+import { readdirSync, readFileSync } from "node:fs";
+
 const BASE = process.argv[2] ?? "https://ilo.sidneybissoli.com";
+
+/** `toolCount` do baseline stdio mais recente (maior versão no nome do arquivo). */
+function expectedToolCount() {
+  const versao = (f) => f.match(/^surface-stdio-(\d+)\.(\d+)\.(\d+)\.json$/)?.slice(1).map(Number);
+  const baselines = readdirSync("baselines")
+    .filter((f) => versao(f))
+    .sort((a, b) => {
+      const [va, vb] = [versao(a), versao(b)];
+      return va[0] - vb[0] || va[1] - vb[1] || va[2] - vb[2];
+    });
+  if (baselines.length === 0) throw new Error("nenhum baselines/surface-stdio-<v>.json para derivar a contagem de tools");
+  const ultimo = baselines[baselines.length - 1];
+  const { toolCount } = JSON.parse(readFileSync(`baselines/${ultimo}`, "utf8"));
+  if (!Number.isInteger(toolCount)) throw new Error(`${ultimo} sem toolCount inteiro`);
+  return { toolCount, baseline: ultimo };
+}
 let nextId = 1;
 let sessionId = null;
 
@@ -85,6 +105,13 @@ await rpc("notifications/initialized", {}).catch(() => {});
 
 const tools = await rpc("tools/list", {});
 console.log("tools/list:", tools.tools.map((t) => t.name));
+{
+  const { toolCount, baseline } = expectedToolCount();
+  if (tools.tools.length !== toolCount) {
+    throw new Error(`tools/list devolveu ${tools.tools.length} tools; o baseline ${baseline} diz ${toolCount}`);
+  }
+  console.log(`tools/list OK — ${tools.tools.length} tools (baseline ${baseline})`);
+}
 
 const search = await rpc("tools/call", {
   name: "ilo_search_indicators",
@@ -155,5 +182,34 @@ const meta2Sc = conteudo(meta2, "ilo_get_indicator_metadata (2ª chamada)");
 if (meta2Sc) {
   console.log("\nmetadata 2ª chamada served_from_cache:", meta2Sc.provenance.served_from_cache);
 }
+
+// Deep Research: search → fetch pelo id devolvido → id desconhecido. O `content`
+// das duas é o JSON do contrato (sem rodapé); a proveniência vem no
+// structuredContent. A url citável é o data explorer público (rplumber.ilo.org),
+// nunca a API SDMX.
+const dr = await rpc("tools/call", { name: "search", arguments: { query: "unemployment rate by sex and age" } });
+const drSc = conteudo(dr, "search");
+if (drSc) {
+  const results = JSON.parse(dr.content[0].text).results;
+  console.log("\nsearch:", results.length, "resultados | 1º:", JSON.stringify(results[0]));
+  if (!results.length) throw new Error("search sem resultado para uma consulta óbvia");
+  if (!/^ind:DF_/.test(results[0].id)) throw new Error(`search: id fora do padrão ind:DF_…: ${results[0].id}`);
+  if (!/^https:\/\/rplumber\.ilo\.org\/dataexplorer\//.test(results[0].url)) {
+    throw new Error(`search: url não é o data explorer público: ${results[0].url}`);
+  }
+  if (!drSc.provenance) throw new Error("search sem provenance no structuredContent");
+
+  const doc = await rpc("tools/call", { name: "fetch", arguments: { id: results[0].id } });
+  const docSc = conteudo(doc, "fetch");
+  if (docSc) {
+    const d = JSON.parse(doc.content[0].text);
+    console.log("fetch:", d.id, "|", d.title, "|", d.url, "| texto:", d.text.length, "chars");
+    if (d.id !== results[0].id) throw new Error(`fetch devolveu id ${d.id}, esperado ${results[0].id}`);
+    if (!docSc.provenance) throw new Error("fetch sem provenance no structuredContent");
+  }
+}
+const desconhecido = await rpc("tools/call", { name: "fetch", arguments: { id: "ind:DF_NAO_EXISTE" } });
+console.log("fetch id desconhecido → isError:", desconhecido.isError, "|", desconhecido.content[0].text.slice(0, 90));
+if (desconhecido.isError !== true) throw new Error("fetch de id desconhecido deveria devolver isError");
 
 console.log(avisos ? `\nSMOKE OK (${avisos} aviso(s) de indisponibilidade da ILO)` : "\nSMOKE OK");

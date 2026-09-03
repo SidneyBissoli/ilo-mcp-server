@@ -5,7 +5,7 @@ import { TOOL_NAMES } from "../src/tools/index.js";
 import type { UsageKind } from "../src/usage-core.js";
 
 describe("buildServer", () => {
-  it("constrói um McpServer com as 4 tools do MVP", () => {
+  it("constrói um McpServer com as 6 tools (4 do MVP + search/fetch)", () => {
     expect(buildServer({})).toBeInstanceOf(McpServer);
   });
 
@@ -13,9 +13,9 @@ describe("buildServer", () => {
     for (const name of TOOL_NAMES) expect(name.length).toBeLessThanOrEqual(64);
   });
 
-  it("são exatamente as 4 tools do docs/01", () => {
+  it("são exatamente as 4 tools do docs/01 + search/fetch (contrato Deep Research)", () => {
     expect([...TOOL_NAMES].sort()).toEqual(
-      ["ilo_get_data", "ilo_get_indicator_metadata", "ilo_list_dimension_values", "ilo_search_indicators"].sort(),
+      ["ilo_get_data", "ilo_get_indicator_metadata", "ilo_list_dimension_values", "ilo_search_indicators", "search", "fetch"].sort(),
     );
   });
 });

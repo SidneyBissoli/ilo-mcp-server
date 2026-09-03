@@ -100,7 +100,7 @@ export function guideMarkdown(): string {
   return `# ILOSTAT query guide (ilo-mcp-server)
 
 Labour statistics from ILOSTAT, the International Labour Organization's database, via its
-official SDMX API. Four read-only tools; every response carries a provenance block
+official SDMX API. Six read-only tools; every response carries a provenance block
 (see \`${PROVENANCE_URI}\`).
 
 ## Workflow
@@ -116,6 +116,13 @@ official SDMX API. Four read-only tools; every response carries a provenance blo
    one dimension. Skip it when you already know the conventions below.
 4. **Get data** — \`ilo_get_data\` with \`filters\` (dimension id → code or list) and
    \`start_period\`/\`end_period\` (or \`last_n_observations\`).
+
+## Deep Research (ChatGPT): \`search\` and \`fetch\`
+
+\`search\` ranks a free-text query against the full dataflow catalogue and returns
+\`{ id, title, url }\` (\`ind:<DATAFLOW_ID>\`); \`fetch\` renders one dataflow as Markdown
+(dimensions, vintage, default selection, how to query). They exist for the ChatGPT Deep
+Research contract; for data, use the \`ilo_*\` tools above.
 
 ## Code conventions (stable across dataflows)
 

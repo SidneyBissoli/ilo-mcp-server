@@ -1,5 +1,5 @@
 /**
- * Prompts MCP — workflows prontos que encadeiam as 4 tools nas perguntas mais
+ * Prompts MCP — workflows prontos que encadeiam as 4 tools ilo_* nas perguntas mais
  * comuns sobre ILOSTAT (perfil de um país, comparação entre países, tendência de
  * um indicador). Cada prompt devolve UMA mensagem de usuário com instruções passo
  * a passo, referências às resources e as regras de citação — o modelo executa.

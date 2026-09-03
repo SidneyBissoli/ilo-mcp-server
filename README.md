@@ -66,10 +66,20 @@ For clients that launch MCP servers as a command, use the
 
 The `ilo-mcp-server.sidneybissoli.workers.dev` hostname is also served, as a secondary.
 
+### ChatGPT (Deep Research)
+
+ChatGPT deep research (and company knowledge, and research workflows over the Responses API) only uses an MCP server that exposes exactly `search` and `fetch` — this server does, on top of the `ilo_*` tools. Point the connector at the hosted endpoint, no key required:
+
+```
+https://ilo.sidneybissoli.com/mcp
+```
+
+`search` ranks the query against the full ILOSTAT dataflow catalogue (~1,200 SDMX dataflows — employment, unemployment, wages, working time, informality, SDG labour indicators) and returns `{ id, title, url }` (`ind:<DATAFLOW_ID>`, e.g. `ind:DF_UNE_2EAP_SEX_AGE_RT`); `fetch` returns the dataflow as readable Markdown — name, data vintage, dimensions and codelists, the ILO's default selection and how to query it with `ilo_get_data` — with the public ILOSTAT data explorer page as `url`, which is what ChatGPT cites. Both carry the same provenance block as every other tool, in `structuredContent` and `_meta` (the text channel is the contract's JSON). In ChatGPT's developer mode (Settings → Security and login → Developer mode) any tool is callable — the `ilo_*` tools remain the ones to use for data.
+
 ## Run locally (stdio)
 
 Prefer not to route queries through a third-party host? The **same server** also runs as a
-**local stdio process** that talks directly to the official ILOSTAT API — same 4 tools, resources and prompts,
+**local stdio process** that talks directly to the official ILOSTAT API — same 6 tools, resources and prompts,
 same limits, same provenance block, no Cloudflare in the loop.
 
 No install needed — the package is on npm ([`ilo-mcp-server`](https://www.npmjs.com/package/ilo-mcp-server), Node ≥ 20):
@@ -112,6 +122,8 @@ this runtime (used by the Glama registry).
 | `ilo_get_indicator_metadata` | dimensions, codelists, vintage and default selection of a dataflow | cached structure (miss → upstream) |
 | `ilo_list_dimension_values` | valid codes of one dimension (paginated by `offset`) | cached codelist (miss → upstream) |
 | `ilo_get_data` | observations filtered by dimension and period | 1 live REST call per query |
+| `search` | ChatGPT Deep Research contract: ranks a query against the full dataflow catalogue, returns `{ id, title, url }` (`ind:<DATAFLOW_ID>`) | in-memory index built from the local catalogue (24 h) |
+| `fetch` | ChatGPT Deep Research contract: one dataflow as readable Markdown with the public data explorer page as `url` | cached structure (miss → upstream) |
 
 Typical flow: `ilo_search_indicators` → `ilo_get_indicator_metadata` / `ilo_list_dimension_values`
 to discover valid filter codes → `ilo_get_data` with country and period filters.
@@ -189,7 +201,7 @@ public server.
 
 ```bash
 npm install
-npm run typecheck && npm test   # 96 offline tests (parsers, key, tools, output contract, resources/prompts, in-memory catalogue, eval fixtures)
+npm run typecheck && npm test   # 189 offline tests (parsers, key, tools, output contract, resources/prompts, in-memory catalogue, eval fixtures)
 npm run dev                     # http://localhost:8787/mcp (Worker)
 npm run build && npm start      # stdio runtime (dist/cli.js)
 
@@ -199,7 +211,7 @@ npx wrangler d1 execute ilostat-catalog --local  --file=scripts/seed-catalog.sql
 npx wrangler d1 execute ilostat-catalog --remote --file=scripts/seed-catalog.sql
 
 npm run deploy
-node scripts/smoke-mcp.mjs      # smoke test against production (initialize → 4 tools → errors)
+node scripts/smoke-mcp.mjs      # smoke test against production (initialize → 6 tools → search → fetch → errors)
 npm run manifest:lhm            # regenerate tools/resources/prompts in lhm.plugin.json from the real server
 # (the seed also writes tests/fixtures/catalog-ids.txt — the versioned id list the tests check resources/prompts against)
 ```

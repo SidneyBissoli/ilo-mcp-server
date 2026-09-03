@@ -23,6 +23,7 @@ import { Client } from "@modelcontextprotocol/client";
 import { InMemoryTransport } from "@modelcontextprotocol/server";
 import { CfWorkerJsonSchemaValidator } from "@modelcontextprotocol/server/validators/cf-worker";
 import { buildServer } from "../src/server.js";
+import { resetIndex } from "../src/tools/deep-research.js";
 import type { Env } from "../src/types.js";
 
 const validador = new CfWorkerJsonSchemaValidator();
@@ -35,22 +36,26 @@ const ROW = { id: "DF_UNE_DEAP_SEX_AGE_RT", agency: "ILO", version: "1.0", name:
 // Não há linha com `name` nulo a cobrir: no seed a coluna é `TEXT NOT NULL` e
 // o gerador cai para `df.names.en ?? df.id` quando a fonte não publica o nome.
 
-/** D1 falso: roteia pelos trechos de SQL que `searchCatalog` usa. */
+/**
+ * D1 falso: roteia pelos trechos de SQL que `searchCatalog` e `listCatalog`
+ * usam. `first`/`all` respondem com e sem `bind` — a listagem inteira do
+ * catálogo (`SELECT … FROM dataflows ORDER BY id`) não tem parâmetro.
+ */
 function fakeDb(opts: { rows: unknown[]; total: number; retrievedAt: string | null }): D1Database {
   const db = {
     prepare(sql: string) {
-      return {
-        bind: (..._params: unknown[]) => ({
-          async first() {
-            if (sql.includes("catalog_meta")) return opts.retrievedAt === null ? null : { value: opts.retrievedAt };
-            if (sql.includes("COUNT(*)")) return { n: opts.total };
-            return null;
-          },
-          async all() {
-            return { results: opts.rows };
-          },
-        }),
+      const statement = {
+        bind: (..._params: unknown[]) => statement,
+        async first() {
+          if (sql.includes("catalog_meta")) return opts.retrievedAt === null ? null : { value: opts.retrievedAt };
+          if (sql.includes("COUNT(*)")) return { n: opts.total };
+          return null;
+        },
+        async all() {
+          return { results: opts.rows };
+        },
       };
+      return statement;
     },
   };
   return db as unknown as D1Database;
@@ -279,6 +284,37 @@ const CASOS: Caso[] = [
     fontes: { estrutura: estruturaMagra(), codelist: codelistMagra(), dados: dadosVazios() },
     args: { dataflow: "DF_UNE_DEAP_SEX_AGE_RT", filters: { REF_AREA: "BRA" } },
   },
+  // search/fetch (contrato Deep Research): o índice nasce do catálogo inteiro
+  // (`listCatalog`, D1 falso) e é guardado no módulo — `resetIndex` no afterEach
+  // garante que cada caso constrói o seu.
+  {
+    nome: "search",
+    cobre: "índice com achado",
+    env: { CATALOG_DB: fakeDb({ rows: [ROW], total: 1, retrievedAt: "2026-08-07T12:00:00Z" }) },
+    fontes: FONTES_CHEIAS,
+    args: { query: "unemployment rate" },
+  },
+  {
+    nome: "search",
+    cobre: "busca sem achado (results vazio)",
+    env: { CATALOG_DB: fakeDb({ rows: [ROW], total: 1, retrievedAt: "2026-08-07T12:00:00Z" }) },
+    fontes: FONTES_CHEIAS,
+    args: { query: "zzzznaoexiste" },
+  },
+  {
+    nome: "fetch",
+    cobre: "documento de dataflow com estrutura completa",
+    env: { CATALOG_DB: fakeDb({ rows: [ROW], total: 1, retrievedAt: "2026-08-07T12:00:00Z" }) },
+    fontes: FONTES_CHEIAS,
+    args: { id: "ind:DF_UNE_DEAP_SEX_AGE_RT" },
+  },
+  {
+    nome: "fetch",
+    cobre: "documento de dataflow sem name, sem vintage, sem default",
+    env: { CATALOG_DB: fakeDb({ rows: [ROW], total: 1, retrievedAt: "2026-08-07T12:00:00Z" }) },
+    fontes: FONTES_MAGRAS,
+    args: { id: "ind:DF_UNE_DEAP_SEX_AGE_RT" },
+  },
 ];
 
 // ---------------------------------------------------------------------------
@@ -305,7 +341,10 @@ afterAll(async () => {
   await clienteCatalogo.close();
 });
 
-afterEach(() => vi.unstubAllGlobals());
+afterEach(() => {
+  vi.unstubAllGlobals();
+  resetIndex();
+});
 
 describe("structuredContent obedece ao outputSchema anunciado", () => {
   it.each(CASOS.map((c) => [c.nome, c.cobre, c] as const))("%s — %s", async (nome, _cobre, caso) => {
@@ -366,6 +405,6 @@ describe("structuredContent obedece ao outputSchema anunciado", () => {
     const semCaso = tools.map((t) => t.name).filter((n) => !cobertas.has(n));
     expect(semCaso, `tools sem caso de contrato: ${semCaso.join(", ")}`).toEqual([]);
     for (const t of tools) expect(t.outputSchema, `${t.name} sem outputSchema`).toBeDefined();
-    expect(tools).toHaveLength(4);
+    expect(tools).toHaveLength(6);
   });
 });

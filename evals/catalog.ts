@@ -7,6 +7,7 @@ import { buildCatalog, type CatalogGroup, type CapturingServer } from "@sbissoli
 import type { McpServer } from "@modelcontextprotocol/server";
 import { registerCatalogTools } from "../src/tools/catalog.js";
 import { registerDataTools } from "../src/tools/data.js";
+import { registerDeepResearchTools } from "../src/tools/deep-research.js";
 import { registerMetadataTools } from "../src/tools/metadata.js";
 import type { Env } from "../src/types.js";
 
@@ -19,6 +20,7 @@ const GROUPS: CatalogGroup[] = [
   { area: "catalogo", register: (s) => registerCatalogTools(asServer(s), ENV, NOOP) },
   { area: "metadados", register: (s) => registerMetadataTools(asServer(s), ENV, NOOP) },
   { area: "dados", register: (s) => registerDataTools(asServer(s), ENV, NOOP) },
+  { area: "deep-research", register: (s) => registerDeepResearchTools(asServer(s), ENV, NOOP) },
 ];
 
 export const CATALOG = buildCatalog(GROUPS);

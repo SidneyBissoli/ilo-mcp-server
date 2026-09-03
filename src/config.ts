@@ -55,7 +55,8 @@ export const SERVER_CONFIG = {
     "filter codes. Resources ilostat://guide (code conventions, limits) and " +
     "ilostat://reference/key-dataflows (verified dataflow ids by topic) save discovery calls; " +
     "prompts ilo_country_labour_profile, ilo_compare_countries and ilo_indicator_trend are " +
-    "ready-made workflows. Do not use this server for non-labour statistics (education, " +
+    "ready-made workflows. search and fetch implement the ChatGPT Deep Research contract over " +
+    "the dataflow catalogue. Do not use this server for non-labour statistics (education, " +
     "health, trade) or for data not published by the ILO.",
   /**
    * Hostnames aceitos no header Host. A lista SUBSTITUI os defaults do

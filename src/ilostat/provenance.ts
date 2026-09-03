@@ -56,3 +56,17 @@ export function ilostatProvenance(input: IlostatProvenanceInput): CanonicalProve
     served_from_cache: input.servedFromCache ?? null,
   });
 }
+
+/**
+ * O bloco de proveniência como extras de envelope — `structuredContent`
+ * ({provenance, attribution}) e `_meta` — sem o texto ao leitor. É como a
+ * proveniência viaja em `search`/`fetch` (src/tools/deep-research.ts), cujo
+ * `content` é o JSON do contrato Deep Research, sem rodapé.
+ */
+export function provenanceExtras(p: CanonicalProvenance): {
+  structured: Record<string, unknown>;
+  meta: Record<string, unknown>;
+} {
+  const { structuredContent, _meta } = provenance.result({}, p);
+  return { structured: structuredContent, meta: _meta };
+}

@@ -155,4 +155,16 @@ export const FIXTURES: EvalFixture[] = [
     expectedTools: ["ilo_search_indicators", "ilo_list_dimension_values"],
     note: "Painel amplo: achar o dataflow e/ou os códigos de área para paginar em lotes de 30.",
   },
+  {
+    id: "dr-01",
+    query: "Search the ILOSTAT corpus for documents about the gender wage gap and give me the id to read one in full.",
+    expectedTools: ["search", "ilo_search_indicators"],
+    note: "Pedido explícito de pesquisa no acervo com id para leitura — o search do Deep Research; ilo_search_indicators é a alternativa defensável.",
+  },
+  {
+    id: "dr-02",
+    query: "Read the document with id ind:DF_EAR_GGAP_OCU_RT that the search returned.",
+    expectedTools: ["fetch"],
+    note: "Id prefixado devolvido pelo search — só o fetch o resolve.",
+  },
 ];

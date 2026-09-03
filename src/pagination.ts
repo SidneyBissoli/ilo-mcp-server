@@ -1,7 +1,7 @@
 /**
  * Cursor de paginação inválido — a recusa que o SDK não faz.
  *
- * O PROBLEMA. Toda lista deste servidor cabe numa página só (4 tools, 3
+ * O PROBLEMA. Toda lista deste servidor cabe numa página só (6 tools, 3
  * resources, 1 template, 3 prompts), então nenhuma resposta traz `nextCursor` e
  * nenhum cursor emitido por este servidor existe. Os quatro handlers de lista
  * do `@modelcontextprotocol/server` 2.0.0 simplesmente IGNORAM `params.cursor` e

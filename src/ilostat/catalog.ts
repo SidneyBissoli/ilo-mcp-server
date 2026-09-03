@@ -28,6 +28,14 @@ export interface CatalogSearchResult {
   sourceUrl: string;
 }
 
+export interface CatalogListing {
+  entries: CatalogEntry[];
+  /** Instante real da extração do catálogo no upstream (gravado no seed). */
+  retrievedAt: string;
+  /** URL canônica do catálogo oficial. */
+  sourceUrl: string;
+}
+
 export const CATALOG_SOURCE_URL = "https://sdmx.ilo.org/rest/dataflow/ILO?detail=allstubs";
 
 function requireDb(env: Env): D1Database {
@@ -89,4 +97,22 @@ export async function searchCatalog(
     retrievedAt,
     sourceUrl: CATALOG_SOURCE_URL,
   };
+}
+
+/**
+ * O catálogo inteiro (~1.200 linhas, ~100 KB) — alimenta o índice em memória de
+ * `search`/`fetch` (src/tools/deep-research.ts), que ranqueia por relevância em
+ * vez do AND de substrings desta busca. Mesma origem e mesmo `retrieved_at`.
+ */
+export async function listCatalog(env: Env): Promise<CatalogListing> {
+  if (!env.CATALOG_DB && env.CATALOG_MEMORY) return env.CATALOG_MEMORY.all();
+  const db = requireDb(env);
+  const [rows, retrievedAt] = await Promise.all([
+    db.prepare("SELECT id, agency, version, name FROM dataflows ORDER BY id").all<CatalogEntry>(),
+    catalogMeta(db, "retrieved_at"),
+  ]);
+  if (!retrievedAt) {
+    throw new Error("catálogo D1 sem catalog_meta.retrieved_at — rodar o seed (scripts/seed-catalog.mjs)");
+  }
+  return { entries: rows.results ?? [], retrievedAt, sourceUrl: CATALOG_SOURCE_URL };
 }
