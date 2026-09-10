@@ -20,8 +20,27 @@ export interface UsageEvent {
   name?: string;
 }
 
-/** Assinatura do registrador injetado nas tools — fire-and-forget, nunca lança. */
-export type RecordUsage = (kind: UsageKind, name?: string) => void;
+/**
+ * A FORMA da chamada — nomes de parâmetro e classe do erro, nunca valores.
+ * Ver `call-shape.ts` para o porquê da linha entre nome e valor.
+ */
+export interface FormaDaChamada {
+  /** Nomes dos parâmetros da chamada, em ordem, separados por vírgula. */
+  params: string;
+  /** Classe do erro (vocabulário fechado); vazia quando a chamada deu certo. */
+  classe: string;
+}
+
+/**
+ * Assinatura do registrador injetado nas tools — fire-and-forget, nunca lança.
+ *
+ * O terceiro argumento é OPCIONAL no tipo, mas quem escreve um adaptador desta
+ * assinatura precisa declará-lo: uma seta de aridade 2 no meio do caminho
+ * compila (é a regra do TypeScript) e engole o argumento em silêncio. Foi o que
+ * fez a telemetria de forma do medical-terminologies-mcp subir gravando vazio,
+ * com os dois lados passando nos testes.
+ */
+export type RecordUsage = (kind: UsageKind, name?: string, forma?: FormaDaChamada) => void;
 
 /** Chave de dia em UTC ("YYYY-MM-DD") — o grão de agregação persistido. */
 export function dayKeyUtc(d: Date): string {
