@@ -18,7 +18,10 @@ import type { RecordUsage } from "../src/usage-core.js";
  * aqui fossilizaria o dia da varredura; a guarda continua verdadeira sozinha.
  */
 
-const CHAMADA = /new Ilostat(?:User|Upstream)Error\(([\s\S]{10,900}?)\n?\s*\)/g;
+// O fecho exigido é `);` e não `)`: com o parêntese solto o casamento para no
+// primeiro parêntese DENTRO da mensagem (um "(e.g. ...)") e a varredura perde a
+// mensagem inteira — foi assim que ela mostrou 2 mensagens onde havia 4.
+const CHAMADA = /new Ilostat(?:User|Upstream)Error\(([\s\S]{10,1200}?)\n?\s*\);/g;
 const LITERAL = /(["'`])((?:\\.|(?!\1)[\s\S])*)\1/g;
 /** Mensagem que só repassa o texto de cima; o sinal chega em execução. */
 const REPASSE = /:\s*X\.?$/;
