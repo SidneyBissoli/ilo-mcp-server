@@ -1,4 +1,7 @@
 import { describe, it, expect } from "vitest";
+import { Client } from "@modelcontextprotocol/client";
+import { InMemoryTransport } from "@modelcontextprotocol/server";
+import { buildServer } from "../src/server.js";
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { classifyError, errorText, paramNames } from "../src/call-shape.js";
@@ -186,5 +189,39 @@ describe("errorText lê o texto que o handler devolveu", () => {
     expect(errorText({})).toBe("");
     expect(errorText(null)).toBe("");
     expect(errorText({ content: [] })).toBe("");
+  });
+});
+
+
+describe("a costura do search/fetch com o pacote", () => {
+  /**
+   * O que este teste guarda. Estas duas tools sao registradas pelo
+   * `@sbissoli/mcp-search`, e ate a 0.4.0 o gancho de telemetria dele tinha
+   * aridade 2: a forma da chamada nao tinha por onde entrar, e as linhas de
+   * `fetch` chegaram na PRODUCAO com classe e parametros vazios. Nenhuma
+   * bateria pegou — os dois lados estavam certos e so faltava o argumento na
+   * costura. Este caso atravessa o servidor real, de ponta a ponta.
+   */
+  it("o erro de `fetch` chega ao recorder classificado e com os nomes", async () => {
+    const vistos: Array<[string, string, unknown]> = [];
+    const record = (kind: string, name?: string, forma?: unknown) => {
+      vistos.push([kind, name ?? "", forma]);
+    };
+    const server = buildServer({} as never, record as never);
+    const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
+    const client = new Client({ name: "call-shape-test", version: "0.0.0" });
+    await Promise.all([server.connect(serverTransport), client.connect(clientTransport)]);
+    try {
+      // Id sem o prefixo do acervo: o handler devolve null sem tocar na fonte
+      // nem no D1, entao o teste nao depende de rede.
+      const r = await client.callTool({ name: "fetch", arguments: { id: "sem-prefixo-nenhum" } });
+      expect(r.isError).toBe(true);
+    } finally {
+      await client.close();
+    }
+    expect(vistos).toEqual([
+      ["tool_call", "fetch", { params: "id", classe: "" }],
+      ["tool_error", "fetch", { params: "id", classe: "nao_encontrado" }],
+    ]);
   });
 });
