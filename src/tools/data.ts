@@ -21,6 +21,9 @@ import { PROVENANCE_MODE_SCHEMA, provenanceOutputShape } from "./shared.js";
 
 export const GET_DATA = "ilo_get_data";
 
+/** Um código de dimensão ou uma lista deles. */
+const CODIGOS_DE_DIMENSAO = z.union([z.string(), z.array(z.string()).min(1)]);
+
 /** Rótulo do período para o dimension_key (a chave SDMX não carrega o período). */
 export function timePeriodLabel(
   start: string | undefined,
@@ -121,12 +124,27 @@ export function registerDataTools(server: McpServer, env: Env, record: RecordUsa
         "(use ilo_search_indicators).",
       inputSchema: z.object({
         dataflow: z.string().min(1).describe('Dataflow id from ilo_search_indicators (e.g. "DF_UNE_DEAP_SEX_AGE_RT")'),
+        // REF_AREA é exigência ESTRUTURAL, e não só de prosa, desde 11/09/2026.
+        // A descrição já dizia "REF_AREA is required" nas duas pontas, e mesmo
+        // assim a forma de chamada mais frequente era `{dataflow}` sozinho:
+        // 57 erros em 99 chamadas em 28 dias, a maioria com essa forma exata.
+        // Modelo lê o `required` do esquema, que dizia só `dataflow`. Agora o
+        // esquema publica o que a fonte cobra — e a chamada que ele passa a
+        // recusar é exatamente a que já falhava 100% das vezes, então nenhuma
+        // chamada que funcionava deixa de funcionar.
         filters: z
-          .record(z.string(), z.union([z.string(), z.array(z.string()).min(1)]))
-          .optional()
+          .object({
+            REF_AREA: CODIGOS_DE_DIMENSAO.describe(
+              'Area codes — REQUIRED, at most 30 per call (e.g. ["BRA","ARG"]). ' +
+                "Without them the ILO gateway times out (HTTP 504). " +
+                "Discover codes with ilo_list_dimension_values (dimension REF_AREA).",
+            ),
+          })
+          .catchall(CODIGOS_DE_DIMENSAO)
           .describe(
             "Dimension id → code or list of codes (from ilo_list_dimension_values). " +
-              "REF_AREA is required (up to 30 area codes).",
+              "REF_AREA is required (up to 30 area codes); any other dimension is optional " +
+              "and, left out, returns all of its categories.",
           ),
         start_period: z.string().min(1).optional().describe('First period, e.g. "2015"'),
         end_period: z.string().min(1).optional().describe('Last period, e.g. "2024"'),

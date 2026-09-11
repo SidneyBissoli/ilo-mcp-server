@@ -399,6 +399,29 @@ describe("structuredContent obedece ao outputSchema anunciado", () => {
     }
   });
 
+  /**
+   * O que a fonte EXIGE tem de estar no `required` do esquema, não só na prosa.
+   *
+   * `ilo_get_data` dizia "REF_AREA is required" na descrição da tool E na do
+   * campo `filters`, e mesmo assim a forma de chamada mais frequente era
+   * `{dataflow}` sozinho — 57 erros em 99 chamadas nos 28 dias até 10/09/2026.
+   * Modelo constrói a chamada a partir do `required`, que listava só
+   * `dataflow`. Prosa não é contrato; `required` é.
+   */
+  it("ilo_get_data publica REF_AREA como obrigatório, não só na descrição", async () => {
+    const { tools } = await clienteCatalogo.listTools();
+    const getData = tools.find((t) => t.name === "ilo_get_data");
+    expect(getData).toBeDefined();
+    const entrada = getData!.inputSchema as {
+      required?: string[];
+      properties?: { filters?: { required?: string[]; properties?: Record<string, unknown> } };
+    };
+    expect(entrada.required).toContain("filters");
+    expect(entrada.properties?.filters?.required).toContain("REF_AREA");
+    // E as outras dimensões continuam livres: o filtro não virou lista fechada.
+    expect(entrada.properties?.filters).toHaveProperty("additionalProperties");
+  });
+
   it("toda tool anunciada declara outputSchema e tem ao menos um caso", async () => {
     const { tools } = await clienteCatalogo.listTools();
     const cobertas = new Set(CASOS.map((c) => c.nome));
