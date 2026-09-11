@@ -131,7 +131,7 @@ export function registerMetadataTools(server: McpServer, env: Env, record: Recor
       inputSchema: z.object({
         dataflow: z.string().min(1).describe('Dataflow id from ilo_search_indicators (e.g. "DF_UNE_DEAP_SEX_AGE_RT")'),
         provenance_mode: PROVENANCE_MODE_SCHEMA,
-      }),
+      }).strict(),
       outputSchema: z.looseObject({
         id: z.string(),
         version: z.string(),
@@ -166,7 +166,7 @@ export function registerMetadataTools(server: McpServer, env: Env, record: Recor
         limit: z.number().int().min(1).max(500).optional().describe("Maximum codes returned (default 200)"),
         offset: z.number().int().min(0).optional().describe("Codes to skip, for pagination (default 0)"),
         provenance_mode: PROVENANCE_MODE_SCHEMA,
-      }),
+      }).strict(),
       outputSchema: z.looseObject({
         dataflow: z.string(),
         dimension: z.string(),

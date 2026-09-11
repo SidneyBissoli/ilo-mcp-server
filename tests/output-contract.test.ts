@@ -422,6 +422,44 @@ describe("structuredContent obedece ao outputSchema anunciado", () => {
     expect(entrada.properties?.filters).toHaveProperty("additionalProperties");
   });
 
+  /**
+   * Parâmetro que não existe tem de ser RECUSADO, nunca descartado em silêncio.
+   *
+   * Sem `.strict()`, o zod tira a chave desconhecida, aplica o default do
+   * parâmetro que faltou e a tool responde OUTRA pergunta com cara de resposta.
+   * Medido no irmão ibge em 11/09/2026: `periodo` no singular, que o esquema
+   * não tem, devolveu a população de 2026 para uma pergunta sobre 2023, com
+   * `p/last` na URL de procedência e nenhum aviso. Singular/plural é o engano
+   * mais comum que existe, e aqui `start_period`/`end_period`/`last_n_observations`
+   * são um campo minado do mesmo tipo.
+   *
+   * `search`/`fetch` ficam de fora: o contrato é da OpenAI e quem os registra é
+   * `@sbissoli/mcp-search`.
+   */
+  it("toda tool ilo_* recusa parâmetro que não existe", async () => {
+    const { tools } = await clienteCatalogo.listTools();
+    const proprias = tools.filter((t) => t.name.startsWith("ilo_"));
+
+    expect(proprias.length).toBeGreaterThanOrEqual(4);
+    for (const t of proprias) {
+      const schema = t.inputSchema as { additionalProperties?: unknown };
+      expect(schema.additionalProperties, `${t.name} aceita chave desconhecida`).toBe(false);
+    }
+  });
+
+  it("a recusa NOMEIA a chave, para o modelo se corrigir sozinho", async () => {
+    const r = await clienteCatalogo.callTool({
+      name: "ilo_search_indicators",
+      arguments: { query: "unemployment", limite: 5 },
+    });
+
+    expect(r.isError).toBe(true);
+    const texto = Array.isArray(r.content)
+      ? r.content.map((c) => ("text" in c ? c.text : "")).join(" ")
+      : "";
+    expect(texto).toContain("limite");
+  });
+
   it("toda tool anunciada declara outputSchema e tem ao menos um caso", async () => {
     const { tools } = await clienteCatalogo.listTools();
     const cobertas = new Set(CASOS.map((c) => c.nome));

@@ -156,7 +156,7 @@ export function registerDataTools(server: McpServer, env: Env, record: RecordUsa
           .optional()
           .describe("Alternative to periods: only the latest N observations per series"),
         provenance_mode: PROVENANCE_MODE_SCHEMA,
-      }),
+      }).strict(),
       outputSchema: z.looseObject({
         dataflow: z.object({ id: z.string(), version: z.string(), name: z.string().nullable() }),
         columns: z.array(z.string()),

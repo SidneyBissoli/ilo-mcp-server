@@ -73,7 +73,7 @@ export function registerCatalogTools(server: McpServer, env: Env, record: Record
         limit: z.number().int().min(1).max(100).optional().describe("Maximum results (default 20)"),
         offset: z.number().int().min(0).optional().describe("Results to skip, for pagination (default 0)"),
         provenance_mode: PROVENANCE_MODE_SCHEMA,
-      }),
+      }).strict(),
       outputSchema: z.looseObject({
         total_matches: z.number(),
         showing: z.number(),
