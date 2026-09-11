@@ -16,7 +16,7 @@ import { logger } from "./logger.js";
 import { allowedOriginHostnames, origemAceita } from "./origin.js";
 import { cursorRejection } from "./pagination.js";
 import { checkRateLimit } from "./rate-limit.js";
-import { tagRequest, withAnalytics } from "./analytics.js";
+import { SELF_ROUTE, tagRequest, withAnalytics } from "./analytics.js";
 import { buildServer } from "./server.js";
 import { buildStatus } from "./status.js";
 import type { Env } from "./types.js";
@@ -40,7 +40,10 @@ export default {
     const url = new URL(request.url);
     const start = Date.now();
     const record = createUsageRecorder(env, ctx);
-    const isMcp = url.pathname === SERVER_CONFIG.mcpRoute;
+    // A rota privada do dono serve EXATAMENTE a mesma superficie; o que muda
+    // e o registro (tagRequest marca self por ela). Ver src/analytics.ts.
+    const rotaMcp = url.pathname === SELF_ROUTE ? SELF_ROUTE : SERVER_CONFIG.mcpRoute;
+    const isMcp = url.pathname === rotaMcp;
 
     // --- Rotas públicas, servidas antes de qualquer auth ---
     if (url.pathname === "/") return landingResponse();
@@ -133,7 +136,7 @@ export default {
     }
 
     const handler = createMcpHandler(() => buildServer(env, recordWithAnalytics), {
-      route: SERVER_CONFIG.mcpRoute,
+      route: rotaMcp,
       // Sem a opção, o handler aceita localhost e *.workers.dev. Ao definir
       // extraAllowedHostnames (domínio próprio), a lista SUBSTITUI os defaults —
       // inclua nela também o hostname workers.dev se ele continuar servido.
