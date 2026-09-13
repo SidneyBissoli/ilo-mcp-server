@@ -13,7 +13,7 @@
 [![License: MIT](https://img.shields.io/badge/license-MIT-yellow)](LICENSE.md)
 [![Status](https://img.shields.io/website?url=https%3A%2F%2Filo.sidneybissoli.com%2Fhealth&up_message=online&down_message=offline&label=status)](https://ilo.sidneybissoli.com/status)
 
-🇺🇸 [Read in English](README.md)
+🇺🇸 [Read in English](https://github.com/SidneyBissoli/ilo-mcp-server/blob/main/README.md)
 
 Servidor [MCP](https://modelcontextprotocol.io) **público, hospedado e provenance-first** para as
 estatísticas da **Organização Internacional do Trabalho (OIT)** — a base **ILOSTAT** — **sem

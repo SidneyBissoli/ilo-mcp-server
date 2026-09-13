@@ -13,7 +13,7 @@
 [![License: MIT](https://img.shields.io/badge/license-MIT-yellow)](LICENSE.md)
 [![Status](https://img.shields.io/website?url=https%3A%2F%2Filo.sidneybissoli.com%2Fhealth&up_message=online&down_message=offline&label=status)](https://ilo.sidneybissoli.com/status)
 
-🇧🇷 [Leia em Português](README.pt-BR.md)
+🇧🇷 [Leia em Português](https://github.com/SidneyBissoli/ilo-mcp-server/blob/main/README.pt-BR.md)
 
 A **public, hosted, provenance-first** [MCP](https://modelcontextprotocol.io) server for the
 **International Labour Organization (ILO)** statistics — the **ILOSTAT** database —
@@ -34,7 +34,7 @@ from training data.
 > chave) para as estatísticas de **mercado de trabalho** da OIT — desemprego, emprego, salários,
 > jornada e informalidade por país, ano, sexo e idade, direto no Claude, no ChatGPT ou em
 > qualquer cliente MCP, com proveniência e citação da fonte em cada resposta:
-> [README em português](README.pt-BR.md).
+> [README em português](https://github.com/SidneyBissoli/ilo-mcp-server/blob/main/README.pt-BR.md).
 
 ## Questions it answers
 
