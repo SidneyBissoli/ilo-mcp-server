@@ -33,6 +33,27 @@ byte a byte iguais ao baseline 0.4.0 (conferido por script antes do commit).
 `scripts/smoke-mcp.mjs` deriva a contagem esperada do `surface-stdio-<v>.json`
 mais recente — nunca de um literal.
 
+## Captura da 0.6.0 (2026-09-13)
+
+Seis tools, três resources e três prompts — a superfície não ganhou nem perdeu
+membro. O diff estrutural contra a 0.5.0 (chaves ordenadas, ignorando fim de
+linha) tem exatamente duas famílias:
+
+1. **O que o master já levava e a 0.5.0 não publicou** (commits de 11/09):
+   `additionalProperties: false` nos esquemas de entrada — chave desconhecida
+   passa a ser RECUSADA — e `filters` com `REF_AREA` exigido no `required`, não
+   só na prosa. É contrato de ENTRADA mais estrito viajando num bump; foi
+   exatamente o que escapou no sih em 13/09 ([[tag-leva-o-master-inteiro]]), e
+   por isso este é minor, não patch.
+2. **O que a 0.6.0 acrescenta**: a descrição de `ilo_search_indicators` passa a
+   dizer que traduz o vocabulário do usuário para o da OIT, e a saída ganha
+   `vocabulary_notes` (a tradução que aconteceu) e `hint` (o que fazer quando o
+   resultado é zero).
+
+Nenhuma outra diferença. O baseline `surface-http-prod-0.6.0.json` só faz
+sentido DEPOIS do deploy desta versão — capturar então, e conferir que volta a
+bater com o stdio.
+
 ## Como usar no gate
 
 Depois de qualquer mudança que possa mexer na superfície:
@@ -40,7 +61,7 @@ Depois de qualquer mudança que possa mexer na superfície:
 ```bash
 npm run build
 node scripts/dump-surface.mjs --stdio > depois.json
-# diff contra o baseline vigente (surface-stdio-0.5.0.json)
+# diff contra o baseline vigente (surface-stdio-0.6.0.json)
 ```
 
 Toda diferença precisa ser deliberada e listada no CHANGELOG. Depois de um

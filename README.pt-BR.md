@@ -30,6 +30,64 @@ Toda resposta carrega um **bloco de proveniência** (URL da fonte, vintage dos d
 real da extração, licença, citação da OIT) — números exatos com trilha de auditoria, não
 palpites da base de treino.
 
+## Perguntas que ele responde
+
+Em linguagem comum, dentro do cliente MCP — quem escolhe a ferramenta e os filtros é o
+assistente:
+
+- "O que aconteceu com o desemprego no Brasil desde 2015?" (`ilo_get_data`)
+- "Compare o desemprego juvenil entre Brasil, México e África do Sul." (`ilo_compare_countries`)
+- "De quanto é a diferença salarial entre homens e mulheres, e onde a OIT publica isso?"
+  (`ilo_search_indicators` → `ilo_get_data`)
+- "Que fatia do emprego na Índia é informal?" (`ilo_search_indicators` → `ilo_get_data`)
+- "Qual dataflow do ILOSTAT traz rendimento médio mensal por sexo e atividade econômica?"
+  (`ilo_search_indicators`)
+- "Que códigos de país, idade e sexo posso usar como filtro deste indicador?"
+  (`ilo_list_dimension_values`)
+- "Faça um perfil do mercado de trabalho do Vietnã." (`ilo_country_labour_profile`)
+
+**Pergunte com a sua palavra, não com a da OIT.** O ILOSTAT é escrito em inglês estatístico
+britânico e a busca casa o nome do dataflow — por isso a palavra do dia a dia (ou a grafia
+americana) devolvia *nada*. Medido nos 1.212 dataflows do catálogo oficial em 13/09/2026, e
+corrigido na 0.6.0: a busca traduz o termo e avisa que traduziu.
+
+| você pergunta | achava antes | a OIT escreve | acha |
+| --- | ---: | --- | ---: |
+| `labor`, `labor force` | 0 | labour, labour force | 176, 122 |
+| `wages`, `salary` | 0 | earnings | 107 |
+| `informality` | 0 | informal | 133 |
+| `gender` | 2 | sex | 1.131 |
+| `productivity` | 0 | output per worker | 4 |
+| `jobless` | 0 | unemployment | 108 |
+
+## Comparação com as alternativas
+
+Quem já trabalha com o ILOSTAT tem boas ferramentas, e este servidor **não substitui nenhuma
+delas** — ele ocupa outro lugar da cadeia: responde a pergunta no ponto onde ela é feita, dentro
+do assistente, com fonte, safra e licença grudadas na resposta. Detalhe, exemplos lado a lado e
+os números medidos em
+[`docs/alternatives.md`](https://github.com/SidneyBissoli/ilo-mcp-server/blob/main/docs/alternatives.md)
+(em inglês).
+
+| Ferramenta | O que é | Quando preferir |
+| --- | --- | --- |
+| **ilo-mcp-server** (este) | Servidor MCP remoto, hospedado, nada para instalar: 6 ferramentas sobre os ~1.200 dataflows do ILOSTAT, com bloco de proveniência por resposta | A pergunta é feita num assistente (Claude, ChatGPT, Cursor, Claude Code) e a resposta precisa ser auditável |
+| [Rilostat](https://ilostat.github.io/Rilostat/) 2.5.0 (R, CRAN) | **O pacote R da própria OIT**, escrito por gente da OIT: download em lote, metadados, filtro e remodelagem | Você está em R e quer a base inteira num data frame, para analisar |
+| [sdmx1](https://pypi.org/project/sdmx1/) 2.27.0 / [pandaSDMX](https://pypi.org/project/pandasdmx/) 1.10.0 (Python) | Clientes SDMX genéricos; a OIT é uma das ~36 fontes que eles conhecem | Seu pipeline é Python e você quer objetos SDMX, ou o mesmo código para várias agências |
+| [DBnomics](https://db.nomics.world/ILO) (API, `dbnomics` no Python, [rdbnomics](https://cran.r-project.org/package=rdbnomics) 0.6.4 no R) | Agregador que republica 1.071 bases da OIT ao lado de outros provedores, numa API só | Você quer séries da OIT junto com FMI, OCDE e Eurostat na mesma interface |
+| [API SDMX REST do ILOSTAT](https://ilostat.ilo.org/resources/sdmx-tools/) | A própria fonte, que este servidor consulta | Você está construindo o seu próprio cliente |
+
+**Não use este servidor quando** precisar da base inteira em vez de uma resposta (o download em
+lote do Rilostat é a ferramenta certa), quando a pergunta não for de estatística do trabalho
+publicada pela OIT (educação → UNESCO UIS, contas nacionais → FMI/Banco Mundial) ou quando
+precisar de microdado: o ILOSTAT publica agregados, e este servidor também.
+
+**Servidores irmãos**, mesmo desenho e mesmo bloco de proveniência, para outras fontes oficiais:
+[IBGE](https://ibge.sidneybissoli.com), [BCB](https://bcb.sidneybissoli.com),
+[Senado](https://senado.sidneybissoli.com), [SIH/SUS](https://sih.sidneybissoli.com) (internações
+hospitalares do DATASUS) e [terminologias médicas](https://medical.sidneybissoli.com) (CID-10,
+CID-11, LOINC, RxNorm, ATC, MeSH).
+
 ## Use (hospedado — sem configuração)
 
 Aponte qualquer cliente MCP para o endpoint Streamable HTTP:
@@ -203,7 +261,7 @@ servidor público.
 
 ```bash
 npm install
-npm run typecheck && npm test   # 189 testes offline (parsers, chave, tools, contrato de saída, resources/prompts, catálogo em memória, fixtures de evals)
+npm run typecheck && npm test   # suíte offline (parsers, chave, tools, contrato de saída, resources/prompts, catálogo em memória, vocabulário, fixtures de evals)
 npm run dev                     # http://localhost:8787/mcp (Worker)
 npm run build && npm start      # runtime stdio (dist/cli.js)
 

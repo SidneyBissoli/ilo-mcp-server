@@ -13,7 +13,7 @@ export const SERVER_CONFIG = {
   /** Nome curto do servidor (handshake MCP, /status, landing). */
   name: "ilo-mcp-server",
   /** Versão do servidor — manter em sincronia com package.json. */
-  version: "0.5.0",
+  version: "0.6.0",
   /** Título de exibição (clientes MCP mostram ao usuário). */
   title: "ILO Labour Statistics (ILOSTAT)",
   /**
@@ -27,8 +27,9 @@ export const SERVER_CONFIG = {
   /** Uma frase: o que o servidor serve e de qual fonte. */
   description:
     "MCP server for ILOSTAT, the International Labour Organization's statistical database: " +
-    "search 1,200+ indicator dataflows and retrieve labour statistics by country, year, sex " +
-    "and age — every response carries a deterministic provenance and attribution block.",
+    "search 1,200+ indicator dataflows and retrieve labour market statistics — unemployment, " +
+    "employment, earnings (wages), working time, informality — by country, year, sex and age. " +
+    "Every response carries a deterministic provenance and attribution block.",
   /**
    * Contato exibido na landing page. A URL raiz do Worker é o que sysadmins upstream
    * veem no User-Agent — precisa resolver para identificação humana + contato.
@@ -48,8 +49,11 @@ export const SERVER_CONFIG = {
    */
   instructions:
     "Labour statistics from ILOSTAT (International Labour Organization) via the official " +
-    "SDMX API: unemployment, employment, wages, working time and related indicators, by " +
-    "country, year and disaggregations such as sex and age. Typical flow: " +
+    "SDMX API: unemployment, employment, earnings (wages), working time, informality and " +
+    "related indicators, by country, year and disaggregations such as sex and age. " +
+    "ILOSTAT is worded in British statistical English; ilo_search_indicators resolves " +
+    "everyday and US wording to it (labor→labour, wages/salary→earnings, " +
+    "informality→informal, gender→sex) and reports the translation. Typical flow: " +
     "ilo_search_indicators to find a dataflow, then ilo_get_data with country and period " +
     "filters; use ilo_get_indicator_metadata / ilo_list_dimension_values to discover valid " +
     "filter codes. Resources ilostat://guide (code conventions, limits) and " +
