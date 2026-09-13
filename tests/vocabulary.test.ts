@@ -4,12 +4,16 @@
  * Os casos são os MEDIDOS no catálogo oficial em 2026-09-13 (1.212 dataflows):
  * "wages", "salary", "informality", "labor", "labor force", "workforce",
  * "gender pay gap", "productivity" e "jobless" devolviam ZERO, com o indicador
- * existindo sob a grafia da OIT. As linhas de fixture abaixo são nomes REAIS do
- * catálogo (copiados de /dataflow/ILO?detail=allstubs), para o teste não provar
- * uma tabela contra si mesma.
+ * existindo sob a grafia da OIT. As linhas de fixture abaixo são pares id/nome
+ * REAIS, lidos de /dataflow/ILO?detail=allstubs, para o teste não provar uma
+ * tabela contra si mesma — e o primeiro caso confere cada id contra a lista
+ * versionada do seed, porque id montado por padrão é hipótese, não fato.
  */
 
 import { describe, expect, it } from "vitest";
+import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
+import { dirname, join } from "node:path";
 import { searchRows, type CatalogRow } from "../src/ilostat/catalog-memory.js";
 import { askedWordsFor, expandTerm, queryTerms, vocabularyNotes, expandQuery } from "../src/ilostat/vocabulary.js";
 
@@ -17,24 +21,39 @@ function row(id: string, name: string, weight = 0): CatalogRow {
   return { id, agency: "ILO", version: "1.0", name, idLc: id.toLowerCase(), nameLc: name.toLowerCase(), searchWeight: weight };
 }
 
-// Nomes reais do catálogo da OIT.
+// Pares id/nome REAIS, lidos do catálogo oficial em 2026-09-13; os pesos são os
+// SEARCH_WEIGHT da própria OIT, na mesma escala. O teste `ids do catálogo` abaixo
+// impede que esta fixture derive para ficção.
 const CATALOGO: CatalogRow[] = [
-  row("DF_EAR_4MTH_SEX_ECO_CUR_NB", "Average monthly earnings of employees by sex and economic activity", 9),
-  row("DF_EAR_GGAP_OCU_RT", "Gender wage gap by occupation", 5),
-  row("DF_EAR_XTMN_CUR_NB", "Monthly minimum wage", 4),
-  row("DF_UNE_2EAP_SEX_AGE_RT", "Unemployment rate by sex and age -- ILO modelled estimates, Nov. 2025", 10),
-  row("DF_EMP_2IFL_SEX_RT", "Informal employment rate by sex -- ILO modelled estimates, Nov. 2025", 8),
-  row("DF_EAP_2WAP_SEX_AGE_RT", "Labour force participation rate by sex and age -- ILO modelled estimates, Nov. 2025", 9),
-  row("DF_GDP_205U_NOC_NB", "Output per worker, GDP constant 2015 US $ -- ILO modelled estimates, Nov. 2025", 7),
-  row("DF_ILR_TUMT_NOC_RT", "Trade union density rate", 3),
-  row("DF_SDG_0111_SEX_AGE_RT", "SDG indicator 1.1.1: Working poverty rate by sex and age", 6),
-  row("DF_EMP_TEMP_SEX_MIG_NB", "Employment by sex and migrant status", 2),
-  row("DF_SDG_F881_SEX_MIG_RT", "Cases of fatal occupational injury by economic activity", 2),
+  row("DF_EAR_EMTA_SEX_ECO_NB", "Average monthly earnings of employees by sex and economic activity", 460500),
+  row("DF_EAR_GGAP_OCU_RT", "Gender wage gap by occupation", 441500),
+  row("DF_EAR_INEE_NOC_NB", "Monthly minimum wage", 443500),
+  row("DF_UNE_2EAP_SEX_AGE_RT", "Unemployment rate by sex and age -- ILO modelled estimates, Nov. 2025", 353000),
+  row("DF_EMP_2IFL_SEX_RT", "Informal employment rate by sex -- ILO modelled estimates, Nov. 2025", 357000),
+  row("DF_EAP_2WAP_SEX_AGE_RT", "Labour force participation rate by sex and age -- ILO modelled estimates, Nov. 2025", 363500),
+  row("DF_GDP_205U_NOC_NB", "Output per worker, GDP constant 2015 US $ -- ILO modelled estimates, Nov. 2025", 338500),
+  row("DF_ILR_TUMT_NOC_RT", "Trade union density rate", 427000),
+  row("DF_SDG_0111_SEX_AGE_RT", "SDG indicator 1.1.1: Working poverty rate by sex and age", 899999),
+  row("DF_INJ_FATL_ECO_NB", "Cases of fatal occupational injury by economic activity", 434000),
+  row("DF_SDG_0852_SEX_AGE_RT", "SDG indicator 8.5.2: Unemployment rate by sex and age", 894500),
 ];
 
 function busca(q: string) {
   return searchRows(CATALOGO, q, 20, 0);
 }
+
+describe("a fixture é o catálogo, não uma invenção", () => {
+  it("todo id da fixture existe na lista versionada do seed", () => {
+    const raiz = join(dirname(fileURLToPath(import.meta.url)), "..");
+    const ids = new Set(
+      readFileSync(join(raiz, "tests/fixtures/catalog-ids.txt"), "utf8")
+        .split(/\r?\n/)
+        .map((l) => l.trim())
+        .filter((l) => l && !l.startsWith("#")),
+    );
+    for (const r of CATALOGO) expect(ids, `id ausente do catálogo: ${r.id}`).toContain(r.id);
+  });
+});
 
 describe("expansão de termo", () => {
   it("plural e sinônimo medidos: wages → earnings, wage", () => {
@@ -66,7 +85,7 @@ describe("busca com o vocabulário do usuário", () => {
   it("wages acha os earnings da OIT", () => {
     const r = busca("wages");
     expect(r.total).toBeGreaterThan(0);
-    expect(r.entries.map((e) => e.id)).toContain("DF_EAR_4MTH_SEX_ECO_CUR_NB");
+    expect(r.entries.map((e) => e.id)).toContain("DF_EAR_EMTA_SEX_ECO_NB");
   });
 
   it("salary, que não existe em nenhum nome do catálogo, também acha", () => {
@@ -106,13 +125,15 @@ describe("busca com o vocabulário do usuário", () => {
   });
 
   it("accidents acha occupational injury", () => {
-    expect(busca("accidents").entries.map((e) => e.id)).toContain("DF_SDG_F881_SEX_MIG_RT");
+    expect(busca("accidents").entries.map((e) => e.id)).toContain("DF_INJ_FATL_ECO_NB");
   });
 
-  it("o que já funcionava continua funcionando, e na mesma ordem (SEARCH_WEIGHT)", () => {
+  it("o que já funcionava continua funcionando, e na ordem do SEARCH_WEIGHT da OIT", () => {
     const r = busca("rate sex");
     expect(r.total).toBeGreaterThan(3);
-    expect(r.entries[0]?.id).toBe("DF_UNE_2EAP_SEX_AGE_RT"); // peso 10
+    // O topo é derivado da fixture, não fixado num id: o critério é o peso.
+    const maiorPeso = CATALOGO.filter((c) => r.entries.some((e) => e.id === c.id)).sort((a, b) => b.searchWeight - a.searchWeight)[0];
+    expect(r.entries[0]?.id).toBe(maiorPeso?.id);
   });
 
   it("termo sem correspondência nenhuma segue devolvendo zero — expandir não inventa dado", () => {
