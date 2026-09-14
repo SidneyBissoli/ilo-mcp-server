@@ -12,6 +12,7 @@
 import { CATALOG_SOURCE_URL, type CatalogEntry, type CatalogListing, type CatalogSearchResult } from "./catalog.js";
 import { IlostatUserError } from "./key.js";
 import { nowIso, upstreamHeaders } from "./sdmx.js";
+import { expandQuery, matchesTerm, vocabularyNotes } from "./vocabulary.js";
 
 const STRUCTURE_JSON = "application/vnd.sdmx.structure+json";
 
@@ -49,20 +50,26 @@ export function catalogRowsFromMessage(msg: unknown): CatalogRow[] {
   });
 }
 
-/** Busca com a mesma semântica da consulta SQL do D1. */
-export function searchRows(rows: CatalogRow[], query: string, limit: number, offset: number): { entries: CatalogEntry[]; total: number } {
-  const terms = query.toLowerCase().split(/\s+/).filter(Boolean);
-  if (!terms.length) {
+/** Busca com a mesma semântica da consulta SQL do D1 — expansão de vocabulário inclusa. */
+export function searchRows(
+  rows: CatalogRow[],
+  query: string,
+  limit: number,
+  offset: number,
+): { entries: CatalogEntry[]; total: number; notes: string[] } {
+  const expanded = expandQuery(query);
+  if (!expanded.length) {
     throw new IlostatUserError("Empty query: pass one or more search terms (e.g. \"unemployment rate\").");
   }
   const matching = rows
-    .filter((r) => terms.every((t) => r.nameLc.includes(t) || r.idLc.includes(t)))
+    .filter((r) => expanded.every((t) => matchesTerm(r.nameLc, t) || matchesTerm(r.idLc, t)))
     .sort((a, b) => b.searchWeight - a.searchWeight || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
   const lim = Math.max(1, Math.min(limit, 100));
   const off = Math.max(0, Math.floor(offset));
   return {
     entries: matching.slice(off, off + lim).map(({ id, agency, version, name }) => ({ id, agency, version, name })),
     total: matching.length,
+    notes: vocabularyNotes(expanded),
   };
 }
 

@@ -33,10 +33,22 @@ export function searchIndicatorsHandler(env: Env) {
         offset,
         indicators: result.entries.map((e) => ({ id: e.id, name: e.name, version: e.version })),
         has_more: hasMore,
+        ...(result.notes.length ? { vocabulary_notes: result.notes } : {}),
         ...(hasMore
           ? {
               next_offset: offset + result.entries.length,
               hint: `Showing ${result.entries.length} of ${result.total} matches (highest-ranked first) — add terms to narrow, or page with offset.`,
+            }
+          : {}),
+        // Zero resultado sem explicação é beco sem saída: o catálogo é da OIT e
+        // usa o vocabulário dela. Dizer o que fazer em seguida é parte da resposta.
+        ...(result.total === 0
+          ? {
+              hint:
+                "No dataflow matches all terms. Try fewer or broader terms (the match is a substring AND over the " +
+                "dataflow name), or read the resource ilostat://reference/key-dataflows for verified ids by topic. " +
+                "ILOSTAT wording is British and statistical: labour (not labor), earnings (not wages/salary), " +
+                "informal (not informality), sex (not gender), output per worker (not productivity).",
             }
           : {}),
       };
@@ -60,7 +72,10 @@ export function registerCatalogTools(server: McpServer, env: Env, record: Record
       description:
         "Search the ILOSTAT catalogue of ~1,200 indicator dataflows by keywords in the name or id " +
         "(e.g. \"unemployment rate sex age\"). All terms must match (AND, case-insensitive), so " +
-        "start with 2–3 English words and drop terms if you get 0 results; results are ranked by " +
+        "start with 2–3 English words and drop terms if you get 0 results. Everyday and US wording is " +
+        "resolved to the ILO's own (labor→labour, wages/salary→earnings, informality→informal, " +
+        "gender→sex, productivity→output per worker); when that happens the response says so in " +
+        "vocabulary_notes. Results are ranked by " +
         "ILO relevance weight, not by match count. Reading the id tells you the shape: suffix _RT " +
         "= rate/ratio, _NB = number (usually thousands); dataflows whose second token starts with 2 " +
         "(e.g. DF_UNE_2EAP_…) are ILO modelled estimates with full country/year coverage, the " +
@@ -81,6 +96,8 @@ export function registerCatalogTools(server: McpServer, env: Env, record: Record
         indicators: z.array(z.object({ id: z.string(), name: z.string(), version: z.string() })),
         has_more: z.boolean(),
         next_offset: z.number().optional(),
+        vocabulary_notes: z.array(z.string()).optional(),
+        hint: z.string().optional(),
         ...provenanceOutputShape(),
       }),
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },

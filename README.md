@@ -13,7 +13,7 @@
 [![License: MIT](https://img.shields.io/badge/license-MIT-yellow)](LICENSE.md)
 [![Status](https://img.shields.io/website?url=https%3A%2F%2Filo.sidneybissoli.com%2Fhealth&up_message=online&down_message=offline&label=status)](https://ilo.sidneybissoli.com/status)
 
-🇧🇷 [Leia em Português](README.pt-BR.md)
+🇧🇷 [Leia em Português](https://github.com/SidneyBissoli/ilo-mcp-server/blob/main/README.pt-BR.md)
 
 A **public, hosted, provenance-first** [MCP](https://modelcontextprotocol.io) server for the
 **International Labour Organization (ILO)** statistics — the **ILOSTAT** database —
@@ -29,6 +29,68 @@ the official ILOSTAT SDMX REST API.
 Every response carries a **provenance block** (source URL, data vintage, real retrieval
 timestamp, license, ILO citation) — exact figures with an audit trail, not numbers guessed
 from training data.
+
+> 🇧🇷 **Em português.** Servidor MCP **remoto e hospedado** (nada para instalar, sem conta e sem
+> chave) para as estatísticas de **mercado de trabalho** da OIT — desemprego, emprego, salários,
+> jornada e informalidade por país, ano, sexo e idade, direto no Claude, no ChatGPT ou em
+> qualquer cliente MCP, com proveniência e citação da fonte em cada resposta:
+> [README em português](https://github.com/SidneyBissoli/ilo-mcp-server/blob/main/README.pt-BR.md).
+
+## Questions it answers
+
+In plain language, inside the MCP client — the assistant picks the tool and the filters:
+
+- "What has happened to unemployment in Brazil since 2015?" (`ilo_get_data`)
+- "Compare youth unemployment in Brazil, Mexico and South Africa." (`ilo_compare_countries`)
+- "How large is the gender pay gap, and where does the ILO publish it?"
+  (`ilo_search_indicators` → `ilo_get_data`)
+- "What share of employment in India is informal?" (`ilo_search_indicators` → `ilo_get_data`)
+- "Which ILOSTAT dataflow has average monthly earnings by sex and economic activity?"
+  (`ilo_search_indicators`)
+- "Which country, age and sex codes can I filter this indicator by?" (`ilo_list_dimension_values`)
+- "Give me a labour-market profile of Viet Nam." (`ilo_country_labour_profile`)
+
+**Ask in your words, not the ILO's.** ILOSTAT is worded in British statistical English, and the
+catalogue is matched on the dataflow name — so the everyday or US word used to return *nothing at
+all*. Measured over the 1,212 dataflows of the official catalogue (2026-09-13), and fixed since
+0.6.0: the search translates the term and tells you it did.
+
+| you ask | hits before | ILOSTAT writes | hits |
+| --- | ---: | --- | ---: |
+| `labor`, `labor force` | 0 | labour, labour force | 176, 122 |
+| `wages`, `salary` | 0 | earnings | 107 |
+| `informality` | 0 | informal | 133 |
+| `gender` | 2 | sex | 1,131 |
+| `productivity` | 0 | output per worker | 4 |
+| `jobless` | 0 | unemployment | 108 |
+
+## Comparison with the alternatives
+
+Anyone who already works with ILOSTAT has good tools, and this server **replaces none of them** —
+it sits somewhere else in the chain: it answers the question at the point where the question is
+asked, inside the assistant, with source, vintage and licence attached to the answer. Detail,
+side-by-side examples and the measured numbers in
+[`docs/alternatives.md`](https://github.com/SidneyBissoli/ilo-mcp-server/blob/main/docs/alternatives.md).
+
+| Tool | What it is | When to prefer it |
+| --- | --- | --- |
+| **ilo-mcp-server** (this) | Remote MCP server, hosted, nothing to install: 6 tools over the ~1,200 ILOSTAT dataflows, with a provenance block per answer | The question is asked in an assistant (Claude, ChatGPT, Cursor, Claude Code) and the answer has to be auditable |
+| [Rilostat](https://ilostat.github.io/Rilostat/) 2.5.0 (R, CRAN) | **The ILO's own R package**, written by ILO staff: bulk download, metadata, filtering and reshaping | You are in R and want the dataset in a data frame — a whole table, repeatedly, for analysis |
+| [sdmx1](https://pypi.org/project/sdmx1/) 2.27.0 / [pandaSDMX](https://pypi.org/project/pandasdmx/) 1.10.0 (Python) | Generic SDMX clients; ILO is one of ~36 sources they know | Your pipeline is Python and you want SDMX objects, or the same code across several SDMX agencies |
+| [DBnomics](https://db.nomics.world/ILO) (API, `dbnomics` for Python, [rdbnomics](https://cran.r-project.org/package=rdbnomics) 0.6.4 for R) | Aggregator that republishes 1,071 ILO datasets next to other providers, one API for all | You want ILO series alongside IMF, OECD, Eurostat in a single interface |
+| [ILOSTAT SDMX REST API](https://ilostat.ilo.org/resources/sdmx-tools/) | The source itself, which this server calls | You are building your own client and want full control |
+
+**Do not use this server when** you need a whole dataset rather than an answer (Rilostat's bulk
+download is the right tool), when the question is not labour statistics published by the ILO
+(education → UNESCO UIS, national accounts → IMF/World Bank), or when you need microdata: ILOSTAT
+publishes aggregates, and so does this server.
+
+**Sister servers**, same design and same provenance block, for other official sources:
+[IBGE](https://ibge.sidneybissoli.com) (Brazilian statistics),
+[BCB](https://bcb.sidneybissoli.com) (Central Bank of Brazil),
+[Senado](https://senado.sidneybissoli.com) (Brazilian Senate open data),
+[SIH/SUS](https://sih.sidneybissoli.com) (Brazilian hospital admissions) and
+[medical terminologies](https://medical.sidneybissoli.com) (ICD-11, ICD-10, LOINC, RxNorm, ATC, MeSH).
 
 ## Use it (hosted — no setup)
 
@@ -201,7 +263,7 @@ public server.
 
 ```bash
 npm install
-npm run typecheck && npm test   # 189 offline tests (parsers, key, tools, output contract, resources/prompts, in-memory catalogue, eval fixtures)
+npm run typecheck && npm test   # offline suite (parsers, key, tools, output contract, resources/prompts, in-memory catalogue, vocabulary, eval fixtures)
 npm run dev                     # http://localhost:8787/mcp (Worker)
 npm run build && npm start      # stdio runtime (dist/cli.js)
 

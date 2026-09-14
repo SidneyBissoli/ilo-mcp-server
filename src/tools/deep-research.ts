@@ -45,6 +45,7 @@ import { classifyError } from "../call-shape.js";
 import { listCatalog, type CatalogEntry } from "../ilostat/catalog.js";
 import { ilostatProvenance, provenanceExtras } from "../ilostat/provenance.js";
 import { getDataflowStructure, structureUrl } from "../ilostat/sdmx.js";
+import { askedWordsFor } from "../ilostat/vocabulary.js";
 import type { DataflowStructure } from "../ilostat/structure.js";
 import { KEY_DATAFLOWS } from "../resources.js";
 import type { Env } from "../types.js";
@@ -115,7 +116,14 @@ export function indexEntries(entries: readonly CatalogEntry[]): IndexEntry[] {
         id: `${DEEP_RESEARCH_ID_PREFIX}${e.id}`,
         title: e.name || e.id,
         url: explorerUrl(e.id),
-        keywords: [...idSegments(e.id), ...(curated ? [curated.topic, curated.name, curated.note ?? ""] : [])].filter(Boolean),
+        keywords: [
+          ...idSegments(e.id),
+          // A palavra com que se PERGUNTA, quando difere da que a OIT escreve
+          // ("wages" para um dataflow de earnings) — sem isto o ranqueador não
+          // encontra o indicador certo pela palavra do usuário.
+          ...askedWordsFor(e.name || e.id),
+          ...(curated ? [curated.topic, curated.name, curated.note ?? ""] : []),
+        ].filter(Boolean),
         text: curated ? `${e.name} — ${curated.topic}${curated.note ? ` (${curated.note})` : ""}.` : e.name,
       };
     });

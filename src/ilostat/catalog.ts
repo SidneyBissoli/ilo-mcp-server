@@ -11,6 +11,7 @@
 
 import type { Env } from "../types.js";
 import { IlostatUserError } from "./key.js";
+import { expandQuery, vocabularyNotes } from "./vocabulary.js";
 
 export interface CatalogEntry {
   id: string;
@@ -26,6 +27,8 @@ export interface CatalogSearchResult {
   retrievedAt: string;
   /** URL canônica do catálogo oficial. */
   sourceUrl: string;
+  /** Termos que a tabela de vocabulário traduziu para a palavra da OIT. */
+  notes: string[];
 }
 
 export interface CatalogListing {
@@ -53,6 +56,10 @@ async function catalogMeta(db: D1Database, key: string): Promise<string | null> 
 /**
  * Busca por termos no nome/id do dataflow (AND entre termos, case-insensitive),
  * ordenada pelo peso de busca do próprio catálogo da OIT (annotation SEARCH_WEIGHT).
+ *
+ * Cada termo vira um OR das grafias que a OIT usa para ele (src/ilostat/vocabulary.ts):
+ * quem escreve "labor" ou "wages" casa "labour" e "earnings" em vez de receber
+ * zero calado. O `notes` devolvido diz quando isso aconteceu.
  */
 export async function searchCatalog(
   env: Env,
@@ -63,13 +70,26 @@ export async function searchCatalog(
   // Runtime stdio (sem D1): catálogo em memória com a mesma semântica de busca.
   if (!env.CATALOG_DB && env.CATALOG_MEMORY) return env.CATALOG_MEMORY.search(query, limit, offset);
   const db = requireDb(env);
-  const terms = query.toLowerCase().split(/\s+/).filter(Boolean);
-  if (!terms.length) {
+  const expanded = expandQuery(query);
+  if (!expanded.length) {
     throw new IlostatUserError("Empty query: pass one or more search terms (e.g. \"unemployment rate\").");
   }
 
-  const where = terms.map((_, i) => `(name_lc LIKE ?${i + 1} OR id_lc LIKE ?${i + 1})`).join(" AND ");
-  const params = terms.map((t) => `%${t.replace(/[%_]/g, "")}%`);
+  const params: string[] = [];
+  const where = expanded
+    .map(
+      (t) =>
+        "(" +
+        t.patterns
+          .map((p) => {
+            params.push(`%${p.replace(/[%_]/g, "")}%`);
+            const n = params.length;
+            return `name_lc LIKE ?${n} OR id_lc LIKE ?${n}`;
+          })
+          .join(" OR ") +
+        ")",
+    )
+    .join(" AND ");
 
   const [rows, count, retrievedAt] = await Promise.all([
     db
@@ -96,6 +116,7 @@ export async function searchCatalog(
     total: count?.n ?? 0,
     retrievedAt,
     sourceUrl: CATALOG_SOURCE_URL,
+    notes: vocabularyNotes(expanded),
   };
 }
 
