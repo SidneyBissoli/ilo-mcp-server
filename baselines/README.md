@@ -50,9 +50,13 @@ linha) tem exatamente duas famílias:
    `vocabulary_notes` (a tradução que aconteceu) e `hint` (o que fazer quando o
    resultado é zero).
 
-Nenhuma outra diferença. O baseline `surface-http-prod-0.6.0.json` só faz
-sentido DEPOIS do deploy desta versão — capturar então, e conferir que volta a
-bater com o stdio.
+Nenhuma outra diferença.
+
+**Produção capturada depois do deploy da 0.6.0 (2026-09-14, run 34792941780):**
+`surface-http-prod-0.6.0.json` é **idêntico byte a byte** ao `surface-stdio-0.6.0.json`
+— a borda serve o que o pacote publica, como nas três versões anteriores. A
+captura foi feita com o `/status` já reportando 0.6.0, para não medir a troca de
+imagem ([[medir-borda-depois-do-rollout]]).
 
 ## Como usar no gate
 
