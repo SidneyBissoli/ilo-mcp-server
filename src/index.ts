@@ -16,7 +16,7 @@ import { logger } from "./logger.js";
 import { allowedOriginHostnames, origemAceita } from "./origin.js";
 import { cursorRejection } from "./pagination.js";
 import { checkRateLimit } from "./rate-limit.js";
-import { SELF_ROUTE, tagRequest, withAnalytics } from "./analytics.js";
+import { SELF_ROUTE, tagRequest, withAnalytics, recordProtocolMethods } from "./analytics.js";
 import { buildServer } from "./server.js";
 import { buildStatus } from "./status.js";
 import type { Env } from "./types.js";
@@ -117,7 +117,19 @@ export default {
 
     // Contexto da requisição (país/AS/marcador self) + escrita no Analytics
     // Engine pegando carona no hook de uso — ver src/analytics.ts.
-    const recordWithAnalytics = withAnalytics(record, env.ANALYTICS, tagRequest(request, env.SELF_MARKER));
+    const tag = tagRequest(request, env.SELF_MARKER);
+    const recordWithAnalytics = withAnalytics(record, env.ANALYTICS, tag);
+
+    // Cópia do corpo tirada ANTES de o handler consumir o stream — é dela que a
+    // telemetria lê os métodos de protocolo (recordProtocolMethods, ao final).
+    // Só para o POST do endpoint MCP; corpo que não é JSON não é assunto daqui.
+    const corpoMcp =
+      isMcp && request.method === "POST"
+        ? await request
+            .clone()
+            .json()
+            .catch(() => undefined)
+        : undefined;
 
     const origensAceitas = allowedOriginHostnames(env.ALLOWED_ORIGIN);
 
@@ -131,6 +143,7 @@ export default {
       const recusa = await cursorRejection(request, env.ALLOWED_ORIGIN || "*");
       if (recusa) {
         logger.info("invalid_cursor", { path: url.pathname });
+        recordProtocolMethods(env.ANALYTICS, tag, corpoMcp, recusa.status);
         return recusa;
       }
     }
@@ -170,6 +183,12 @@ export default {
     });
 
     const response = await handler(request, env, ctx);
+    // Métodos de protocolo (initialize, tools/list, notifications/*...) não
+    // passam pelo hook de tools: vão para o Analytics Engine daqui, com o
+    // desfecho lido do HTTP da resposta. Ver recordProtocolMethods em
+    // src/analytics.ts.
+    recordProtocolMethods(env.ANALYTICS, tag, corpoMcp, response.status);
+
     logger.info("request", {
       method: request.method,
       path: url.pathname,
