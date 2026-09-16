@@ -16,7 +16,7 @@ import { logger } from "./logger.js";
 import { allowedOriginHostnames, origemAceita } from "./origin.js";
 import { cursorRejection } from "./pagination.js";
 import { checkRateLimit } from "./rate-limit.js";
-import { SELF_ROUTE, tagRequest, withAnalytics, recordProtocolMethods } from "./analytics.js";
+import { SELF_ROUTE, tagRequest, withAnalytics, recordProtocolMethods, sessionFromRequest, withSessionHeader } from "./analytics.js";
 import { buildServer } from "./server.js";
 import { buildStatus } from "./status.js";
 import type { Env } from "./types.js";
@@ -117,8 +117,6 @@ export default {
 
     // Contexto da requisição (país/AS/marcador self) + escrita no Analytics
     // Engine pegando carona no hook de uso — ver src/analytics.ts.
-    const tag = tagRequest(request, env.SELF_MARKER);
-    const recordWithAnalytics = withAnalytics(record, env.ANALYTICS, tag);
 
     // Cópia do corpo tirada ANTES de o handler consumir o stream — é dela que a
     // telemetria lê os métodos de protocolo (recordProtocolMethods, ao final).
@@ -130,6 +128,12 @@ export default {
             .json()
             .catch(() => undefined)
         : undefined;
+    // Sessão: o handler é stateless e não emite id; o Worker sorteia no
+    // initialize e devolve no cabeçalho, e nas demais requisições lê o que o
+    // cliente repetiu. Vai na telemetria (blob9). Ver src/analytics.ts.
+    const sessao = sessionFromRequest(request, corpoMcp);
+    const tag = tagRequest(request, env.SELF_MARKER, sessao.id);
+    const recordWithAnalytics = withAnalytics(record, env.ANALYTICS, tag);
 
     const origensAceitas = allowedOriginHostnames(env.ALLOWED_ORIGIN);
 
@@ -182,7 +186,7 @@ export default {
       },
     });
 
-    const response = await handler(request, env, ctx);
+    const response = withSessionHeader(await handler(request, env, ctx), sessao);
     // Métodos de protocolo (initialize, tools/list, notifications/*...) não
     // passam pelo hook de tools: vão para o Analytics Engine daqui, com o
     // desfecho lido do HTTP da resposta. Ver recordProtocolMethods em
