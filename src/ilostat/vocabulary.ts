@@ -30,19 +30,16 @@
  * de fora, porque inventar apelido para dado inexistente é prometer o que a
  * OIT não publica.
  *
- * Vale para os dois caminhos de busca, pelas duas pontas da mesma tabela:
- * `ilo_search_indicators` expande o TERMO da consulta (OR dentro do termo, AND
- * entre termos — expandir só aumenta o recall, nunca perde casamento que já
- * havia) e o índice de `search` (Deep Research) recebe a palavra perguntada
- * como KEYWORD do dataflow cujo nome traz a palavra da fonte.
+ * A MECÂNICA (expansão em OR dentro do termo e AND entre termos, stopwords,
+ * singular, a nota dita, a ponta inversa para o índice de `search`) mora em
+ * `@sbissoli/mcp-search` desde a 0.5.0 — este servidor foi o primeiro a tê-la
+ * (0.6.0) e cinco a repetiram em cópia; aqui fica só a tabela. Os nomes
+ * exportados são os de sempre, para quem chama não mudar.
  */
 
-export interface VocabularyEntry {
-  /** Como o usuário escreve. */
-  readonly asked: string;
-  /** Como a OIT escreve — substrings, podendo ser frase ("output per worker"). */
-  readonly source: readonly string[];
-}
+import { createVocabulary, type ExpandedTerm, type VocabularyEntry } from "@sbissoli/mcp-search";
+
+export type { ExpandedTerm, VocabularyEntry };
 
 export const VOCABULARY: readonly VocabularyEntry[] = [
   { asked: "wages", source: ["earnings", "wage"] },
@@ -68,85 +65,17 @@ export const VOCABULARY: readonly VocabularyEntry[] = [
   { asked: "poor", source: ["poverty"] },
 ];
 
-const BY_ASKED: ReadonlyMap<string, readonly string[]> = new Map(VOCABULARY.map((e) => [e.asked, e.source]));
-
-/**
- * Palavras que não carregam significado no nome de um dataflow e, em AND,
- * excluem resultado certo ("hours of work" não pode morrer no "of"). Só saem
- * quando sobra algum termo — consulta feita só de stopword continua valendo.
- */
-const STOPWORDS: ReadonlySet<string> = new Set(["a", "an", "the", "of", "in", "on", "for", "and", "to", "per", "by", "with"]);
-
-/**
- * Forma singular de um termo — a substring mais curta casa o plural também.
- * Só a regra do "s" final (e a do "ies"): tirar "es" fabricaria cacos como
- * "wages" → "wag", que casam por acidente e sujam a nota ao usuário.
- */
-function singulars(term: string): string[] {
-  if (term.length > 4 && term.endsWith("ies")) return [`${term.slice(0, -3)}y`];
-  if (term.length > 3 && term.endsWith("s") && !term.endsWith("ss")) return [term.slice(0, -1)];
-  return [];
-}
+const vocabulary = createVocabulary({ entries: VOCABULARY, locale: "en", sourceName: "ILOSTAT" });
 
 /** Os termos efetivos da consulta: minúsculos, sem stopword, sem vazio. */
-export function queryTerms(query: string): string[] {
-  const all = query.toLowerCase().split(/\s+/).filter(Boolean);
-  const kept = all.filter((t) => !STOPWORDS.has(t));
-  return kept.length ? kept : all;
-}
-
-/**
- * Um termo e as substrings que o representam na busca (o próprio termo primeiro).
- * A expansão só acrescenta alternativas em OR: o que casava antes segue casando.
- */
-export function expandTerm(term: string): string[] {
-  const t = term.toLowerCase();
-  const out = [t, ...(BY_ASKED.get(t) ?? []), ...singulars(t).flatMap((s) => [s, ...(BY_ASKED.get(s) ?? [])])];
-  return [...new Set(out)];
-}
-
-export interface ExpandedTerm {
-  readonly term: string;
-  readonly patterns: readonly string[];
-  /** A tabela (não a mera flexão de plural) mudou o que se procura. */
-  readonly translated: boolean;
-}
-
+export const queryTerms = vocabulary.queryTerms;
+/** Um termo e as substrings que o representam na busca (o próprio termo primeiro). */
+export const expandTerm = vocabulary.expandTerm;
 /** A consulta inteira, termo a termo, pronta para virar WHERE ou filtro. */
-export function expandQuery(query: string): ExpandedTerm[] {
-  return queryTerms(query).map((term) => {
-    const patterns = expandTerm(term);
-    const t = term.toLowerCase();
-    const translated = BY_ASKED.has(t) || singulars(t).some((s) => BY_ASKED.has(s));
-    return { term, patterns, translated };
-  });
-}
-
-/**
- * A frase que conta ao chamador que a palavra dele não é a da OIT — sem isto a
- * tradução é invisível e o resultado parece vir do que ele escreveu.
- */
-export function vocabularyNotes(expanded: readonly ExpandedTerm[]): string[] {
-  return expanded
-    .filter((e) => e.translated)
-    .map((e) => {
-      const outros = e.patterns.filter((p) => p !== e.term.toLowerCase());
-      return `"${e.term}" was also searched as ${outros.join(", ")} — the wording ILOSTAT uses.`;
-    });
-}
-
+export const expandQuery = vocabulary.expandQuery;
+/** A frase que conta ao chamador que a palavra dele não é a da OIT. */
+export const vocabularyNotes = vocabulary.vocabularyNotes;
 /** Um nome de dataflow casa o termo expandido? (mesma semântica do LIKE do D1) */
-export function matchesTerm(haystack: string, expanded: ExpandedTerm): boolean {
-  return expanded.patterns.some((p) => haystack.includes(p));
-}
-
-/**
- * A ponta inversa da tabela: as palavras com que se PERGUNTA por este nome de
- * dataflow — keywords do índice de `search`, que ranqueia por relevância em vez
- * de casar substring.
- */
-export function askedWordsFor(name: string): string[] {
-  const lc = name.toLowerCase();
-  const out = VOCABULARY.filter((e) => e.source.some((s) => lc.includes(s))).map((e) => e.asked);
-  return [...new Set(out)];
-}
+export const matchesTerm = vocabulary.matchesTerm;
+/** A ponta inversa: as palavras com que se PERGUNTA por este nome — keywords do índice de `search`. */
+export const askedWordsFor = vocabulary.askedWordsFor;
