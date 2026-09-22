@@ -61,6 +61,44 @@ async function catalogMeta(db: D1Database, key: string): Promise<string | null> 
  * quem escreve "labor" ou "wages" casa "labour" e "earnings" em vez de receber
  * zero calado. O `notes` devolvido diz quando isso aconteceu.
  */
+/**
+ * Um termo expandido vira o WHERE que casa o INÍCIO de uma palavra.
+ *
+ * Era `LIKE '%p%'` até a 0.6.x — e `LIKE '%p%'` É o casamento sem fronteira, que
+ * inventa resultado sem dar erro. O caso caro deste catálogo: `male` casa dentro
+ * de `female`, então perguntar por homens trazia mulheres, calado. A mesma
+ * classe medida em 22/09/2026 no IBGE (`uber` dentro de `TUBÉRCULOS`, `idade`
+ * dentro de `atividade`) e corrigida em `@sbissoli/mcp-search` 0.6.0 para quem
+ * casa em memória. Aqui o filtro vai para o D1, então o conserto tem de ser em
+ * SQL — e os dois caminhos deste servidor (D1 e `CATALOG_MEMORY`) precisam
+ * responder igual, senão a resposta muda com o transporte.
+ *
+ * `GLOB 'p*'` = começa o texto; `GLOB '*[^a-z0-9]p*'` = vem logo depois de algo
+ * que não é letra nem dígito. Juntos: começa uma palavra. Só no início, de
+ * propósito — a tabela de vocabulário guarda radicais (`labour`, `child`) que
+ * precisam alcançar `labour force` e `children`.
+ *
+ * `LIKE` não serviria: a fronteira precisa de classe de caracteres, que `LIKE`
+ * não tem. E `GLOB` não tem caractere de escape, então `*`, `?` e `[` saem do
+ * padrão — `patterns[0]` é o texto que o USUÁRIO digitou. Padrão que fica vazio
+ * depois disso não pode virar `GLOB '*'`, que casaria o catálogo inteiro.
+ */
+function termToSql(patterns: readonly string[], params: string[]): string {
+  const conds = patterns.flatMap((p) => {
+    const limpo = p.replace(/[*?[\]]/g, "");
+    if (!limpo) return [];
+    params.push(`${limpo}*`, `*[^a-z0-9]${limpo}*`);
+    const inicio = params.length - 1;
+    const apos = params.length;
+    return [
+      `name_lc GLOB ?${inicio} OR name_lc GLOB ?${apos} ` +
+        `OR id_lc GLOB ?${inicio} OR id_lc GLOB ?${apos}`,
+    ];
+  });
+  // Consulta feita só de metacaractere não casa nada, em vez de casar tudo.
+  return conds.length ? conds.join(" OR ") : "0 = 1";
+}
+
 export async function searchCatalog(
   env: Env,
   query: string,
@@ -76,20 +114,7 @@ export async function searchCatalog(
   }
 
   const params: string[] = [];
-  const where = expanded
-    .map(
-      (t) =>
-        "(" +
-        t.patterns
-          .map((p) => {
-            params.push(`%${p.replace(/[%_]/g, "")}%`);
-            const n = params.length;
-            return `name_lc LIKE ?${n} OR id_lc LIKE ?${n}`;
-          })
-          .join(" OR ") +
-        ")",
-    )
-    .join(" AND ");
+  const where = expanded.map((t) => `(${termToSql(t.patterns, params)})`).join(" AND ");
 
   const [rows, count, retrievedAt] = await Promise.all([
     db
