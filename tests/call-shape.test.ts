@@ -4,7 +4,7 @@ import { InMemoryTransport } from "@modelcontextprotocol/server";
 import { buildServer } from "../src/server.js";
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
-import { classifyError, errorText, paramNames } from "../src/call-shape.js";
+import { classifyError, classifyThrown, errorText, paramNames } from "../src/call-shape.js";
 import { withAnalytics, tagRequest } from "../src/analytics.js";
 import { withUsage } from "../src/usage-wrap.js";
 import type { RecordUsage } from "../src/usage-core.js";
@@ -223,5 +223,45 @@ describe("a costura do search/fetch com o pacote", () => {
       ["tool_call", "fetch", { params: "id", classe: "" }],
       ["tool_error", "fetch", { params: "id", classe: "nao_encontrado" }],
     ]);
+  });
+});
+
+/**
+ * `classifyThrown` nomeia a exceção que ESCAPOU do handler.
+ *
+ * Em 22/09/2026 o `ibge_cnae` respondia `Cannot read properties of undefined
+ * (reading 'divisao')` — um `TypeError` — e nenhum padrão de `classifyError`
+ * casava com essa frase: ia para `outro`, que já era 13 dos 23 erros da
+ * ferramenta. O sinal é o TIPO do erro, não a frase, porque o texto do motor de
+ * JS muda entre versões de Node.
+ *
+ * A guarda PROVA a diferença em vez de afirmá-la: a mesma mensagem que
+ * `classifyError` só sabe chamar de `outro`, `classifyThrown` chama de
+ * `defeito`, porque tem o objeto do erro em mãos.
+ */
+describe("classifyThrown nomeia a exceção que escapou do handler", () => {
+  it("TypeError vira `defeito`, e não o `outro` anônimo", () => {
+    const erro = new TypeError("Cannot read properties of undefined (reading 'divisao')");
+    expect(classifyError(erro.message)).toBe("outro");
+    expect(classifyThrown(erro)).toBe("defeito");
+  });
+
+  it("as outras exceções de runtime também", () => {
+    expect(classifyThrown(new RangeError("Invalid array length"))).toBe("defeito");
+    expect(classifyThrown(new ReferenceError("x is not defined"))).toBe("defeito");
+    expect(classifyThrown(new SyntaxError("Unexpected token"))).toBe("defeito");
+  });
+
+  it("erro que NÓS escrevemos continua classificado pela mensagem", () => {
+    expect(classifyThrown(new Error('Dataflow "DF_INVENTADO" not found at ILOSTAT.'))).toBe(
+      "nao_encontrado"
+    );
+    expect(classifyThrown(new Error("ILOSTAT returned 503"))).toBe("fonte");
+    expect(classifyThrown(new Error("REF_AREA is required (up to 30 area codes)"))).toBe("contrato");
+  });
+
+  it("lida com o que foi lançado sem ser Error", () => {
+    expect(classifyThrown("ILOSTAT returned an empty response")).toBe("nao_encontrado");
+    expect(classifyThrown(undefined)).toBe("outro");
   });
 });
