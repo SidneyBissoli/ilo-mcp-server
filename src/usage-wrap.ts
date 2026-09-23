@@ -9,7 +9,7 @@
  * Nunca o valor de um parâmetro — ver `call-shape.ts`.
  */
 
-import { classifyError, errorText, paramNames } from "./call-shape.js";
+import { classifyError, classifyThrown, errorText, paramNames } from "./call-shape.js";
 import type { RecordUsage } from "./usage-core.js";
 
 export function withUsage<A, R>(
@@ -27,7 +27,10 @@ export function withUsage<A, R>(
       return result;
     } catch (e) {
       isError = true;
-      classe = classifyError(e instanceof Error ? e.message : String(e));
+      // `classifyThrown` e não `classifyError`: aqui o OBJETO do erro existe,
+      // e o tipo dele separa bug nosso (`TypeError` & cia. -> `defeito`) de
+      // condição da fonte. Pela mensagem, um `TypeError` caía em `outro`.
+      classe = classifyThrown(e);
       throw e;
     } finally {
       const forma = { params: paramNames(args), classe: "" };
