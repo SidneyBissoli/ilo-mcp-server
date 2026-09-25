@@ -26,7 +26,7 @@
     {
       "name": "ilo_search_indicators",
       "title": "Search ILOSTAT indicators",
-      "description": "Search the ILOSTAT catalogue of ~1,200 indicator dataflows by keywords in the name or id (e.g. \"unemployment rate sex age\"). All terms must match (AND, case-insensitive), so start with 2–3 English words and drop terms if you get 0 results; results are ranked by ILO relevance weight, not by match count. Reading the id tells you the shape: suffix _RT = rate/ratio, _NB = number (usually thousands); dataflows whose second token starts with 2 (e.g. DF_UNE_2EAP_…) are ILO modelled estimates with full country/year coverage, the others are reported national data. Returns dataflow ids to use with ilo_get_data / ilo_get_indicator_metadata. Searches the local catalogue only — it does not return statistical values (use ilo_get_data), does not search dimension codes such as countries (use ilo_list_dimension_values) and does not cover non-ILO sources.",
+      "description": "Search the ILOSTAT catalogue of ~1,200 indicator dataflows by keywords in the name or id (e.g. \"unemployment rate sex age\"). All terms must match (AND, case-insensitive), so start with 2–3 English words and drop terms if you get 0 results. Everyday and US wording is resolved to the ILO's own (labor→labour, wages/salary→earnings, informality→informal, gender→sex, productivity→output per worker); when that happens the response says so in vocabulary_notes. Results are ranked by ILO relevance weight, not by match count. Reading the id tells you the shape: suffix _RT = rate/ratio, _NB = number (usually thousands); dataflows whose second token starts with 2 (e.g. DF_UNE_2EAP_…) are ILO modelled estimates with full country/year coverage, the others are reported national data. Returns dataflow ids to use with ilo_get_data / ilo_get_indicator_metadata. Searches the local catalogue only — it does not return statistical values (use ilo_get_data), does not search dimension codes such as countries (use ilo_list_dimension_values) and does not cover non-ILO sources.",
       "inputSchema": {
         "type": "object",
         "properties": {
@@ -59,7 +59,8 @@
         "required": [
           "query"
         ],
-        "$schema": "https://json-schema.org/draft/2020-12/schema"
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "additionalProperties": false
       },
       "outputSchema": {
         "type": "object",
@@ -101,6 +102,15 @@
           },
           "next_offset": {
             "type": "number"
+          },
+          "vocabulary_notes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "hint": {
+            "type": "string"
           },
           "provenance": {},
           "attribution": {
@@ -153,7 +163,8 @@
         "required": [
           "dataflow"
         ],
-        "$schema": "https://json-schema.org/draft/2020-12/schema"
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "additionalProperties": false
       },
       "outputSchema": {
         "type": "object",
@@ -279,7 +290,8 @@
           "dataflow",
           "dimension"
         ],
-        "$schema": "https://json-schema.org/draft/2020-12/schema"
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "additionalProperties": false
       },
       "outputSchema": {
         "type": "object",
@@ -373,11 +385,27 @@
             "description": "Dataflow id from ilo_search_indicators (e.g. \"DF_UNE_DEAP_SEX_AGE_RT\")"
           },
           "filters": {
-            "description": "Dimension id → code or list of codes (from ilo_list_dimension_values). REF_AREA is required (up to 30 area codes).",
             "type": "object",
-            "propertyNames": {
-              "type": "string"
+            "properties": {
+              "REF_AREA": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "minItems": 1,
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                ],
+                "description": "Area codes — REQUIRED, at most 30 per call (e.g. [\"BRA\",\"ARG\"]). Without them the ILO gateway times out (HTTP 504). Discover codes with ilo_list_dimension_values (dimension REF_AREA)."
+              }
             },
+            "required": [
+              "REF_AREA"
+            ],
             "additionalProperties": {
               "anyOf": [
                 {
@@ -391,7 +419,8 @@
                   }
                 }
               ]
-            }
+            },
+            "description": "Dimension id → code or list of codes (from ilo_list_dimension_values). REF_AREA is required (up to 30 area codes); any other dimension is optional and, left out, returns all of its categories."
           },
           "start_period": {
             "description": "First period, e.g. \"2015\"",
@@ -419,9 +448,11 @@
           }
         },
         "required": [
-          "dataflow"
+          "dataflow",
+          "filters"
         ],
-        "$schema": "https://json-schema.org/draft/2020-12/schema"
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "additionalProperties": false
       },
       "outputSchema": {
         "type": "object",
