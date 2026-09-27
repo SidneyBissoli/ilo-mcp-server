@@ -13,6 +13,7 @@ import { InMemoryTransport } from "@modelcontextprotocol/server";
 import { InMemoryCatalog } from "../src/ilostat/catalog-memory.js";
 import { listCatalog } from "../src/ilostat/catalog.js";
 import type { DataflowStructure } from "../src/ilostat/structure.js";
+import { upstreamIo } from "../src/ilostat/upstream.js";
 import { buildServer } from "../src/server.js";
 import {
   DEEP_RESEARCH_ID_PREFIX,
@@ -321,16 +322,21 @@ describe("search/fetch pelo servidor real", () => {
   });
 
   it("falha do upstream em fetch vira isError legível, não exceção crua", async () => {
-    vi.stubGlobal(
-      "fetch",
-      vi.fn(async () => new Response("upstream down", { status: 503 })),
-    );
+    const fetchStub = vi.fn(async () => new Response("upstream down", { status: 503 }));
+    vi.stubGlobal("fetch", fetchStub);
+    // O 503 é repetido pela política de rede (3 tentativas); sem calar a espera
+    // o teste pagaria 1 s + 2 s de backoff reais.
+    const sleep = vi.spyOn(upstreamIo, "sleep").mockResolvedValue(undefined);
     const client = await conectar(envMemoria());
     try {
       const r = await client.callTool({ name: "fetch", arguments: { id: "ind:DF_UNE_2EAP_SEX_AGE_RT" } });
       expect(r.isError).toBe(true);
       expect(texto(r).length).toBeGreaterThan(10);
+      expect(texto(r)).toContain("HTTP 503");
+      expect(fetchStub).toHaveBeenCalledTimes(3);
+      expect(sleep.mock.calls.map(([ms]) => ms)).toEqual([1000, 2000]);
     } finally {
+      sleep.mockRestore();
       await client.close();
     }
   });

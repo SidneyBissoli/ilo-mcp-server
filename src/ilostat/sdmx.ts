@@ -16,6 +16,14 @@ import type { Env } from "../types.js";
 import { IlostatUserError } from "./key.js";
 import { parseSdmxData, type ParsedSdmxData } from "./parser.js";
 import {
+  IlostatUpstreamError,
+  translateUpstreamError,
+  upstreamCall,
+  upstreamNotFound,
+  upstreamStatus,
+  USER_AGENT,
+} from "./upstream.js";
+import {
   parseCodelistMessage,
   parseStructureMessage,
   type Codelist,
@@ -28,15 +36,8 @@ export const ILOSTAT_AGENCY = "ILO";
 const STRUCTURE_JSON = "application/vnd.sdmx.structure+json";
 const DATA_JSON = "application/vnd.sdmx.data+json";
 
-/** Erro do upstream (não é uso errado da tool): status + trecho do corpo. */
-export class IlostatUpstreamError extends Error {
-  readonly status: number;
-  constructor(status: number, context: string, bodySnippet: string) {
-    super(`ILOSTAT upstream HTTP ${status} (${context}): ${bodySnippet}`);
-    this.name = "IlostatUpstreamError";
-    this.status = status;
-  }
-}
+/** A classe vive em `upstream.ts` (ao lado da política de rede); reexportada para quem sempre a importou daqui. */
+export { IlostatUpstreamError };
 
 /** ISO-8601 sem milissegundos (formato canônico do contrato de proveniência). */
 export function nowIso(): string {
@@ -59,13 +60,8 @@ function kvPut(env: Env, key: string, cached: Cached<unknown>, ttlSeconds: numbe
 }
 
 /**
- * User-Agent identificável (política do portfólio: sysadmins upstream devem
- * conseguir chegar ao contato). Sem User-Agent, o gateway da OIT responde 500.
- */
-const USER_AGENT = "ilo-mcp-server (https://ilo.sidneybissoli.com; sbissoli76@gmail.com)";
-
-/**
- * Headers de toda chamada upstream. `Accept-Language` explícito é obrigatório:
+ * Headers de toda chamada upstream (`User-Agent` vive em `upstream.ts`, junto
+ * da política de rede). `Accept-Language` explícito é obrigatório:
  * o gateway da OIT responde HTTP 500 ("languageTag1") quando recebe o
  * `Accept-Language: *` que o fetch do Node (undici) envia por padrão — foi isso,
  * e não o User-Agent, que fazia o Node parecer rejeitado (verificado 18/08/2026).
@@ -75,13 +71,18 @@ export function upstreamHeaders(accept: string): Record<string, string> {
   return { Accept: accept, "Accept-Language": "en", "User-Agent": USER_AGENT };
 }
 
+/**
+ * Uma ida lendo JSON, pelo coletor da chamada (timeout, retry, contagem —
+ * `upstream.ts`). Status de erro final vira `IlostatUpstreamError` com o
+ * trecho do corpo, como sempre; timeout e rede também (status 0), em vez do
+ * `TypeError` cru do fetch.
+ */
 async function fetchJson(url: string, accept: string, context: string): Promise<unknown> {
-  const res = await fetch(url, { headers: upstreamHeaders(accept) });
-  if (!res.ok) {
-    const body = (await res.text()).slice(0, 300);
-    throw new IlostatUpstreamError(res.status, context, body);
+  try {
+    return await upstreamCall().json(url, { headers: upstreamHeaders(accept) });
+  } catch (e) {
+    throw translateUpstreamError(e, context);
   }
-  return await res.json();
 }
 
 export interface StructureWithOrigin {
@@ -193,25 +194,29 @@ export async function fetchData(
   params: DataQueryParams,
 ): Promise<DataWithOrigin> {
   const url = dataUrl(structure, key, params);
-  const res = await fetch(url, { headers: upstreamHeaders(DATA_JSON) });
+  let msg: unknown;
+  try {
+    msg = await upstreamCall().json(url, { headers: upstreamHeaders(DATA_JSON) });
+  } catch (e) {
+    if (upstreamNotFound(e)) {
+      // SDMX REST: 404 NoResultsFound — recorte válido, mas sem observações.
+      // Conta como ida (retrieval.requests 1), não como anomalia: a origem respondeu.
+      return {
+        parsed: { rows: [], dimensionIds: structure.dimensions.map((d) => d.id), name: structure.name },
+        retrievedAt: nowIso(),
+        sourceUrl: url,
+      };
+    }
+    if (upstreamStatus(e) === 504) {
+      // Determinístico ("consulta grande demais"): `retryUpstream` não o repete.
+      throw new IlostatUserError(
+        "The ILO gateway timed out (HTTP 504) — the query is too broad. Narrow it: fewer areas " +
+          "(maximum 30 per call), a shorter period (start_period/end_period), or filter more dimensions.",
+      );
+    }
+    throw translateUpstreamError(e, `data ${structure.id}/${key}`);
+  }
   const retrievedAt = nowIso();
-  if (res.status === 404) {
-    // SDMX REST: 404 NoResultsFound — recorte válido, mas sem observações.
-    return {
-      parsed: { rows: [], dimensionIds: structure.dimensions.map((d) => d.id), name: structure.name },
-      retrievedAt,
-      sourceUrl: url,
-    };
-  }
-  if (res.status === 504) {
-    throw new IlostatUserError(
-      "The ILO gateway timed out (HTTP 504) — the query is too broad. Narrow it: fewer areas " +
-        "(maximum 30 per call), a shorter period (start_period/end_period), or filter more dimensions.",
-    );
-  }
-  if (!res.ok) {
-    throw new IlostatUpstreamError(res.status, `data ${structure.id}/${key}`, (await res.text()).slice(0, 300));
-  }
-  const parsed = parseSdmxData(await res.json());
+  const parsed = parseSdmxData(msg);
   return { parsed, retrievedAt, sourceUrl: url };
 }

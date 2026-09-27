@@ -10,8 +10,16 @@
  */
 
 import { classifyError, classifyThrown, errorText, paramNames } from "./call-shape.js";
+import { withUpstreamCall } from "./ilostat/upstream.js";
 import type { RecordUsage } from "./usage-core.js";
 
+/**
+ * Por ser o ponto único, é também aqui que se abre o COLETOR DE REDE da
+ * chamada (`withUpstreamCall`): toda ida à OIT feita dentro de `cb` conta, e
+ * `ilostatProvenance` lê a contagem para o `retrieval` do bloco. `search` e
+ * `fetch` não passam por aqui (são do `@sbissoli/mcp-search`) e abrem o
+ * coletor nos próprios handlers — ver `tools/deep-research.ts`.
+ */
 export function withUsage<A, R>(
   name: string,
   record: RecordUsage,
@@ -21,7 +29,7 @@ export function withUsage<A, R>(
     let isError = false;
     let classe = "";
     try {
-      const result = await cb(args);
+      const result = await withUpstreamCall(() => cb(args));
       isError = (result as { isError?: unknown } | null | undefined)?.isError === true;
       if (isError) classe = classifyError(errorText(result));
       return result;

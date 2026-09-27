@@ -1,7 +1,7 @@
 {
   "identifier": "sidneybissoli-ilo-mcp-server",
   "name": "ILO Labour Statistics (ILOSTAT) MCP Server",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "icon": "📊",
   "description": "ILO labour statistics (ILOSTAT) with full provenance: source URL, data vintage, retrieval timestamp, license and ILO citation on every response. Tools to search indicators, read indicator metadata and dimension codes, and fetch data; reference resources (query guide, key dataflows by topic, provenance contract) and workflow prompts (country profile, compare countries, indicator trend). Hosted on Cloudflare Workers (Streamable HTTP, no auth) or local stdio. Not affiliated with or endorsed by the ILO. MIT licensed.",
   "author": "Sidney da S. P. Bissoli",
@@ -112,7 +112,414 @@
           "hint": {
             "type": "string"
           },
-          "provenance": {},
+          "provenance": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "source": {
+                    "type": "string"
+                  },
+                  "source_url": {
+                    "type": "string"
+                  },
+                  "data_vintage": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "retrieved_at": {
+                    "type": "string"
+                  },
+                  "retrieval": {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "requests": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 9007199254740991
+                          },
+                          "attempts": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 9007199254740991
+                          },
+                          "anomalies": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "kind": {
+                                  "type": "string",
+                                  "enum": [
+                                    "timeout",
+                                    "network",
+                                    "http_4xx",
+                                    "http_5xx",
+                                    "rate_limited",
+                                    "malformed_body"
+                                  ]
+                                },
+                                "count": {
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 9007199254740991
+                                }
+                              },
+                              "required": [
+                                "kind",
+                                "count"
+                              ],
+                              "additionalProperties": false
+                            }
+                          },
+                          "unstable": {
+                            "type": "boolean"
+                          }
+                        },
+                        "required": [
+                          "requests",
+                          "attempts",
+                          "anomalies",
+                          "unstable"
+                        ],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "citation": {
+                    "type": "string"
+                  },
+                  "license": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  }
+                },
+                "required": [
+                  "source",
+                  "source_url",
+                  "data_vintage",
+                  "retrieved_at",
+                  "retrieval",
+                  "citation",
+                  "license"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "contract_version": {
+                    "type": "string",
+                    "const": "1.1"
+                  },
+                  "source": {
+                    "type": "object",
+                    "properties": {
+                      "name": {
+                        "type": "string"
+                      },
+                      "agency": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "database": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "endpoint": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "name",
+                      "agency",
+                      "database",
+                      "endpoint"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "dataset": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "version": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "name": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "version",
+                      "name"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "dimension_key": {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "propertyNames": {
+                          "type": "string"
+                        },
+                        "additionalProperties": {
+                          "type": "string"
+                        }
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "data_vintage": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "retrieved_at": {
+                    "type": "string"
+                  },
+                  "source_url": {
+                    "type": "string"
+                  },
+                  "api_version": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "license": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "name": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "url": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "terms_url": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "verified_at": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "name",
+                      "url",
+                      "terms_url",
+                      "verified_at"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "citation": {
+                    "type": "string"
+                  },
+                  "notices": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "derived": {
+                    "type": "boolean"
+                  },
+                  "derivation_note": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "served_from_cache": {
+                    "type": [
+                      "boolean",
+                      "null"
+                    ]
+                  },
+                  "retrieval": {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "requests": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 9007199254740991
+                          },
+                          "attempts": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 9007199254740991
+                          },
+                          "anomalies": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "kind": {
+                                  "type": "string",
+                                  "enum": [
+                                    "timeout",
+                                    "network",
+                                    "http_4xx",
+                                    "http_5xx",
+                                    "rate_limited",
+                                    "malformed_body"
+                                  ]
+                                },
+                                "count": {
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 9007199254740991
+                                }
+                              },
+                              "required": [
+                                "kind",
+                                "count"
+                              ],
+                              "additionalProperties": false
+                            }
+                          },
+                          "unstable": {
+                            "type": "boolean"
+                          }
+                        },
+                        "required": [
+                          "requests",
+                          "attempts",
+                          "anomalies",
+                          "unstable"
+                        ],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "field_sources": {
+                    "anyOf": [
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "fields": {
+                              "minItems": 1,
+                              "type": "array",
+                              "items": {
+                                "type": "string"
+                              }
+                            },
+                            "source_url": {
+                              "type": "string"
+                            },
+                            "dataset_id": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            },
+                            "data_vintage": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            },
+                            "retrieved_at": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "fields",
+                            "source_url",
+                            "dataset_id",
+                            "data_vintage",
+                            "retrieved_at"
+                          ],
+                          "additionalProperties": false
+                        }
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "contract_version",
+                  "source",
+                  "dataset",
+                  "dimension_key",
+                  "data_vintage",
+                  "retrieved_at",
+                  "source_url",
+                  "api_version",
+                  "license",
+                  "citation",
+                  "notices",
+                  "derived",
+                  "derivation_note",
+                  "served_from_cache",
+                  "retrieval",
+                  "field_sources"
+                ],
+                "additionalProperties": false
+              }
+            ],
+            "description": "Provenance block (contract v1.1). concise (default): source, source_url, data_vintage, retrieved_at, retrieval, citation, license; detailed: the full canonical block (dataset, dimension_key, notices, served_from_cache, ...). retrieval is the origin diagnostic of this call — requests made to ILOSTAT, attempts including retries, anomalies overcome (timeout, network, rate_limited, http_5xx, http_4xx, malformed_body) and unstable (true when anything had to be retried: treat the figures as obtained with difficulty); null when nothing was fetched from ILOSTAT (catalogue or cached answer)"
+          },
           "attribution": {
             "type": "array",
             "items": {
@@ -215,7 +622,414 @@
               "null"
             ]
           },
-          "provenance": {},
+          "provenance": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "source": {
+                    "type": "string"
+                  },
+                  "source_url": {
+                    "type": "string"
+                  },
+                  "data_vintage": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "retrieved_at": {
+                    "type": "string"
+                  },
+                  "retrieval": {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "requests": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 9007199254740991
+                          },
+                          "attempts": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 9007199254740991
+                          },
+                          "anomalies": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "kind": {
+                                  "type": "string",
+                                  "enum": [
+                                    "timeout",
+                                    "network",
+                                    "http_4xx",
+                                    "http_5xx",
+                                    "rate_limited",
+                                    "malformed_body"
+                                  ]
+                                },
+                                "count": {
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 9007199254740991
+                                }
+                              },
+                              "required": [
+                                "kind",
+                                "count"
+                              ],
+                              "additionalProperties": false
+                            }
+                          },
+                          "unstable": {
+                            "type": "boolean"
+                          }
+                        },
+                        "required": [
+                          "requests",
+                          "attempts",
+                          "anomalies",
+                          "unstable"
+                        ],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "citation": {
+                    "type": "string"
+                  },
+                  "license": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  }
+                },
+                "required": [
+                  "source",
+                  "source_url",
+                  "data_vintage",
+                  "retrieved_at",
+                  "retrieval",
+                  "citation",
+                  "license"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "contract_version": {
+                    "type": "string",
+                    "const": "1.1"
+                  },
+                  "source": {
+                    "type": "object",
+                    "properties": {
+                      "name": {
+                        "type": "string"
+                      },
+                      "agency": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "database": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "endpoint": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "name",
+                      "agency",
+                      "database",
+                      "endpoint"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "dataset": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "version": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "name": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "version",
+                      "name"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "dimension_key": {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "propertyNames": {
+                          "type": "string"
+                        },
+                        "additionalProperties": {
+                          "type": "string"
+                        }
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "data_vintage": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "retrieved_at": {
+                    "type": "string"
+                  },
+                  "source_url": {
+                    "type": "string"
+                  },
+                  "api_version": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "license": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "name": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "url": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "terms_url": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "verified_at": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "name",
+                      "url",
+                      "terms_url",
+                      "verified_at"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "citation": {
+                    "type": "string"
+                  },
+                  "notices": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "derived": {
+                    "type": "boolean"
+                  },
+                  "derivation_note": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "served_from_cache": {
+                    "type": [
+                      "boolean",
+                      "null"
+                    ]
+                  },
+                  "retrieval": {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "requests": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 9007199254740991
+                          },
+                          "attempts": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 9007199254740991
+                          },
+                          "anomalies": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "kind": {
+                                  "type": "string",
+                                  "enum": [
+                                    "timeout",
+                                    "network",
+                                    "http_4xx",
+                                    "http_5xx",
+                                    "rate_limited",
+                                    "malformed_body"
+                                  ]
+                                },
+                                "count": {
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 9007199254740991
+                                }
+                              },
+                              "required": [
+                                "kind",
+                                "count"
+                              ],
+                              "additionalProperties": false
+                            }
+                          },
+                          "unstable": {
+                            "type": "boolean"
+                          }
+                        },
+                        "required": [
+                          "requests",
+                          "attempts",
+                          "anomalies",
+                          "unstable"
+                        ],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "field_sources": {
+                    "anyOf": [
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "fields": {
+                              "minItems": 1,
+                              "type": "array",
+                              "items": {
+                                "type": "string"
+                              }
+                            },
+                            "source_url": {
+                              "type": "string"
+                            },
+                            "dataset_id": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            },
+                            "data_vintage": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            },
+                            "retrieved_at": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "fields",
+                            "source_url",
+                            "dataset_id",
+                            "data_vintage",
+                            "retrieved_at"
+                          ],
+                          "additionalProperties": false
+                        }
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "contract_version",
+                  "source",
+                  "dataset",
+                  "dimension_key",
+                  "data_vintage",
+                  "retrieved_at",
+                  "source_url",
+                  "api_version",
+                  "license",
+                  "citation",
+                  "notices",
+                  "derived",
+                  "derivation_note",
+                  "served_from_cache",
+                  "retrieval",
+                  "field_sources"
+                ],
+                "additionalProperties": false
+              }
+            ],
+            "description": "Provenance block (contract v1.1). concise (default): source, source_url, data_vintage, retrieved_at, retrieval, citation, license; detailed: the full canonical block (dataset, dimension_key, notices, served_from_cache, ...). retrieval is the origin diagnostic of this call — requests made to ILOSTAT, attempts including retries, anomalies overcome (timeout, network, rate_limited, http_5xx, http_4xx, malformed_body) and unstable (true when anything had to be retried: treat the figures as obtained with difficulty); null when nothing was fetched from ILOSTAT (catalogue or cached answer)"
+          },
           "attribution": {
             "type": "array",
             "items": {
@@ -342,7 +1156,414 @@
           "next_offset": {
             "type": "number"
           },
-          "provenance": {},
+          "provenance": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "source": {
+                    "type": "string"
+                  },
+                  "source_url": {
+                    "type": "string"
+                  },
+                  "data_vintage": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "retrieved_at": {
+                    "type": "string"
+                  },
+                  "retrieval": {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "requests": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 9007199254740991
+                          },
+                          "attempts": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 9007199254740991
+                          },
+                          "anomalies": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "kind": {
+                                  "type": "string",
+                                  "enum": [
+                                    "timeout",
+                                    "network",
+                                    "http_4xx",
+                                    "http_5xx",
+                                    "rate_limited",
+                                    "malformed_body"
+                                  ]
+                                },
+                                "count": {
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 9007199254740991
+                                }
+                              },
+                              "required": [
+                                "kind",
+                                "count"
+                              ],
+                              "additionalProperties": false
+                            }
+                          },
+                          "unstable": {
+                            "type": "boolean"
+                          }
+                        },
+                        "required": [
+                          "requests",
+                          "attempts",
+                          "anomalies",
+                          "unstable"
+                        ],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "citation": {
+                    "type": "string"
+                  },
+                  "license": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  }
+                },
+                "required": [
+                  "source",
+                  "source_url",
+                  "data_vintage",
+                  "retrieved_at",
+                  "retrieval",
+                  "citation",
+                  "license"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "contract_version": {
+                    "type": "string",
+                    "const": "1.1"
+                  },
+                  "source": {
+                    "type": "object",
+                    "properties": {
+                      "name": {
+                        "type": "string"
+                      },
+                      "agency": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "database": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "endpoint": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "name",
+                      "agency",
+                      "database",
+                      "endpoint"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "dataset": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "version": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "name": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "version",
+                      "name"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "dimension_key": {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "propertyNames": {
+                          "type": "string"
+                        },
+                        "additionalProperties": {
+                          "type": "string"
+                        }
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "data_vintage": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "retrieved_at": {
+                    "type": "string"
+                  },
+                  "source_url": {
+                    "type": "string"
+                  },
+                  "api_version": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "license": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "name": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "url": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "terms_url": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "verified_at": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "name",
+                      "url",
+                      "terms_url",
+                      "verified_at"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "citation": {
+                    "type": "string"
+                  },
+                  "notices": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "derived": {
+                    "type": "boolean"
+                  },
+                  "derivation_note": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "served_from_cache": {
+                    "type": [
+                      "boolean",
+                      "null"
+                    ]
+                  },
+                  "retrieval": {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "requests": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 9007199254740991
+                          },
+                          "attempts": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 9007199254740991
+                          },
+                          "anomalies": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "kind": {
+                                  "type": "string",
+                                  "enum": [
+                                    "timeout",
+                                    "network",
+                                    "http_4xx",
+                                    "http_5xx",
+                                    "rate_limited",
+                                    "malformed_body"
+                                  ]
+                                },
+                                "count": {
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 9007199254740991
+                                }
+                              },
+                              "required": [
+                                "kind",
+                                "count"
+                              ],
+                              "additionalProperties": false
+                            }
+                          },
+                          "unstable": {
+                            "type": "boolean"
+                          }
+                        },
+                        "required": [
+                          "requests",
+                          "attempts",
+                          "anomalies",
+                          "unstable"
+                        ],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "field_sources": {
+                    "anyOf": [
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "fields": {
+                              "minItems": 1,
+                              "type": "array",
+                              "items": {
+                                "type": "string"
+                              }
+                            },
+                            "source_url": {
+                              "type": "string"
+                            },
+                            "dataset_id": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            },
+                            "data_vintage": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            },
+                            "retrieved_at": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "fields",
+                            "source_url",
+                            "dataset_id",
+                            "data_vintage",
+                            "retrieved_at"
+                          ],
+                          "additionalProperties": false
+                        }
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "contract_version",
+                  "source",
+                  "dataset",
+                  "dimension_key",
+                  "data_vintage",
+                  "retrieved_at",
+                  "source_url",
+                  "api_version",
+                  "license",
+                  "citation",
+                  "notices",
+                  "derived",
+                  "derivation_note",
+                  "served_from_cache",
+                  "retrieval",
+                  "field_sources"
+                ],
+                "additionalProperties": false
+              }
+            ],
+            "description": "Provenance block (contract v1.1). concise (default): source, source_url, data_vintage, retrieved_at, retrieval, citation, license; detailed: the full canonical block (dataset, dimension_key, notices, served_from_cache, ...). retrieval is the origin diagnostic of this call — requests made to ILOSTAT, attempts including retries, anomalies overcome (timeout, network, rate_limited, http_5xx, http_4xx, malformed_body) and unstable (true when anything had to be retried: treat the figures as obtained with difficulty); null when nothing was fetched from ILOSTAT (catalogue or cached answer)"
+          },
           "attribution": {
             "type": "array",
             "items": {
@@ -499,7 +1720,414 @@
               "additionalProperties": {}
             }
           },
-          "provenance": {},
+          "provenance": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "source": {
+                    "type": "string"
+                  },
+                  "source_url": {
+                    "type": "string"
+                  },
+                  "data_vintage": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "retrieved_at": {
+                    "type": "string"
+                  },
+                  "retrieval": {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "requests": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 9007199254740991
+                          },
+                          "attempts": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 9007199254740991
+                          },
+                          "anomalies": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "kind": {
+                                  "type": "string",
+                                  "enum": [
+                                    "timeout",
+                                    "network",
+                                    "http_4xx",
+                                    "http_5xx",
+                                    "rate_limited",
+                                    "malformed_body"
+                                  ]
+                                },
+                                "count": {
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 9007199254740991
+                                }
+                              },
+                              "required": [
+                                "kind",
+                                "count"
+                              ],
+                              "additionalProperties": false
+                            }
+                          },
+                          "unstable": {
+                            "type": "boolean"
+                          }
+                        },
+                        "required": [
+                          "requests",
+                          "attempts",
+                          "anomalies",
+                          "unstable"
+                        ],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "citation": {
+                    "type": "string"
+                  },
+                  "license": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  }
+                },
+                "required": [
+                  "source",
+                  "source_url",
+                  "data_vintage",
+                  "retrieved_at",
+                  "retrieval",
+                  "citation",
+                  "license"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "contract_version": {
+                    "type": "string",
+                    "const": "1.1"
+                  },
+                  "source": {
+                    "type": "object",
+                    "properties": {
+                      "name": {
+                        "type": "string"
+                      },
+                      "agency": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "database": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "endpoint": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "name",
+                      "agency",
+                      "database",
+                      "endpoint"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "dataset": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "version": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "name": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "version",
+                      "name"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "dimension_key": {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "propertyNames": {
+                          "type": "string"
+                        },
+                        "additionalProperties": {
+                          "type": "string"
+                        }
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "data_vintage": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "retrieved_at": {
+                    "type": "string"
+                  },
+                  "source_url": {
+                    "type": "string"
+                  },
+                  "api_version": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "license": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "name": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "url": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "terms_url": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "verified_at": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "name",
+                      "url",
+                      "terms_url",
+                      "verified_at"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "citation": {
+                    "type": "string"
+                  },
+                  "notices": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "derived": {
+                    "type": "boolean"
+                  },
+                  "derivation_note": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "served_from_cache": {
+                    "type": [
+                      "boolean",
+                      "null"
+                    ]
+                  },
+                  "retrieval": {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "requests": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 9007199254740991
+                          },
+                          "attempts": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 9007199254740991
+                          },
+                          "anomalies": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "kind": {
+                                  "type": "string",
+                                  "enum": [
+                                    "timeout",
+                                    "network",
+                                    "http_4xx",
+                                    "http_5xx",
+                                    "rate_limited",
+                                    "malformed_body"
+                                  ]
+                                },
+                                "count": {
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 9007199254740991
+                                }
+                              },
+                              "required": [
+                                "kind",
+                                "count"
+                              ],
+                              "additionalProperties": false
+                            }
+                          },
+                          "unstable": {
+                            "type": "boolean"
+                          }
+                        },
+                        "required": [
+                          "requests",
+                          "attempts",
+                          "anomalies",
+                          "unstable"
+                        ],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "field_sources": {
+                    "anyOf": [
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "fields": {
+                              "minItems": 1,
+                              "type": "array",
+                              "items": {
+                                "type": "string"
+                              }
+                            },
+                            "source_url": {
+                              "type": "string"
+                            },
+                            "dataset_id": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            },
+                            "data_vintage": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            },
+                            "retrieved_at": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "fields",
+                            "source_url",
+                            "dataset_id",
+                            "data_vintage",
+                            "retrieved_at"
+                          ],
+                          "additionalProperties": false
+                        }
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "contract_version",
+                  "source",
+                  "dataset",
+                  "dimension_key",
+                  "data_vintage",
+                  "retrieved_at",
+                  "source_url",
+                  "api_version",
+                  "license",
+                  "citation",
+                  "notices",
+                  "derived",
+                  "derivation_note",
+                  "served_from_cache",
+                  "retrieval",
+                  "field_sources"
+                ],
+                "additionalProperties": false
+              }
+            ],
+            "description": "Provenance block (contract v1.1). concise (default): source, source_url, data_vintage, retrieved_at, retrieval, citation, license; detailed: the full canonical block (dataset, dimension_key, notices, served_from_cache, ...). retrieval is the origin diagnostic of this call — requests made to ILOSTAT, attempts including retries, anomalies overcome (timeout, network, rate_limited, http_5xx, http_4xx, malformed_body) and unstable (true when anything had to be retried: treat the figures as obtained with difficulty); null when nothing was fetched from ILOSTAT (catalogue or cached answer)"
+          },
           "attribution": {
             "type": "array",
             "items": {
@@ -573,7 +2201,414 @@
             },
             "description": "Matching documents, in relevance order"
           },
-          "provenance": {},
+          "provenance": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "source": {
+                    "type": "string"
+                  },
+                  "source_url": {
+                    "type": "string"
+                  },
+                  "data_vintage": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "retrieved_at": {
+                    "type": "string"
+                  },
+                  "retrieval": {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "requests": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 9007199254740991
+                          },
+                          "attempts": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 9007199254740991
+                          },
+                          "anomalies": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "kind": {
+                                  "type": "string",
+                                  "enum": [
+                                    "timeout",
+                                    "network",
+                                    "http_4xx",
+                                    "http_5xx",
+                                    "rate_limited",
+                                    "malformed_body"
+                                  ]
+                                },
+                                "count": {
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 9007199254740991
+                                }
+                              },
+                              "required": [
+                                "kind",
+                                "count"
+                              ],
+                              "additionalProperties": false
+                            }
+                          },
+                          "unstable": {
+                            "type": "boolean"
+                          }
+                        },
+                        "required": [
+                          "requests",
+                          "attempts",
+                          "anomalies",
+                          "unstable"
+                        ],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "citation": {
+                    "type": "string"
+                  },
+                  "license": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  }
+                },
+                "required": [
+                  "source",
+                  "source_url",
+                  "data_vintage",
+                  "retrieved_at",
+                  "retrieval",
+                  "citation",
+                  "license"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "contract_version": {
+                    "type": "string",
+                    "const": "1.1"
+                  },
+                  "source": {
+                    "type": "object",
+                    "properties": {
+                      "name": {
+                        "type": "string"
+                      },
+                      "agency": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "database": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "endpoint": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "name",
+                      "agency",
+                      "database",
+                      "endpoint"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "dataset": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "version": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "name": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "version",
+                      "name"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "dimension_key": {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "propertyNames": {
+                          "type": "string"
+                        },
+                        "additionalProperties": {
+                          "type": "string"
+                        }
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "data_vintage": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "retrieved_at": {
+                    "type": "string"
+                  },
+                  "source_url": {
+                    "type": "string"
+                  },
+                  "api_version": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "license": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "name": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "url": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "terms_url": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "verified_at": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "name",
+                      "url",
+                      "terms_url",
+                      "verified_at"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "citation": {
+                    "type": "string"
+                  },
+                  "notices": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "derived": {
+                    "type": "boolean"
+                  },
+                  "derivation_note": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "served_from_cache": {
+                    "type": [
+                      "boolean",
+                      "null"
+                    ]
+                  },
+                  "retrieval": {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "requests": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 9007199254740991
+                          },
+                          "attempts": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 9007199254740991
+                          },
+                          "anomalies": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "kind": {
+                                  "type": "string",
+                                  "enum": [
+                                    "timeout",
+                                    "network",
+                                    "http_4xx",
+                                    "http_5xx",
+                                    "rate_limited",
+                                    "malformed_body"
+                                  ]
+                                },
+                                "count": {
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 9007199254740991
+                                }
+                              },
+                              "required": [
+                                "kind",
+                                "count"
+                              ],
+                              "additionalProperties": false
+                            }
+                          },
+                          "unstable": {
+                            "type": "boolean"
+                          }
+                        },
+                        "required": [
+                          "requests",
+                          "attempts",
+                          "anomalies",
+                          "unstable"
+                        ],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "field_sources": {
+                    "anyOf": [
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "fields": {
+                              "minItems": 1,
+                              "type": "array",
+                              "items": {
+                                "type": "string"
+                              }
+                            },
+                            "source_url": {
+                              "type": "string"
+                            },
+                            "dataset_id": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            },
+                            "data_vintage": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            },
+                            "retrieved_at": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "fields",
+                            "source_url",
+                            "dataset_id",
+                            "data_vintage",
+                            "retrieved_at"
+                          ],
+                          "additionalProperties": false
+                        }
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "contract_version",
+                  "source",
+                  "dataset",
+                  "dimension_key",
+                  "data_vintage",
+                  "retrieved_at",
+                  "source_url",
+                  "api_version",
+                  "license",
+                  "citation",
+                  "notices",
+                  "derived",
+                  "derivation_note",
+                  "served_from_cache",
+                  "retrieval",
+                  "field_sources"
+                ],
+                "additionalProperties": false
+              }
+            ],
+            "description": "Provenance block (contract v1.1). concise (default): source, source_url, data_vintage, retrieved_at, retrieval, citation, license; detailed: the full canonical block (dataset, dimension_key, notices, served_from_cache, ...). retrieval is the origin diagnostic of this call — requests made to ILOSTAT, attempts including retries, anomalies overcome (timeout, network, rate_limited, http_5xx, http_4xx, malformed_body) and unstable (true when anything had to be retried: treat the figures as obtained with difficulty); null when nothing was fetched from ILOSTAT (catalogue or cached answer)"
+          },
           "attribution": {
             "type": "array",
             "items": {
@@ -641,7 +2676,414 @@
             },
             "additionalProperties": {}
           },
-          "provenance": {},
+          "provenance": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "source": {
+                    "type": "string"
+                  },
+                  "source_url": {
+                    "type": "string"
+                  },
+                  "data_vintage": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "retrieved_at": {
+                    "type": "string"
+                  },
+                  "retrieval": {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "requests": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 9007199254740991
+                          },
+                          "attempts": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 9007199254740991
+                          },
+                          "anomalies": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "kind": {
+                                  "type": "string",
+                                  "enum": [
+                                    "timeout",
+                                    "network",
+                                    "http_4xx",
+                                    "http_5xx",
+                                    "rate_limited",
+                                    "malformed_body"
+                                  ]
+                                },
+                                "count": {
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 9007199254740991
+                                }
+                              },
+                              "required": [
+                                "kind",
+                                "count"
+                              ],
+                              "additionalProperties": false
+                            }
+                          },
+                          "unstable": {
+                            "type": "boolean"
+                          }
+                        },
+                        "required": [
+                          "requests",
+                          "attempts",
+                          "anomalies",
+                          "unstable"
+                        ],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "citation": {
+                    "type": "string"
+                  },
+                  "license": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  }
+                },
+                "required": [
+                  "source",
+                  "source_url",
+                  "data_vintage",
+                  "retrieved_at",
+                  "retrieval",
+                  "citation",
+                  "license"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "contract_version": {
+                    "type": "string",
+                    "const": "1.1"
+                  },
+                  "source": {
+                    "type": "object",
+                    "properties": {
+                      "name": {
+                        "type": "string"
+                      },
+                      "agency": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "database": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "endpoint": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "name",
+                      "agency",
+                      "database",
+                      "endpoint"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "dataset": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "version": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "name": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "version",
+                      "name"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "dimension_key": {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "propertyNames": {
+                          "type": "string"
+                        },
+                        "additionalProperties": {
+                          "type": "string"
+                        }
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "data_vintage": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "retrieved_at": {
+                    "type": "string"
+                  },
+                  "source_url": {
+                    "type": "string"
+                  },
+                  "api_version": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "license": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "name": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "url": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "terms_url": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "verified_at": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "name",
+                      "url",
+                      "terms_url",
+                      "verified_at"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "citation": {
+                    "type": "string"
+                  },
+                  "notices": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "derived": {
+                    "type": "boolean"
+                  },
+                  "derivation_note": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "served_from_cache": {
+                    "type": [
+                      "boolean",
+                      "null"
+                    ]
+                  },
+                  "retrieval": {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "requests": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 9007199254740991
+                          },
+                          "attempts": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 9007199254740991
+                          },
+                          "anomalies": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "kind": {
+                                  "type": "string",
+                                  "enum": [
+                                    "timeout",
+                                    "network",
+                                    "http_4xx",
+                                    "http_5xx",
+                                    "rate_limited",
+                                    "malformed_body"
+                                  ]
+                                },
+                                "count": {
+                                  "type": "integer",
+                                  "minimum": 1,
+                                  "maximum": 9007199254740991
+                                }
+                              },
+                              "required": [
+                                "kind",
+                                "count"
+                              ],
+                              "additionalProperties": false
+                            }
+                          },
+                          "unstable": {
+                            "type": "boolean"
+                          }
+                        },
+                        "required": [
+                          "requests",
+                          "attempts",
+                          "anomalies",
+                          "unstable"
+                        ],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "field_sources": {
+                    "anyOf": [
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "fields": {
+                              "minItems": 1,
+                              "type": "array",
+                              "items": {
+                                "type": "string"
+                              }
+                            },
+                            "source_url": {
+                              "type": "string"
+                            },
+                            "dataset_id": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            },
+                            "data_vintage": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            },
+                            "retrieved_at": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "fields",
+                            "source_url",
+                            "dataset_id",
+                            "data_vintage",
+                            "retrieved_at"
+                          ],
+                          "additionalProperties": false
+                        }
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "contract_version",
+                  "source",
+                  "dataset",
+                  "dimension_key",
+                  "data_vintage",
+                  "retrieved_at",
+                  "source_url",
+                  "api_version",
+                  "license",
+                  "citation",
+                  "notices",
+                  "derived",
+                  "derivation_note",
+                  "served_from_cache",
+                  "retrieval",
+                  "field_sources"
+                ],
+                "additionalProperties": false
+              }
+            ],
+            "description": "Provenance block (contract v1.1). concise (default): source, source_url, data_vintage, retrieved_at, retrieval, citation, license; detailed: the full canonical block (dataset, dimension_key, notices, served_from_cache, ...). retrieval is the origin diagnostic of this call — requests made to ILOSTAT, attempts including retries, anomalies overcome (timeout, network, rate_limited, http_5xx, http_4xx, malformed_body) and unstable (true when anything had to be retried: treat the figures as obtained with difficulty); null when nothing was fetched from ILOSTAT (catalogue or cached answer)"
+          },
           "attribution": {
             "type": "array",
             "items": {
@@ -687,7 +3129,7 @@
       "name": "ilostat-provenance",
       "title": "Provenance and citation contract",
       "uri": "ilostat://reference/provenance",
-      "description": "Meaning of every provenance field returned with the data (source_url, data_vintage, retrieved_at, notices, license, citation) and how to cite the ILO correctly.",
+      "description": "Meaning of every provenance field returned with the data (source_url, data_vintage, retrieved_at, retrieval, notices, license, citation) and how to cite the ILO correctly.",
       "mimeType": "text/markdown"
     }
   ],

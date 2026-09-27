@@ -5,7 +5,8 @@
  * Padrões do portfólio:
  *  - anotações obrigatórias em toda tool (title, readOnlyHint, destructiveHint;
  *    nome ≤ 64 chars; descrição diz o que a tool NÃO faz);
- *  - todo retorno carrega o envelope de proveniência v1.0 (@sbissoli/mcp-provenance);
+ *  - todo retorno carrega o envelope de proveniência v1.1 (@sbissoli/mcp-provenance),
+ *    com o `retrieval` medido pelo fetch comum (@sbissoli/mcp-upstream — src/ilostat/upstream.ts);
  *  - instrumentação de uso fora do caminho crítico (withUsage → Durable Object).
  *
  * As tools vivem em src/tools/ (um módulo por grupo — os grupos são também as

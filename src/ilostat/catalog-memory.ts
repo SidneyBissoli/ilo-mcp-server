@@ -12,6 +12,7 @@
 import { CATALOG_SOURCE_URL, type CatalogEntry, type CatalogListing, type CatalogSearchResult } from "./catalog.js";
 import { IlostatUserError } from "./key.js";
 import { nowIso, upstreamHeaders } from "./sdmx.js";
+import { translateUpstreamError, upstreamCall } from "./upstream.js";
 import { expandQuery, matchesTerm, vocabularyNotes } from "./vocabulary.js";
 
 const STRUCTURE_JSON = "application/vnd.sdmx.structure+json";
@@ -107,8 +108,16 @@ export class InMemoryCatalog {
   }
 }
 
+/**
+ * O download do catálogo, pelo coletor da chamada que o disparou (timeout,
+ * retry, contagem — `upstream.ts`). Falha vira `IlostatUpstreamError`, que
+ * `toToolError` devolve legível ("retrying later may succeed") em vez do
+ * `Error` comum que o SDK relançava cru.
+ */
 async function defaultLoader(): Promise<unknown> {
-  const res = await fetch(CATALOG_SOURCE_URL, { headers: upstreamHeaders(STRUCTURE_JSON) });
-  if (!res.ok) throw new Error(`ILOSTAT catalogue HTTP ${res.status}: ${(await res.text()).slice(0, 200)}`);
-  return await res.json();
+  try {
+    return await upstreamCall().json(CATALOG_SOURCE_URL, { headers: upstreamHeaders(STRUCTURE_JSON) });
+  } catch (e) {
+    throw translateUpstreamError(e, "dataflow catalogue");
+  }
 }
