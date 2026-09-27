@@ -1,7 +1,7 @@
 /**
  * ilo_get_data — a tool central: dados estatísticos de um dataflow, com recorte
  * obrigatório (teto de 30 áreas, decisão do decisor 07/08/2026) e bloco de
- * proveniência v1.0 com a chave de dimensões da consulta.
+ * proveniência v1.1 com a chave de dimensões da consulta.
  *
  * Consulta típica = 1 chamada REST (a estrutura, fonte do data_vintage, vem do
  * cache KV). Dados nunca são cacheados no MVP.

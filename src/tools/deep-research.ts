@@ -45,6 +45,7 @@ import { classifyError } from "../call-shape.js";
 import { listCatalog, type CatalogEntry } from "../ilostat/catalog.js";
 import { ilostatProvenance, provenanceExtras } from "../ilostat/provenance.js";
 import { getDataflowStructure, structureUrl } from "../ilostat/sdmx.js";
+import { withUpstreamCall } from "../ilostat/upstream.js";
 import { askedWordsFor } from "../ilostat/vocabulary.js";
 import type { DataflowStructure } from "../ilostat/structure.js";
 import { KEY_DATAFLOWS } from "../resources.js";
@@ -209,51 +210,62 @@ export function renderDataflow(structure: DataflowStructure): string {
 
 // ==================== HANDLERS ====================
 
+/**
+ * Os dois handlers abrem o coletor de rede eles mesmos (`withUpstreamCall`):
+ * são registrados pelo `@sbissoli/mcp-search`, fora do `withUsage` que o abre
+ * para as tools `ilo_*`. Sem isso o `retrieval` da proveniência deles sairia
+ * `null` — "não medido" — com a ida à OIT (estrutura em miss, catálogo em
+ * memória no primeiro uso) acontecendo de fato.
+ */
 export function deepResearchHandlers(env: Env) {
-  async function search(query: string): Promise<SearchReply> {
-    const idx = await getIndex(env);
-    const results = idx.index.search(query, { limit: DEEP_RESEARCH_LIMIT }).map(({ id, title, url }) => ({ id, title, url }));
-    const p = ilostatProvenance({
-      dataset: { id: "dataflow/ILO", version: null, name: "ILOSTAT dataflow catalogue" },
-      retrievedAt: idx.retrievedAt,
-      sourceUrl: idx.sourceUrl,
-      servedFromCache: true,
+  function search(query: string): Promise<SearchReply> {
+    return withUpstreamCall(async () => {
+      const idx = await getIndex(env);
+      const results = idx.index.search(query, { limit: DEEP_RESEARCH_LIMIT }).map(({ id, title, url }) => ({ id, title, url }));
+      const p = ilostatProvenance({
+        dataset: { id: "dataflow/ILO", version: null, name: "ILOSTAT dataflow catalogue" },
+        retrievedAt: idx.retrievedAt,
+        sourceUrl: idx.sourceUrl,
+        servedFromCache: true,
+      });
+      return { results, extras: provenanceExtras(p) };
     });
-    return { results, extras: provenanceExtras(p) };
   }
 
-  async function fetch(id: string): Promise<FetchReply | null> {
-    if (!id.startsWith(DEEP_RESEARCH_ID_PREFIX)) return null;
-    const dataflowId = id.slice(DEEP_RESEARCH_ID_PREFIX.length);
-    // Refuse unknown ids from the catalogue — the upstream is never asked about them.
-    const idx = await getIndex(env);
-    if (!idx.ids.has(id)) return null;
-    const { structure, retrievedAt, servedFromCache } = await getDataflowStructure(env, dataflowId);
-    const freq = structure.defaults?.FREQ ?? "A";
-    const p = ilostatProvenance({
-      dataset: { id: structure.id, version: structure.version, name: structure.name },
-      dataVintage: structure.dataVintage,
-      retrievedAt,
-      sourceUrl: structureUrl(structure.id),
-      servedFromCache,
-    });
-    return {
-      document: {
-        id,
-        title: structure.name ?? structure.id,
-        text: renderDataflow(structure),
-        url: explorerUrl(structure.id, freq),
-        metadata: {
-          dataflow: structure.id,
-          version: structure.version,
-          data_vintage: structure.dataVintage,
-          dimensions: structure.dimensions.map((d) => d.id),
-          time_dimension: structure.timeDimension,
-          ...(CURATED.has(structure.id) ? { topic: CURATED.get(structure.id)!.topic } : {}),
+  function fetch(id: string): Promise<FetchReply | null> {
+    return withUpstreamCall(async () => {
+      if (!id.startsWith(DEEP_RESEARCH_ID_PREFIX)) return null;
+      const dataflowId = id.slice(DEEP_RESEARCH_ID_PREFIX.length);
+      // Refuse unknown ids from the catalogue — the upstream is never asked about them.
+      const idx = await getIndex(env);
+      if (!idx.ids.has(id)) return null;
+      const { structure, retrievedAt, servedFromCache } = await getDataflowStructure(env, dataflowId);
+      const freq = structure.defaults?.FREQ ?? "A";
+      const p = ilostatProvenance({
+        dataset: { id: structure.id, version: structure.version, name: structure.name },
+        dataVintage: structure.dataVintage,
+        retrievedAt,
+        sourceUrl: structureUrl(structure.id),
+        servedFromCache,
+      });
+      return {
+        document: {
+          id,
+          title: structure.name ?? structure.id,
+          text: renderDataflow(structure),
+          url: explorerUrl(structure.id, freq),
+          metadata: {
+            dataflow: structure.id,
+            version: structure.version,
+            data_vintage: structure.dataVintage,
+            dimensions: structure.dimensions.map((d) => d.id),
+            time_dimension: structure.timeDimension,
+            ...(CURATED.has(structure.id) ? { topic: CURATED.get(structure.id)!.topic } : {}),
+          },
         },
-      },
-      extras: provenanceExtras(p),
-    };
+        extras: provenanceExtras(p),
+      };
+    });
   }
 
   return { search, fetch };

@@ -199,6 +199,14 @@ selects \`concise\` (default) or \`detailed\`.
 - **retrieved_at** — the real instant the data was extracted from ILOSTAT (UTC). For
   cached structures/codelists it is the instant of the original extraction and
   \`served_from_cache\` is \`true\`. Data (\`ilo_get_data\`) is never cached.
+- **retrieval** (contract v1.1) — the origin diagnostic of this call, measured by the server:
+  \`requests\` (distinct calls made to ILOSTAT), \`attempts\` (including retries),
+  \`anomalies\` overcome on the way (\`timeout\`, \`network\`, \`rate_limited\`, \`http_5xx\`,
+  \`http_4xx\`, \`malformed_body\`, each with a count) and \`unstable\` — \`true\` when anything
+  had to be retried: treat the figures as obtained with difficulty and consider re-running
+  the query before relying on them. \`null\` when the answer did not touch ILOSTAT (catalogue
+  search, cached structure or codelist). Policy: 65 s per attempt, up to 3 attempts on
+  transient failures, 70 s per call; timeouts, HTTP 504 and 404 are not retried.
 - **dimension_key** (detailed / \`ilo_get_data\`) — the effective filter set of the query,
   including the period, so the selection can be quoted or re-run.
 - **derived** — always \`false\` here: this server never transforms values (no aggregation,
@@ -254,7 +262,7 @@ export function registerResources(server: McpServer): void {
       title: "Provenance and citation contract",
       description:
         "Meaning of every provenance field returned with the data (source_url, data_vintage, " +
-        "retrieved_at, notices, license, citation) and how to cite the ILO correctly.",
+        "retrieved_at, retrieval, notices, license, citation) and how to cite the ILO correctly.",
       ...md,
     },
     async (uri) => ({ contents: [{ uri: uri.href, mimeType: md.mimeType, text: provenanceMarkdown() }] }),

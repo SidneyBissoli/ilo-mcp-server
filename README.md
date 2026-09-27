@@ -190,10 +190,15 @@ this runtime (used by the Glama registry).
 Typical flow: `ilo_search_indicators` → `ilo_get_indicator_metadata` / `ilo_list_dimension_values`
 to discover valid filter codes → `ilo_get_data` with country and period filters.
 
-Every response carries the **provenance block v1.0**
+Every response carries the **provenance block v1.1**
 ([`@sbissoli/mcp-provenance`](https://www.npmjs.com/package/@sbissoli/mcp-provenance), modes
 `concise`/`detailed` via the `provenance_mode` parameter) on three channels:
 `structuredContent`, namespaced `_meta` (`com.sidneybissoli.ilostat/*`) and a text footer.
+Since 1.1.0 the block includes `retrieval`, the origin diagnostic of the call — how many
+requests went to ILOSTAT, how many attempts they took, which anomalies were overcome and whether
+the answer is `unstable` — measured by the portfolio's common fetch
+([`@sbissoli/mcp-upstream`](https://www.npmjs.com/package/@sbissoli/mcp-upstream)); `null`
+when the answer did not touch ILOSTAT (catalogue or cached structure).
 
 ## Resources and prompts
 
@@ -238,6 +243,12 @@ the test suite, so the documentation cannot point at an id the search would not 
   always visible.
 - **Every upstream call carries an identifiable User-Agent** (service URL + contact), so ILO
   administrators can reach the operator.
+- **Every upstream call has a timeout and a retry policy** (since 1.1.0, measured against the
+  live API): 65 s per attempt — above the ~61 s the ILO gateway itself takes to reject an
+  unrestricted query with 504, so a legitimate wide query is never cut short by this server —,
+  up to 3 attempts on 5xx, 429 (honouring `Retry-After`) and network errors, 70 s in total per
+  call. Timeouts, HTTP 504 (query too broad) and 404 (no observations) are never retried. What
+  happened is reported in the provenance `retrieval` field.
 - **Language: English; timezone: UTC** (ILO data is published in English).
 
 ### Provenance fields

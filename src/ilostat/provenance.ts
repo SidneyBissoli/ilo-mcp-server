@@ -14,6 +14,7 @@
 import { createProvenanceContext, type CanonicalProvenance } from "@sbissoli/mcp-provenance";
 import { PROVENANCE_OPTIONS } from "../config.js";
 import { ILOSTAT_AGENCY, SDMX_BASE } from "./sdmx.js";
+import { currentRetrieval } from "./upstream.js";
 
 export const provenance = createProvenanceContext(PROVENANCE_OPTIONS);
 
@@ -41,7 +42,13 @@ export interface IlostatProvenanceInput {
   notices?: string[];
 }
 
-/** Bloco canônico v1.0 para uma resposta do ILOSTAT. */
+/**
+ * Bloco canônico v1.1 para uma resposta do ILOSTAT. `retrieval` é o que o
+ * coletor da chamada mediu (idas, tentativas, anomalias — `upstream.ts`);
+ * `null` quando nada foi à origem (catálogo, acerto de KV) ou fora de um
+ * coletor. `retrieved_at` continua sendo o instante da extração original,
+ * vindo do KV no acerto — não é o do coletor.
+ */
 export function ilostatProvenance(input: IlostatProvenanceInput): CanonicalProvenance {
   return provenance.build({
     source: { name: "ILOSTAT", agency: ILOSTAT_AGENCY, database: "ILOSTAT", endpoint: SDMX_BASE },
@@ -54,6 +61,7 @@ export function ilostatProvenance(input: IlostatProvenanceInput): CanonicalProve
     citation: ilostatCitation(input.retrievedAt),
     ...(input.notices?.length ? { notices: input.notices } : {}),
     served_from_cache: input.servedFromCache ?? null,
+    retrieval: currentRetrieval(),
   });
 }
 

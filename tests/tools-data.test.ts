@@ -107,7 +107,10 @@ describe("getDataHandler", () => {
     expect(calls.some((u) => u.includes("format="))).toBe(false);
 
     const p = sc.provenance as Record<string, unknown>;
-    expect(p.contract_version).toBe("1.0");
+    expect(p.contract_version).toBe("1.1");
+    // Handler chamado direto, fora do coletor que `withUsage` abre: "não medido".
+    // A contagem real está em tests/upstream.test.ts, pelo servidor inteiro.
+    expect(p.retrieval).toBeNull();
     expect(p.data_vintage).toBe("2026-07-31");
     expect((p.source as Record<string, unknown>).name).toBe("ILOSTAT");
     expect(p.dimension_key).toEqual({
@@ -123,7 +126,7 @@ describe("getDataHandler", () => {
     expect((p.license as Record<string, unknown>).id).toBe("CC-BY-4.0");
   });
 
-  it("modo concise (default): bloco com exatamente 6 chaves em ordem fixa", async () => {
+  it("modo concise (default): bloco com exatamente 7 chaves em ordem fixa (v1.1: retrieval depois de retrieved_at)", async () => {
     stubFetch();
     const r = (await getDataHandler(ENV)({
       dataflow: "DF_UNE_DEAP_SEX_AGE_RT",
@@ -134,6 +137,7 @@ describe("getDataHandler", () => {
       "source_url",
       "data_vintage",
       "retrieved_at",
+      "retrieval",
       "citation",
       "license",
     ]);
