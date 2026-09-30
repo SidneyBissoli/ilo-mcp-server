@@ -9,7 +9,7 @@
  * Nunca o valor de um parâmetro — ver `call-shape.ts`.
  */
 
-import { classifyError, classifyThrown, errorText, paramNames } from "./call-shape.js";
+import { classeAnexada, classifyError, classifyThrown, errorText, paramNames } from "./call-shape.js";
 import { withUpstreamCall } from "./ilostat/upstream.js";
 import type { RecordUsage } from "./usage-core.js";
 
@@ -31,7 +31,9 @@ export function withUsage<A, R>(
     try {
       const result = await withUpstreamCall(() => cb(args));
       isError = (result as { isError?: unknown } | null | undefined)?.isError === true;
-      if (isError) classe = classifyError(errorText(result));
+      // A classe que `toToolError` anexou pelo TIPO vence a frase; a frase fica
+      // para o erro que nasceu sem tipo. Ver CLASSE_DO_ERRO em call-shape.ts.
+      if (isError) classe = classeAnexada(result) ?? classifyError(errorText(result));
       return result;
     } catch (e) {
       isError = true;

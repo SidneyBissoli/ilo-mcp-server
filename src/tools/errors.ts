@@ -7,6 +7,7 @@
 
 import { IlostatUserError } from "../ilostat/key.js";
 import { IlostatUpstreamError } from "../ilostat/sdmx.js";
+import { CLASSE_DO_ERRO } from "../call-shape.js";
 
 // Type alias (não interface): CallToolResult do SDK tem index signature
 // `[x: string]: unknown`, e só aliases de objeto recebem index signature implícita.
@@ -20,7 +21,7 @@ export function toToolError(e: unknown): ToolErrorResult {
     return { content: [{ type: "text", text: e.message }], isError: true };
   }
   if (e instanceof IlostatUpstreamError) {
-    return {
+    const r: ToolErrorResult = {
       content: [
         {
           type: "text",
@@ -31,6 +32,10 @@ export function toToolError(e: unknown): ToolErrorResult {
       ],
       isError: true,
     };
+    // A classe vai pelo TIPO, fora do fio: pela frase, o "invalid" do sufixo
+    // acima mandava toda falha da OIT para `contrato`. Ver CLASSE_DO_ERRO.
+    Object.defineProperty(r, CLASSE_DO_ERRO, { value: e.classe, enumerable: false });
+    return r;
   }
   throw e;
 }
