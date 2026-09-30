@@ -77,6 +77,7 @@ import {
 } from "@sbissoli/mcp-upstream";
 import { currentCall, withCall } from "@sbissoli/mcp-upstream/als";
 import type { RetrievalInput } from "@sbissoli/mcp-provenance";
+import type { ErrorClass } from "../call-shape.js";
 
 /**
  * User-Agent identificável (política do portfólio: sysadmins upstream devem
@@ -103,6 +104,11 @@ export const UPSTREAM_POLICY = {
  */
 export class IlostatUpstreamError extends Error {
   readonly status: number;
+  /**
+   * A classe pelo TIPO, não pela frase (ver `CLASSE_DO_ERRO` em call-shape.ts):
+   * 404 é a origem dizendo que não existe; todo o resto é a origem falhando.
+   */
+  readonly classe: ErrorClass;
   constructor(status: number, context: string, detail: string) {
     super(
       status === 0
@@ -111,6 +117,7 @@ export class IlostatUpstreamError extends Error {
     );
     this.name = "IlostatUpstreamError";
     this.status = status;
+    this.classe = status === 404 ? "nao_encontrado" : "fonte";
   }
 }
 
