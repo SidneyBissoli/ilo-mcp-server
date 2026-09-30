@@ -74,6 +74,16 @@ describe("o que não é falha da origem continua como era", () => {
     expect((await classeGravada(falha("not_found", 404))).classe).toBe("nao_encontrado");
   });
 
+  it("422 é a OIT recusando o ARGUMENTO — medido em produção com start_period \"abc\"", async () => {
+    const { classe, result } = await classeGravada(
+      falha("http_4xx", 422, "Semantic Error - Invalid Date Format `abc`"),
+    );
+    expect(classe).toBe("contrato");
+    // Não manda repetir o que vai falhar de novo.
+    expect(JSON.stringify(result)).not.toContain("retrying later may succeed");
+    expect(JSON.stringify(result)).toContain("fix it");
+  });
+
   it("erro de USO segue classificado pela própria frase (aqui, instrução ao chamador)", async () => {
     const { classe } = await classeGravada(
       new IlostatUserError("The query is too broad. Narrow it: fewer areas (maximum 30 per call)."),

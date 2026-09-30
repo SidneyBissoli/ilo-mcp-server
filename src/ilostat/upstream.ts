@@ -106,7 +106,13 @@ export class IlostatUpstreamError extends Error {
   readonly status: number;
   /**
    * A classe pelo TIPO, não pela frase (ver `CLASSE_DO_ERRO` em call-shape.ts):
-   * 404 é a origem dizendo que não existe; todo o resto é a origem falhando.
+   * 404 é a origem dizendo que não existe; 422 é a origem dizendo que o
+   * ARGUMENTO não faz sentido; todo o resto é a origem falhando.
+   *
+   * O 422 foi medido em produção em 30/09/2026: `start_period: "abc"` volta
+   * "Semantic Error - Invalid Date Format `abc`". Repetir não adianta, e a
+   * culpa é de quem chamou — `contrato`, não `fonte`. O 400 continua `fonte`:
+   * nunca foi medido como culpa do chamador.
    */
   readonly classe: ErrorClass;
   constructor(status: number, context: string, detail: string) {
@@ -117,7 +123,7 @@ export class IlostatUpstreamError extends Error {
     );
     this.name = "IlostatUpstreamError";
     this.status = status;
-    this.classe = status === 404 ? "nao_encontrado" : "fonte";
+    this.classe = status === 404 ? "nao_encontrado" : status === 422 ? "contrato" : "fonte";
   }
 }
 
