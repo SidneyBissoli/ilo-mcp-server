@@ -27,7 +27,9 @@ export function toToolError(e: unknown): ToolErrorResult {
           type: "text",
           text:
             `${e.message}\n` +
-            "This is an upstream (ILO) failure, not an invalid query — retrying later may succeed.",
+            (e.classe === "contrato"
+              ? "The ILO rejected an argument (see the detail above) — fix it; retrying unchanged will fail again."
+              : "This is an upstream (ILO) failure, not an invalid query — retrying later may succeed."),
         },
       ],
       isError: true,
