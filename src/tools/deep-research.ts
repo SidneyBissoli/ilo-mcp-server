@@ -41,7 +41,7 @@ import {
   type SearchIndex,
   type SearchReply,
 } from "@sbissoli/mcp-search";
-import { classifyError } from "../call-shape.js";
+import { classifyError, classifyThrown } from "../call-shape.js";
 import { listCatalog, type CatalogEntry } from "../ilostat/catalog.js";
 import { ilostatProvenance, provenanceExtras } from "../ilostat/provenance.js";
 import { getDataflowStructure, structureUrl } from "../ilostat/sdmx.js";
@@ -287,6 +287,10 @@ export function registerDeepResearchTools(server: McpServer, env: Env, record: R
     // Sem ele o pacote grava os nomes dos parâmetros e deixa a classe
     // vazia, que foi o que a produção mostrou antes da 0.4.0.
     classifyError,
+    // A classe de uma EXCEÇÃO pelo tipo (mcp-search 0.8.0): `TypeError` nosso
+    // -> `defeito`. O erro da origem já declara a sua (`.classe`), e o pacote
+    // a lê antes deste e da frase.
+    classifyThrown,
     record,
   });
 }
