@@ -7,7 +7,7 @@
 
 import { IlostatUserError } from "../ilostat/key.js";
 import { IlostatUpstreamError } from "../ilostat/sdmx.js";
-import { CLASSE_DO_ERRO } from "../call-shape.js";
+import { CLASSE_DO_ERRO, type ErrorClass } from "../call-shape.js";
 
 // Type alias (não interface): CallToolResult do SDK tem index signature
 // `[x: string]: unknown`, e só aliases de objeto recebem index signature implícita.
@@ -18,7 +18,9 @@ export type ToolErrorResult = {
 
 export function toToolError(e: unknown): ToolErrorResult {
   if (e instanceof IlostatUserError) {
-    return { content: [{ type: "text", text: e.message }], isError: true };
+    // A classe declarada pelo erro, não a frase: a frase ecoa o argumento
+    // ("INVALID") e o regex decidia por ele. Ver IlostatUserError.
+    return comClasse({ content: [{ type: "text", text: e.message }], isError: true }, e.classe);
   }
   if (e instanceof IlostatUpstreamError) {
     const r: ToolErrorResult = {
@@ -36,10 +38,19 @@ export function toToolError(e: unknown): ToolErrorResult {
     };
     // A classe vai pelo TIPO, fora do fio: pela frase, o "invalid" do sufixo
     // acima mandava toda falha da OIT para `contrato`. Ver CLASSE_DO_ERRO.
-    Object.defineProperty(r, CLASSE_DO_ERRO, { value: e.classe, enumerable: false });
-    return r;
+    return comClasse(r, e.classe);
   }
   throw e;
+}
+
+/**
+ * ÚNICO lugar que monta resultado de erro: todo `isError: true` sai daqui com a
+ * classe anexada (chave-símbolo não enumerável — o fio não muda). A guarda
+ * `tests/sem-iserror-literal.test.ts` reprova `isError: true` em outro arquivo.
+ */
+function comClasse(r: ToolErrorResult, classe: ErrorClass): ToolErrorResult {
+  Object.defineProperty(r, CLASSE_DO_ERRO, { value: classe, enumerable: false });
+  return r;
 }
 
 /** Envolve um handler assíncrono com a conversão de erros acima. */

@@ -8,14 +8,26 @@
  *  - FREQ não filtrada assume o default do dataflow (annotation DEFAULT) ou "A".
  */
 
+import type { ErrorClass } from "../call-shape.js";
 import { ILOSTAT_LIMITS } from "../config.js";
 import type { DataflowStructure } from "./structure.js";
 
-/** Erro de uso da tool: mensagem pedagógica para o modelo/usuário, não bug do servidor. */
+/**
+ * Erro de uso da tool: mensagem pedagógica para o modelo/usuário, não bug do servidor.
+ *
+ * A classe nasce com o erro (ver `CLASSE_DO_ERRO` em call-shape.ts) e
+ * `toToolError` a anexa ao resultado: o hook não cai na frase. Padrão
+ * `contrato` (culpa de quem chamou); quem lança por OUTRO motivo — a OIT
+ * respondeu que o id não existe — declara a classe no construtor. Sem isso,
+ * um id ecoado na frase decidia a classe: `Dataflow "INVALID" not found`
+ * casava `invalid` e saía `contrato`.
+ */
 export class IlostatUserError extends Error {
-  constructor(message: string) {
+  readonly classe: ErrorClass;
+  constructor(message: string, classe: ErrorClass = "contrato") {
     super(message);
     this.name = "IlostatUserError";
+    this.classe = classe;
   }
 }
 
