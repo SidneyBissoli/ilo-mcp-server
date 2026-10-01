@@ -120,6 +120,8 @@ export async function getDataflowStructure(env: Env, dataflowId: string): Promis
     if (e instanceof IlostatUpstreamError && e.status === 404) {
       throw new IlostatUserError(
         `Dataflow "${dataflowId}" not found at ILOSTAT. Use ilo_search_indicators to find valid dataflow ids.`,
+        // A OIT respondeu 404: ausência respondida, não argumento malformado.
+        "nao_encontrado",
       );
     }
     throw e;

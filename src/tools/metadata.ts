@@ -70,6 +70,9 @@ export function listDimensionValuesHandler(env: Env) {
       }
       const dim = structure.dimensions.find((d) => d.id === args.dimension);
       if (!dim) {
+        // `contrato` (padrão do IlostatUserError), como o "Unknown dimension" de
+        // key.ts: o chamador escolheu fora da lista que a frase lhe devolve. Pela
+        // frase, "does not exist" saía `nao_encontrado`.
         throw new IlostatUserError(
           `Dimension "${args.dimension}" does not exist in dataflow ${structure.id}. ` +
             `Valid dimensions: ${structure.dimensions.map((d) => d.id).join(", ")}.`,
