@@ -1,0 +1,226 @@
+{
+  "gerado": "2026-10-02T12:49:52.885Z",
+  "pacote": "ilo-mcp-server",
+  "endpoint": "https://ilo.sidneybissoli.com/mcp",
+  "statusVersion": "1.1.0",
+  "sha256NoAr": "42a14ff342fe084733b476c257f5ef31f6af67481f085b0586a8d2d1744bc3a2",
+  "versoes": [
+    {
+      "versao": "0.3.0",
+      "data": "2026-08-19",
+      "noRegistro": true,
+      "sha256": "ef7e495a4d43425277800bad02fbe4e6d82dfe72320214a3ca4d09fbf80a06c2",
+      "tools": [
+        "ilo_get_data",
+        "ilo_get_indicator_metadata",
+        "ilo_list_dimension_values",
+        "ilo_search_indicators"
+      ],
+      "resources": [
+        "ilostat://guide",
+        "ilostat://reference/key-dataflows",
+        "ilostat://reference/provenance"
+      ],
+      "prompts": [
+        "ilo_compare_countries",
+        "ilo_country_labour_profile",
+        "ilo_indicator_trend"
+      ],
+      "instructionsSha256": "3c030260ba36e0d9c6b588a66a2113fd34ff692c6b671661b09bcadcf0256c58"
+    },
+    {
+      "versao": "0.3.1",
+      "data": "2026-08-27",
+      "noRegistro": true,
+      "sha256": "ef7e495a4d43425277800bad02fbe4e6d82dfe72320214a3ca4d09fbf80a06c2",
+      "tools": [
+        "ilo_get_data",
+        "ilo_get_indicator_metadata",
+        "ilo_list_dimension_values",
+        "ilo_search_indicators"
+      ],
+      "resources": [
+        "ilostat://guide",
+        "ilostat://reference/key-dataflows",
+        "ilostat://reference/provenance"
+      ],
+      "prompts": [
+        "ilo_compare_countries",
+        "ilo_country_labour_profile",
+        "ilo_indicator_trend"
+      ],
+      "instructionsSha256": "3c030260ba36e0d9c6b588a66a2113fd34ff692c6b671661b09bcadcf0256c58"
+    },
+    {
+      "versao": "0.3.2",
+      "data": "2026-08-29",
+      "noRegistro": true,
+      "sha256": "088b9ce95b5fae0dba57f10b3ebf4d7eb1fa92ef88b4ee62ce38d41ad0e57ef4",
+      "tools": [
+        "ilo_get_data",
+        "ilo_get_indicator_metadata",
+        "ilo_list_dimension_values",
+        "ilo_search_indicators"
+      ],
+      "resources": [
+        "ilostat://guide",
+        "ilostat://reference/key-dataflows",
+        "ilostat://reference/provenance"
+      ],
+      "prompts": [
+        "ilo_compare_countries",
+        "ilo_country_labour_profile",
+        "ilo_indicator_trend"
+      ],
+      "instructionsSha256": "3c030260ba36e0d9c6b588a66a2113fd34ff692c6b671661b09bcadcf0256c58"
+    },
+    {
+      "versao": "0.4.0",
+      "data": "2026-08-30",
+      "noRegistro": true,
+      "sha256": "a4af67b77716ccaafac285c9eb73ec4677a50d595a33dcd8cc3f11675bcd0a10",
+      "tools": [
+        "ilo_get_data",
+        "ilo_get_indicator_metadata",
+        "ilo_list_dimension_values",
+        "ilo_search_indicators"
+      ],
+      "resources": [
+        "ilostat://guide",
+        "ilostat://reference/key-dataflows",
+        "ilostat://reference/provenance"
+      ],
+      "prompts": [
+        "ilo_compare_countries",
+        "ilo_country_labour_profile",
+        "ilo_indicator_trend"
+      ],
+      "instructionsSha256": "3c030260ba36e0d9c6b588a66a2113fd34ff692c6b671661b09bcadcf0256c58"
+    },
+    {
+      "versao": "0.5.0",
+      "data": "2026-09-03",
+      "noRegistro": true,
+      "sha256": "66905133609a1671863e8a387277326b57c76a3cd7a2820962d862fccab00da2",
+      "tools": [
+        "fetch",
+        "ilo_get_data",
+        "ilo_get_indicator_metadata",
+        "ilo_list_dimension_values",
+        "ilo_search_indicators",
+        "search"
+      ],
+      "resources": [
+        "ilostat://guide",
+        "ilostat://reference/key-dataflows",
+        "ilostat://reference/provenance"
+      ],
+      "prompts": [
+        "ilo_compare_countries",
+        "ilo_country_labour_profile",
+        "ilo_indicator_trend"
+      ],
+      "instructionsSha256": "ca8e2a6a39ec2751f7f7779fd0a0531f050c282882218a5a655862f45bdc388e"
+    },
+    {
+      "versao": "0.6.0",
+      "data": "2026-09-14",
+      "noRegistro": true,
+      "sha256": "bb181d11e2ee9442ada87ed89aa07d86ad5d863d4682fca66d2e6b83a40b87d4",
+      "tools": [
+        "fetch",
+        "ilo_get_data",
+        "ilo_get_indicator_metadata",
+        "ilo_list_dimension_values",
+        "ilo_search_indicators",
+        "search"
+      ],
+      "resources": [
+        "ilostat://guide",
+        "ilostat://reference/key-dataflows",
+        "ilostat://reference/provenance"
+      ],
+      "prompts": [
+        "ilo_compare_countries",
+        "ilo_country_labour_profile",
+        "ilo_indicator_trend"
+      ],
+      "instructionsSha256": "a0006f53a80acae401afdf42e0621ecd103c57b76627ea5f99885789f62d5daf"
+    },
+    {
+      "versao": "0.6.1",
+      "data": "2026-09-16",
+      "noRegistro": true,
+      "sha256": "bb181d11e2ee9442ada87ed89aa07d86ad5d863d4682fca66d2e6b83a40b87d4",
+      "tools": [
+        "fetch",
+        "ilo_get_data",
+        "ilo_get_indicator_metadata",
+        "ilo_list_dimension_values",
+        "ilo_search_indicators",
+        "search"
+      ],
+      "resources": [
+        "ilostat://guide",
+        "ilostat://reference/key-dataflows",
+        "ilostat://reference/provenance"
+      ],
+      "prompts": [
+        "ilo_compare_countries",
+        "ilo_country_labour_profile",
+        "ilo_indicator_trend"
+      ],
+      "instructionsSha256": "a0006f53a80acae401afdf42e0621ecd103c57b76627ea5f99885789f62d5daf"
+    },
+    {
+      "versao": "1.0.0",
+      "data": "2026-09-25",
+      "noRegistro": true,
+      "sha256": "bb181d11e2ee9442ada87ed89aa07d86ad5d863d4682fca66d2e6b83a40b87d4",
+      "tools": [
+        "fetch",
+        "ilo_get_data",
+        "ilo_get_indicator_metadata",
+        "ilo_list_dimension_values",
+        "ilo_search_indicators",
+        "search"
+      ],
+      "resources": [
+        "ilostat://guide",
+        "ilostat://reference/key-dataflows",
+        "ilostat://reference/provenance"
+      ],
+      "prompts": [
+        "ilo_compare_countries",
+        "ilo_country_labour_profile",
+        "ilo_indicator_trend"
+      ],
+      "instructionsSha256": "a0006f53a80acae401afdf42e0621ecd103c57b76627ea5f99885789f62d5daf"
+    },
+    {
+      "versao": "1.1.0",
+      "data": "2026-09-27",
+      "noRegistro": true,
+      "sha256": "42a14ff342fe084733b476c257f5ef31f6af67481f085b0586a8d2d1744bc3a2",
+      "tools": [
+        "fetch",
+        "ilo_get_data",
+        "ilo_get_indicator_metadata",
+        "ilo_list_dimension_values",
+        "ilo_search_indicators",
+        "search"
+      ],
+      "resources": [
+        "ilostat://guide",
+        "ilostat://reference/key-dataflows",
+        "ilostat://reference/provenance"
+      ],
+      "prompts": [
+        "ilo_compare_countries",
+        "ilo_country_labour_profile",
+        "ilo_indicator_trend"
+      ],
+      "instructionsSha256": "a0006f53a80acae401afdf42e0621ecd103c57b76627ea5f99885789f62d5daf"
+    }
+  ]
+}
