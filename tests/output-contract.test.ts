@@ -433,15 +433,17 @@ describe("structuredContent obedece ao outputSchema anunciado", () => {
    * mais comum que existe, e aqui `start_period`/`end_period`/`last_n_observations`
    * são um campo minado do mesmo tipo.
    *
-   * `search`/`fetch` ficam de fora: o contrato é da OpenAI e quem os registra é
-   * `@sbissoli/mcp-search`.
+   * `search`/`fetch` entram na varredura desde `@sbissoli/mcp-search` 0.9.0:
+   * o contrato continua da OpenAI, mas o esquema que o pacote entrega agora é
+   * `z.strictObject` e o servidor o repassa inteiro — a mesma recusa chega
+   * sem nenhuma linha local.
    */
-  it("toda tool ilo_* recusa parâmetro que não existe", async () => {
+  it("toda tool recusa parâmetro que não existe, search/fetch inclusive", async () => {
     const { tools } = await clienteCatalogo.listTools();
-    const proprias = tools.filter((t) => t.name.startsWith("ilo_"));
 
-    expect(proprias.length).toBeGreaterThanOrEqual(4);
-    for (const t of proprias) {
+    expect(tools.map((t) => t.name)).toEqual(expect.arrayContaining(["search", "fetch"]));
+    expect(tools.length).toBeGreaterThanOrEqual(6);
+    for (const t of tools) {
       const schema = t.inputSchema as { additionalProperties?: unknown };
       expect(schema.additionalProperties, `${t.name} aceita chave desconhecida`).toBe(false);
     }
@@ -458,6 +460,19 @@ describe("structuredContent obedece ao outputSchema anunciado", () => {
       ? r.content.map((c) => ("text" in c ? c.text : "")).join(" ")
       : "";
     expect(texto).toContain("limite");
+  });
+
+  it("search também recusa e NOMEIA a chave desconhecida", async () => {
+    const r = await clienteCatalogo.callTool({
+      name: "search",
+      arguments: { query: "unemployment", country: "BRA" },
+    });
+
+    expect(r.isError).toBe(true);
+    const texto = Array.isArray(r.content)
+      ? r.content.map((c) => ("text" in c ? c.text : "")).join(" ")
+      : "";
+    expect(texto).toContain("country");
   });
 
   it("toda tool anunciada declara outputSchema e tem ao menos um caso", async () => {
