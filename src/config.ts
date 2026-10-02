@@ -13,7 +13,7 @@ export const SERVER_CONFIG = {
   /** Nome curto do servidor (handshake MCP, /status, landing). */
   name: "ilo-mcp-server",
   /** Versão do servidor — manter em sincronia com package.json. */
-  version: "1.2.0",
+  version: "1.2.1",
   /** Título de exibição (clientes MCP mostram ao usuário). */
   title: "ILO Labour Statistics (ILOSTAT)",
   /**
@@ -133,7 +133,7 @@ export const LANDING = {
   ] as readonly string[],
   repoUrl: "https://github.com/SidneyBissoli/ilo-mcp-server",
   npmUrl: "https://www.npmjs.com/package/ilo-mcp-server",
-  docsUrl: "https://github.com/SidneyBissoli/ilo-mcp-server/blob/main/README.pt-BR.md",
+  docsUrl: "https://github.com/SidneyBissoli/ilo-mcp-server/blob/main/LEIA-ME.md",
   emOutroIdioma: {
     lang: "pt-BR" as "pt-BR" | "en",
     resumo:
