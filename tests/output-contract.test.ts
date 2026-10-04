@@ -13,22 +13,25 @@
  * chega ao cliente como "missing required property". Por isso cada tool tem um
  * caso CHEIO e um caso MAGRO, com os campos opcionais do SDMX ausentes.
  *
- * O teste roda o servidor de verdade (`buildServer`) pelo transporte em
- * memória e valida contra o schema que o `tools/list` publica, com o mesmo
- * validador do SDK. A rede nunca é tocada.
+ * O teste roda o servidor de verdade (`buildServer`) e o interroga COMO O
+ * CLIENTE (ideia de leitor, https://dev.to/arhancanli/comment/3g4i4): o próprio
+ * `Client` do SDK faz `tools/list` e `tools/call` e reprova o resultado contra
+ * o schema listado — o teste falha como a sessão do usuário falharia, sem
+ * validador escolhido por nós. E há controle negativo pelo lado do RESULTADO:
+ * um resultado quebrado entre servidor e cliente tem de fazer a chamada falhar.
+ * A rede nunca é tocada.
  *
- * Desde 04/10/2026 valida também COMO O CLIENTE valida (ideia de leitor,
- * https://dev.to/arhancanli/comment/3g4i4): o próprio `Client` do SDK faz
- * `tools/list` e `tools/call` e reprova o resultado contra o schema listado —
- * o teste falha como a sessão do usuário falharia, sem validador escolhido por
- * nós. E há controle negativo pelo lado do RESULTADO: um resultado quebrado
- * entre servidor e cliente tem de fazer a chamada falhar.
+ * O circuito nasceu AQUI, em 04/10/2026, e no mesmo dia foi extraído para o
+ * `@sbissoli/mcp-surface/cliente`, comum aos sete servidores: o helper passa
+ * toda mensagem do servidor por JSON, como a rede (chave `undefined` some no
+ * fio), faz o `tools/list` antes do `tools/call` (sem ele o `Client` não
+ * valida) e deriva do schema listado as quebras do controle negativo.
  */
 
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
-import { Client } from "@modelcontextprotocol/client";
-import { InMemoryTransport } from "@modelcontextprotocol/server";
+import type { Client } from "@modelcontextprotocol/client";
 import { CfWorkerJsonSchemaValidator } from "@modelcontextprotocol/server/validators/cf-worker";
+import { chamarComoCliente, conectarComoCliente, controlesNegativos } from "@sbissoli/mcp-surface/cliente";
 import { buildServer } from "../src/server.js";
 import { resetIndex } from "../src/tools/deep-research.js";
 import type { Env } from "../src/types.js";
@@ -364,34 +367,10 @@ const CASOS: Caso[] = [
 
 let schemas: Map<string, unknown>;
 
-/** Resultado de `tools/call` como viaja no fio (o que `adulterar` recebe). */
-type ResultadoNoFio = { content?: unknown; structuredContent?: Record<string, unknown> } & Record<string, unknown>;
-
-/**
- * `adulterar` mexe no RESULTADO de `tools/call` entre o servidor e o cliente —
- * é o controle negativo pelo lado do resultado: o servidor responde certo e o
- * que chega ao cliente está quebrado, como chegaria de um servidor com defeito.
- */
-async function conectar(env: Env, adulterar?: (r: ResultadoNoFio) => void): Promise<Client> {
-  const server = buildServer(env);
-  const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
-  if (adulterar) {
-    const enviar = serverTransport.send.bind(serverTransport);
-    serverTransport.send = async (mensagem, opcoes) => {
-      const r = (mensagem as { result?: ResultadoNoFio }).result;
-      if (r && "content" in r) adulterar(r);
-      return enviar(mensagem, opcoes);
-    };
-  }
-  const client = new Client({ name: "output-contract", version: "0.0.0" });
-  await Promise.all([server.connect(serverTransport), client.connect(clientTransport)]);
-  return client;
-}
-
 let clienteCatalogo: Client;
 
 beforeAll(async () => {
-  clienteCatalogo = await conectar({});
+  clienteCatalogo = await conectarComoCliente(buildServer({}));
   const { tools } = await clienteCatalogo.listTools();
   schemas = new Map(tools.map((t) => [t.name, t.outputSchema]));
 });
@@ -411,25 +390,12 @@ describe("structuredContent obedece ao outputSchema anunciado", () => {
     expect(schema, `tool ${nome} sem outputSchema em tools/list`).toBeDefined();
 
     stubFetch(caso.fontes);
-    const client = await conectar(caso.env);
+    const client = await conectarComoCliente(buildServer(caso.env));
     try {
-      // Percurso do cliente: initialize (no connect) → tools/list → tools/call.
-      // O `listTools` NÃO é cerimônia: o `Client` só valida o resultado contra
-      // o schema que tem em cache do `tools/list` — sem ele, `callTool` devolve
-      // o que recebeu sem validar (medido no client 2.0.0 e 2.1.0, 30/09/2026).
-      await client.listTools();
-      const resultado = await client.callTool({ name: nome, arguments: caso.args });
-      const texto = (resultado.content as Array<{ text?: string }> | undefined)?.[0]?.text;
-      expect(resultado.isError, `${nome} devolveu erro: ${texto}`).toBeFalsy();
+      // tools/list → tools/call; o `Client` reprova o resultado contra o schema
+      // listado e `chamarComoCliente` lança também em `isError`.
+      const resultado = await chamarComoCliente(client, nome, caso.args);
       expect(resultado.structuredContent, `${nome} sem structuredContent`).toBeDefined();
-
-      // Valida o que o CLIENTE vê: `structuredContent` atravessa como JSON, e
-      // `JSON.stringify` apaga chave cujo valor é `undefined` — num campo
-      // obrigatório isso é "missing required property" do outro lado. O
-      // transporte em memória não serializa, então serializa-se aqui.
-      const noFio = JSON.parse(JSON.stringify(resultado.structuredContent)) as unknown;
-      const veredicto = validador.getValidator(schema as never)(noFio);
-      expect(veredicto.valid, `${nome}: ${veredicto.errorMessage}`).toBe(true);
     } finally {
       await client.close();
     }
@@ -442,7 +408,7 @@ describe("structuredContent obedece ao outputSchema anunciado", () => {
    */
   it("reprova um schema desonesto (prova de que o portão pode falhar)", async () => {
     stubFetch(FONTES_MAGRAS);
-    const client = await conectar({});
+    const client = await conectarComoCliente(buildServer({}));
     try {
       const resultado = await client.callTool({
         name: "ilo_get_indicator_metadata",
@@ -464,60 +430,44 @@ describe("structuredContent obedece ao outputSchema anunciado", () => {
   });
 
   /**
-   * Controle negativo pelo lado do RESULTADO, no percurso do cliente. O caso
-   * acima passa pelo validador do próprio `Client`; isto prova que esse
+   * Controle negativo pelo lado do RESULTADO, no percurso do cliente. Os casos
+   * acima passam pelo validador do próprio `Client`; isto prova que esse
    * validador está de fato ligado — que um resultado quebrado no fio faz a
-   * chamada FALHAR como falharia na sessão do usuário. Sem o `listTools`
-   * antes, os quatro passariam calados.
+   * chamada FALHAR como falharia na sessão do usuário. As quebras saem do
+   * schema listado (structuredContent ausente, cada obrigatório ausente, o
+   * primeiro obrigatório tipado com tipo trocado); o último veredito é a
+   * armadilha: sem `tools/list` antes, a quebra passa calada.
    */
-  describe("o validador do cliente reprova resultado quebrado no fio", () => {
-    async function chamarAdulterado(adulterar: (r: ResultadoNoFio) => void, listar = true) {
-      stubFetch(FONTES_CHEIAS);
-      const client = await conectar({}, adulterar);
-      try {
-        if (listar) await client.listTools();
-        return await client.callTool({
-          name: "ilo_get_data",
-          arguments: { dataflow: "DF_UNE_DEAP_SEX_AGE_RT", filters: { REF_AREA: "BRA" } },
-        });
-      } finally {
-        await client.close();
-      }
-    }
-
-    it("campo obrigatório ausente (rows_count)", async () => {
-      await expect(chamarAdulterado((r) => void delete r.structuredContent?.rows_count)).rejects.toThrow(/rows_count/);
-    });
-
-    it("structuredContent ausente", async () => {
-      await expect(chamarAdulterado((r) => void delete r.structuredContent)).rejects.toThrow(/structured content/i);
-    });
-
-    it("campo de tipo errado (rows_count como texto)", async () => {
-      await expect(
-        chamarAdulterado((r) => {
-          if (r.structuredContent) r.structuredContent.rows_count = "2";
-        }),
-      ).rejects.toThrow(/rows_count/);
-    });
-
-    // Onde o schema FECHA o objeto. Medido em 04/10/2026: o nível de cima de
-    // `ilo_get_data` é aberto (looseObject — cabe proveniência e o que vier),
-    // e ali um campo a mais passa; `dataflow` é fechado e o recusa.
-    it("campo que o schema proíbe, onde ele fecha o objeto (dataflow)", async () => {
-      await expect(
-        chamarAdulterado((r) => {
-          const df = r.structuredContent?.dataflow as Record<string, unknown> | undefined;
-          if (df) df.intruso = 1;
-        }),
-      ).rejects.toThrow(/additional properties/);
-    });
-
-    it("a armadilha: sem tools/list antes, o mesmo resultado quebrado passa calado", async () => {
-      const r = await chamarAdulterado((res) => void delete res.structuredContent?.rows_count, false);
-      expect(r.structuredContent).toBeDefined();
-      expect((r.structuredContent as Record<string, unknown>).rows_count).toBeUndefined();
-    });
+  it("o validador do cliente reprova resultado quebrado no fio (ilo_get_data)", async () => {
+    stubFetch(FONTES_CHEIAS);
+    const vs = await controlesNegativos(
+      () => buildServer({}),
+      "ilo_get_data",
+      { dataflow: "DF_UNE_DEAP_SEX_AGE_RT", filters: { REF_AREA: "BRA" } },
+      [
+        // Onde o schema FECHA o objeto. Medido em 04/10/2026: o nível de cima de
+        // `ilo_get_data` é aberto (looseObject — cabe proveniência e o que vier),
+        // e ali um campo a mais passa; `dataflow` é fechado e o recusa.
+        {
+          descricao: "campo que o schema proíbe, onde ele fecha o objeto (dataflow)",
+          adulterar: (r) => {
+            const df = r.structuredContent?.dataflow as Record<string, unknown> | undefined;
+            if (df) df.intruso = 1;
+          },
+        },
+        // A troca de tipo derivada cai no PRIMEIRO obrigatório tipado, que aqui
+        // é `dataflow` (objeto); a do escalar `rows_count` fica explícita.
+        {
+          descricao: "campo de tipo errado (rows_count como texto)",
+          adulterar: (r) => {
+            if (r.structuredContent) r.structuredContent.rows_count = "2";
+          },
+        },
+      ],
+    );
+    const descricoes = vs.map((v) => v.descricao);
+    expect(descricoes).toContain("campo obrigatório ausente (rows_count)");
+    for (const v of vs) expect(v.obtido, `${v.descricao}: ${v.mensagem ?? ""}`).toBe(v.esperado);
   });
 
   /**
