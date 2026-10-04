@@ -36,17 +36,26 @@ export function timePeriodLabel(
 }
 
 /**
- * Avisos da origem: valores distintos de OBS_STATUS (o canal de status/disclaimer
- * do SDMX — ex.: "Break in series"), verbatim + contagem. Atributos técnicos
- * (DECIMALS, SOURCE etc.) ficam nas linhas, não em notices.
+ * Atributos que viram aviso: OBS_STATUS (o canal de status/disclaimer do SDMX —
+ * ex.: "Break in series") e, desde 04/10/2026, a unidade e a escala
+ * (UNIT_MEASURE, UNIT_MULT — ex.: "Thousands"). O número da linha só se lê
+ * certo com a escala. A escala viaja SEMPRE nas linhas; `notices` só aparece no
+ * modo `detailed` da proveniência (o `concise` não a projeta — contrato do
+ * `@sbissoli/mcp-provenance`), onde resume a escala da resposta inteira.
+ * Atributos técnicos (DECIMALS, SOURCE etc.) ficam só nas linhas.
  */
+export const NOTICE_ATTRIBUTES = ["OBS_STATUS", "UNIT_MEASURE", "UNIT_MULT"] as const;
+
+/** Avisos da origem: valores distintos dos NOTICE_ATTRIBUTES, verbatim + contagem. */
 export function noticesFromRows(rows: ObservationRow[]): string[] {
   const counts = new Map<string, number>();
   for (const row of rows) {
-    const v = row.attributes?.OBS_STATUS;
-    if (!v) continue;
-    const label = `OBS_STATUS ${v.id ?? "?"}${v.name ? ` (${v.name})` : ""}`;
-    counts.set(label, (counts.get(label) ?? 0) + 1);
+    for (const attr of NOTICE_ATTRIBUTES) {
+      const v = row.attributes?.[attr];
+      if (!v) continue;
+      const label = `${attr} ${v.id ?? "?"}${v.name ? ` (${v.name})` : ""}`;
+      counts.set(label, (counts.get(label) ?? 0) + 1);
+    }
   }
   return [...counts.entries()].map(([label, n]) => `${label}: ${n} observation(s)`).sort();
 }
@@ -120,8 +129,9 @@ export function registerDataTools(server: McpServer, env: Env, record: RecordUsa
         "(start_period/end_period, e.g. \"2015\"/\"2024\"). REF_AREA is required, maximum 30 areas " +
         "per call — for broad panels, split areas into batches and/or paginate by period. " +
         "Unfiltered dimensions return all their categories. Does not aggregate, convert or " +
-        "otherwise transform values (raw ILOSTAT data only), and does not search indicators " +
-        "(use ilo_search_indicators).",
+        "otherwise transform values (raw ILOSTAT data only): read each value with the unit and " +
+        "multiplier the ILO states in its row attributes (UNIT_MEASURE, UNIT_MULT — e.g. " +
+        "UNIT_MULT 3 = thousands). Does not search indicators (use ilo_search_indicators).",
       inputSchema: z.object({
         dataflow: z.string().min(1).describe('Dataflow id from ilo_search_indicators (e.g. "DF_UNE_DEAP_SEX_AGE_RT")'),
         // REF_AREA é exigência ESTRUTURAL, e não só de prosa, desde 11/09/2026.
