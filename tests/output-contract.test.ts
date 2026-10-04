@@ -468,7 +468,7 @@ describe("structuredContent obedece ao outputSchema anunciado", () => {
    * acima passa pelo validador do próprio `Client`; isto prova que esse
    * validador está de fato ligado — que um resultado quebrado no fio faz a
    * chamada FALHAR como falharia na sessão do usuário. Sem o `listTools`
-   * antes, os três passariam calados.
+   * antes, os quatro passariam calados.
    */
   describe("o validador do cliente reprova resultado quebrado no fio", () => {
     async function chamarAdulterado(adulterar: (r: ResultadoNoFio) => void, listar = true) {
@@ -499,6 +499,18 @@ describe("structuredContent obedece ao outputSchema anunciado", () => {
           if (r.structuredContent) r.structuredContent.rows_count = "2";
         }),
       ).rejects.toThrow(/rows_count/);
+    });
+
+    // Onde o schema FECHA o objeto. Medido em 04/10/2026: o nível de cima de
+    // `ilo_get_data` é aberto (looseObject — cabe proveniência e o que vier),
+    // e ali um campo a mais passa; `dataflow` é fechado e o recusa.
+    it("campo que o schema proíbe, onde ele fecha o objeto (dataflow)", async () => {
+      await expect(
+        chamarAdulterado((r) => {
+          const df = r.structuredContent?.dataflow as Record<string, unknown> | undefined;
+          if (df) df.intruso = 1;
+        }),
+      ).rejects.toThrow(/additional properties/);
     });
 
     it("a armadilha: sem tools/list antes, o mesmo resultado quebrado passa calado", async () => {
