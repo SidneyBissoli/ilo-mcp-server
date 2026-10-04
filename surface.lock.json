@@ -1,8 +1,8 @@
 {
   "$comentario": "Impressão digital da superfície (@sbissoli/mcp-surface). Não editar à mão: `npm run surface:lock` regrava, e só aceita superfície nova sob versão nova.",
   "declarada": {
-    "versao": "1.2.0",
-    "sha256": "65472a21bc954f39b0ca13ce2e326728be7d7f51f7965afd886458c7c0113731",
+    "versao": "1.3.0",
+    "sha256": "aa07324ebcf2cb60f53a584e0983b37de489b2ad80a3ffca4f520847e5a3f671",
     "conteudo": {
       "initialize": {
         "capabilities": {
@@ -622,7 +622,7 @@
             "openWorldHint": true,
             "readOnlyHint": true
           },
-          "description": "Statistical observations from one ILOSTAT dataflow, filtered by dimension codes (filters, e.g. {\"REF_AREA\": [\"BRA\",\"ARG\"], \"SEX\": \"SEX_T\"}) and period (start_period/end_period, e.g. \"2015\"/\"2024\"). REF_AREA is required, maximum 30 areas per call — for broad panels, split areas into batches and/or paginate by period. Unfiltered dimensions return all their categories. Does not aggregate, convert or otherwise transform values (raw ILOSTAT data only), and does not search indicators (use ilo_search_indicators).",
+          "description": "Statistical observations from one ILOSTAT dataflow, filtered by dimension codes (filters, e.g. {\"REF_AREA\": [\"BRA\",\"ARG\"], \"SEX\": \"SEX_T\"}) and period (start_period/end_period, e.g. \"2015\"/\"2024\"). REF_AREA is required, maximum 30 areas per call — for broad panels, split areas into batches and/or paginate by period. Unfiltered dimensions return all their categories. Does not aggregate, convert or otherwise transform values (raw ILOSTAT data only): read each value with the unit and multiplier the ILO states in its row attributes (UNIT_MEASURE, UNIT_MULT — e.g. UNIT_MULT 3 = thousands). Does not search indicators (use ilo_search_indicators).",
           "inputSchema": {
             "$schema": "https://json-schema.org/draft/2020-12/schema",
             "additionalProperties": false,

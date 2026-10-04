@@ -184,17 +184,20 @@ describe("helpers puros", () => {
     expect(timePeriodLabel(undefined, undefined, undefined)).toBeNull();
   });
 
-  it("noticesFromRows agrega só OBS_STATUS (atributos técnicos ficam nas linhas)", () => {
+  it("noticesFromRows agrega OBS_STATUS, unidade e escala (atributos técnicos ficam nas linhas)", () => {
+    const thousands = { UNIT_MEASURE: { id: "PS", name: "Persons" }, UNIT_MULT: { id: "3", name: "Thousands" } };
     const rows: ObservationRow[] = [
-      { dimensions: {}, value: 1, attributes: { OBS_STATUS: { id: "B", name: "Break in series" } } },
-      { dimensions: {}, value: 2, attributes: { OBS_STATUS: { id: "B", name: "Break in series" } } },
+      { dimensions: {}, value: 1, attributes: { OBS_STATUS: { id: "B", name: "Break in series" }, ...thousands } },
+      { dimensions: {}, value: 2, attributes: { OBS_STATUS: { id: "B", name: "Break in series" }, ...thousands } },
       { dimensions: {}, value: 3, attributes: { OBS_STATUS: { id: "E", name: "Estimated" } } },
-      { dimensions: {}, value: 4, attributes: { DECIMALS: { id: "1", name: "1" } } },
+      { dimensions: {}, value: 4, attributes: { DECIMALS: { id: "1", name: "1" }, UNIT_MEASURE_TYPE: { id: "NB", name: "Number" } } },
       { dimensions: {}, value: 5, attributes: null },
     ];
     expect(noticesFromRows(rows)).toEqual([
       "OBS_STATUS B (Break in series): 2 observation(s)",
       "OBS_STATUS E (Estimated): 1 observation(s)",
+      "UNIT_MEASURE PS (Persons): 2 observation(s)",
+      "UNIT_MULT 3 (Thousands): 2 observation(s)",
     ]);
   });
 });

@@ -16,6 +16,13 @@
  * O teste roda o servidor de verdade (`buildServer`) pelo transporte em
  * memória e valida contra o schema que o `tools/list` publica, com o mesmo
  * validador do SDK. A rede nunca é tocada.
+ *
+ * Desde 04/10/2026 valida também COMO O CLIENTE valida (ideia de leitor,
+ * https://dev.to/arhancanli/comment/3g4i4): o próprio `Client` do SDK faz
+ * `tools/list` e `tools/call` e reprova o resultado contra o schema listado —
+ * o teste falha como a sessão do usuário falharia, sem validador escolhido por
+ * nós. E há controle negativo pelo lado do RESULTADO: um resultado quebrado
+ * entre servidor e cliente tem de fazer a chamada falhar.
  */
 
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
@@ -166,6 +173,35 @@ function dadosCheios() {
   };
 }
 
+/**
+ * Unidade e escala no nível de SÉRIE, na forma real da OIT (medida em
+ * 04/10/2026): relationship → MEASURE, um valor na estrutura, índice null.
+ */
+function dadosComUnidade() {
+  const unit = (id: string, v: { id: string; name: string }) => ({ id, relationship: { dimensions: ["MEASURE"] }, values: [v] });
+  return {
+    data: {
+      structures: [
+        {
+          dimensions: {
+            series: [
+              { id: "REF_AREA", values: [{ id: "BRA" }] },
+              { id: "MEASURE", values: [{ id: "EMP_TEMP_NB" }] },
+            ],
+            observation: [{ id: "TIME_PERIOD", values: [{ id: "2025" }] }],
+          },
+          attributes: {
+            dataSet: [],
+            series: [unit("UNIT_MEASURE", { id: "PS", name: "Persons" }), unit("UNIT_MULT", { id: "3", name: "Thousands" })],
+            observation: [{ id: "DECIMALS", values: [{ id: "1", name: "1" }] }],
+          },
+        },
+      ],
+      dataSets: [{ series: { "0:0": { attributes: [null, null], observations: { "0": [102453.886, 0] } } } }],
+    },
+  };
+}
+
 /** Consulta válida cujo recorte não tem observação publicada. */
 function dadosVazios() {
   return {
@@ -279,6 +315,13 @@ const CASOS: Caso[] = [
   },
   {
     nome: "ilo_get_data",
+    cobre: "unidade e escala de série (UNIT_MEASURE, UNIT_MULT) nas linhas",
+    env: {},
+    fontes: { ...FONTES_CHEIAS, dados: dadosComUnidade() },
+    args: { dataflow: "DF_UNE_DEAP_SEX_AGE_RT", filters: { REF_AREA: "BRA" } },
+  },
+  {
+    nome: "ilo_get_data",
     cobre: "recorte sem observação publicada (rows vazio, dataflow.name nulo)",
     env: {},
     fontes: { estrutura: estruturaMagra(), codelist: codelistMagra(), dados: dadosVazios() },
@@ -321,9 +364,25 @@ const CASOS: Caso[] = [
 
 let schemas: Map<string, unknown>;
 
-async function conectar(env: Env): Promise<Client> {
+/** Resultado de `tools/call` como viaja no fio (o que `adulterar` recebe). */
+type ResultadoNoFio = { content?: unknown; structuredContent?: Record<string, unknown> } & Record<string, unknown>;
+
+/**
+ * `adulterar` mexe no RESULTADO de `tools/call` entre o servidor e o cliente —
+ * é o controle negativo pelo lado do resultado: o servidor responde certo e o
+ * que chega ao cliente está quebrado, como chegaria de um servidor com defeito.
+ */
+async function conectar(env: Env, adulterar?: (r: ResultadoNoFio) => void): Promise<Client> {
   const server = buildServer(env);
   const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
+  if (adulterar) {
+    const enviar = serverTransport.send.bind(serverTransport);
+    serverTransport.send = async (mensagem, opcoes) => {
+      const r = (mensagem as { result?: ResultadoNoFio }).result;
+      if (r && "content" in r) adulterar(r);
+      return enviar(mensagem, opcoes);
+    };
+  }
   const client = new Client({ name: "output-contract", version: "0.0.0" });
   await Promise.all([server.connect(serverTransport), client.connect(clientTransport)]);
   return client;
@@ -354,6 +413,11 @@ describe("structuredContent obedece ao outputSchema anunciado", () => {
     stubFetch(caso.fontes);
     const client = await conectar(caso.env);
     try {
+      // Percurso do cliente: initialize (no connect) → tools/list → tools/call.
+      // O `listTools` NÃO é cerimônia: o `Client` só valida o resultado contra
+      // o schema que tem em cache do `tools/list` — sem ele, `callTool` devolve
+      // o que recebeu sem validar (medido no client 2.0.0 e 2.1.0, 30/09/2026).
+      await client.listTools();
       const resultado = await client.callTool({ name: nome, arguments: caso.args });
       const texto = (resultado.content as Array<{ text?: string }> | undefined)?.[0]?.text;
       expect(resultado.isError, `${nome} devolveu erro: ${texto}`).toBeFalsy();
@@ -397,6 +461,51 @@ describe("structuredContent obedece ao outputSchema anunciado", () => {
     } finally {
       await client.close();
     }
+  });
+
+  /**
+   * Controle negativo pelo lado do RESULTADO, no percurso do cliente. O caso
+   * acima passa pelo validador do próprio `Client`; isto prova que esse
+   * validador está de fato ligado — que um resultado quebrado no fio faz a
+   * chamada FALHAR como falharia na sessão do usuário. Sem o `listTools`
+   * antes, os três passariam calados.
+   */
+  describe("o validador do cliente reprova resultado quebrado no fio", () => {
+    async function chamarAdulterado(adulterar: (r: ResultadoNoFio) => void, listar = true) {
+      stubFetch(FONTES_CHEIAS);
+      const client = await conectar({}, adulterar);
+      try {
+        if (listar) await client.listTools();
+        return await client.callTool({
+          name: "ilo_get_data",
+          arguments: { dataflow: "DF_UNE_DEAP_SEX_AGE_RT", filters: { REF_AREA: "BRA" } },
+        });
+      } finally {
+        await client.close();
+      }
+    }
+
+    it("campo obrigatório ausente (rows_count)", async () => {
+      await expect(chamarAdulterado((r) => void delete r.structuredContent?.rows_count)).rejects.toThrow(/rows_count/);
+    });
+
+    it("structuredContent ausente", async () => {
+      await expect(chamarAdulterado((r) => void delete r.structuredContent)).rejects.toThrow(/structured content/i);
+    });
+
+    it("campo de tipo errado (rows_count como texto)", async () => {
+      await expect(
+        chamarAdulterado((r) => {
+          if (r.structuredContent) r.structuredContent.rows_count = "2";
+        }),
+      ).rejects.toThrow(/rows_count/);
+    });
+
+    it("a armadilha: sem tools/list antes, o mesmo resultado quebrado passa calado", async () => {
+      const r = await chamarAdulterado((res) => void delete res.structuredContent?.rows_count, false);
+      expect(r.structuredContent).toBeDefined();
+      expect((r.structuredContent as Record<string, unknown>).rows_count).toBeUndefined();
+    });
   });
 
   /**
