@@ -434,9 +434,9 @@ describe("structuredContent obedece ao outputSchema anunciado", () => {
    * acima passam pelo validador do próprio `Client`; isto prova que esse
    * validador está de fato ligado — que um resultado quebrado no fio faz a
    * chamada FALHAR como falharia na sessão do usuário. As quebras saem do
-   * schema listado (structuredContent ausente, cada obrigatório ausente, o
-   * primeiro obrigatório tipado com tipo trocado); o último veredito é a
-   * armadilha: sem `tools/list` antes, a quebra passa calada.
+   * schema listado (structuredContent ausente, cada obrigatório ausente, cada
+   * obrigatório tipado com tipo trocado); o último veredito é a armadilha: sem
+   * `tools/list` antes, a quebra passa calada.
    */
   it("o validador do cliente reprova resultado quebrado no fio (ilo_get_data)", async () => {
     stubFetch(FONTES_CHEIAS);
@@ -455,18 +455,16 @@ describe("structuredContent obedece ao outputSchema anunciado", () => {
             if (df) df.intruso = 1;
           },
         },
-        // A troca de tipo derivada cai no PRIMEIRO obrigatório tipado, que aqui
-        // é `dataflow` (objeto); a do escalar `rows_count` fica explícita.
-        {
-          descricao: "campo de tipo errado (rows_count como texto)",
-          adulterar: (r) => {
-            if (r.structuredContent) r.structuredContent.rows_count = "2";
-          },
-        },
       ],
     );
+    // Até o helper 0.2.0 a troca de tipo derivada caía só no PRIMEIRO
+    // obrigatório tipado — aqui `dataflow`, um objeto — e o escalar
+    // `rows_count` era quebra extra escrita à mão. Desde a 0.2.1 cada
+    // obrigatório tipado é trocado; a asserção prende que o escalar continua
+    // coberto pela derivação.
     const descricoes = vs.map((v) => v.descricao);
     expect(descricoes).toContain("campo obrigatório ausente (rows_count)");
+    expect(descricoes).toContain("campo de tipo errado (rows_count)");
     for (const v of vs) expect(v.obtido, `${v.descricao}: ${v.mensagem ?? ""}`).toBe(v.esperado);
   });
 
