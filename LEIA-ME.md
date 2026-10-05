@@ -313,6 +313,7 @@ instruções). Rodada de 07/08/2026: **top-1 100% (24/24)** — `evals/results/`
 | `/health` | liveness |
 | `/status` | versão, contagens/nomes de tools, resources e prompts, versão do contrato de proveniência, deploy corrente (alimenta os badges do README) |
 | `/metrics` | uso agregado (só o endpoint MCP; sem IPs, sem conteúdo de consulta) |
+| `/.well-known/mcp/server-card.json` | server card MCP para scanners de diretório (`serverInfo`, tools, resources, prompts — derivado do servidor em execução) |
 | `/mcp` | MCP Streamable HTTP |
 
 ## Segurança
