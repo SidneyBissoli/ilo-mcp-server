@@ -6,8 +6,8 @@
  * digitado. O bloco deploy é omitido quando o binding está ausente (dev local/testes).
  */
 
-import { CONTRACT_VERSION } from "@sbissoli/mcp-provenance";
 import { SERVER_CONFIG } from "./config.js";
+import { provenance } from "./ilostat/provenance.js";
 import { PROMPT_NAMES } from "./prompts.js";
 import { RESOURCE_URIS } from "./resources.js";
 import { TOOL_NAMES } from "./tools/index.js";
@@ -28,7 +28,8 @@ export function buildStatus(env: Env) {
     resource_uris: [...RESOURCE_URIS],
     prompts: PROMPT_NAMES.length,
     prompt_names: [...PROMPT_NAMES],
-    provenance_contract: CONTRACT_VERSION,
+    /** A versão que o servidor EMITE (contexto de proveniência), não a mais nova que o pacote aceita. */
+    provenance_contract: provenance.contractVersion,
     ...(meta
       ? { deploy: { id: meta.id, tag: meta.tag || null, timestamp: meta.timestamp } }
       : {}),

@@ -12,8 +12,8 @@
  */
 
 import type { McpServer } from "@modelcontextprotocol/server";
-import { CONTRACT_VERSION } from "@sbissoli/mcp-provenance";
 import { ILOSTAT_LIMITS, PROVENANCE_OPTIONS } from "./config.js";
+import { provenance } from "./ilostat/provenance.js";
 
 export const GUIDE_URI = "ilostat://guide";
 export const KEY_DATAFLOWS_URI = "ilostat://reference/key-dataflows";
@@ -184,7 +184,7 @@ export function provenanceMarkdown(): string {
   return `# Provenance and citation contract
 
 Every tool response of this server carries a deterministic provenance block
-(contract v${CONTRACT_VERSION}, package \`@sbissoli/mcp-provenance\`), on three channels:
+(contract v${provenance.contractVersion}, package \`@sbissoli/mcp-provenance\`), on three channels:
 \`structuredContent.provenance\` + \`structuredContent.attribution\`, namespaced \`_meta\`
 (\`${PROVENANCE_OPTIONS.metaNamespace}/*\`) and a short text footer. \`provenance_mode\`
 selects \`concise\` (default) or \`detailed\`.
