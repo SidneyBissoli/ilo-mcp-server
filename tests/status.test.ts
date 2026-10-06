@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { Client } from "@modelcontextprotocol/client";
 import { InMemoryTransport } from "@modelcontextprotocol/server";
-import { CONTRACT_VERSION } from "@sbissoli/mcp-provenance";
 import { SERVER_CONFIG } from "../src/config.js";
+import { provenance } from "../src/ilostat/provenance.js";
 import { buildServer } from "../src/server.js";
 import { PROMPT_NAMES } from "../src/prompts.js";
 import { RESOURCE_URIS } from "../src/resources.js";
@@ -23,7 +23,7 @@ describe("buildStatus", () => {
       resource_uris: [...RESOURCE_URIS],
       prompts: PROMPT_NAMES.length,
       prompt_names: [...PROMPT_NAMES],
-      provenance_contract: CONTRACT_VERSION,
+      provenance_contract: provenance.contractVersion,
     });
   });
 
