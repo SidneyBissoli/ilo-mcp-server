@@ -41,4 +41,4 @@ retrieval date, license). This service is not endorsed by the ILO.
 
 ## Contact
 
-Sidney da S. P. Bissoli — sbissoli76@gmail.com
+Sidney da Silva Pereira Bissoli — sbissoli76@gmail.com

@@ -34,7 +34,7 @@ export const SERVER_CONFIG = {
    * Contato exibido na landing page. A URL raiz do Worker é o que sysadmins upstream
    * veem no User-Agent — precisa resolver para identificação humana + contato.
    */
-  contactName: "Sidney da S. P. Bissoli",
+  contactName: "Sidney da Silva Pereira Bissoli",
   contactEmail: "sbissoli76@gmail.com",
   /**
    * Chave do IndexNow. É PÚBLICA por desenho: ela prova posse do domínio por

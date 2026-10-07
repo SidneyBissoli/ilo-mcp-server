@@ -331,4 +331,4 @@ Política de privacidade do serviço hospedado: [PRIVACY.md](PRIVACY.md).
 
 ## Contato
 
-Sidney da S. P. Bissoli — sbissoli76@gmail.com. Este serviço não é endossado pela OIT.
+Sidney da Silva Pereira Bissoli — sbissoli76@gmail.com. Este serviço não é endossado pela OIT.
