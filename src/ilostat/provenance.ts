@@ -11,7 +11,7 @@
  * pelo servidor). O MVP não transforma nada: `derived` é sempre false.
  */
 
-import { createProvenanceContext, type CanonicalProvenance } from "@sbissoli/mcp-provenance";
+import { createProvenanceContext, type CanonicalProvenance, type Revision } from "@sbissoli/mcp-provenance";
 import { PROVENANCE_OPTIONS } from "../config.js";
 import { ILOSTAT_AGENCY, SDMX_BASE } from "./sdmx.js";
 import { currentRetrieval } from "./upstream.js";
@@ -40,10 +40,35 @@ export interface IlostatProvenanceInput {
   sourceUrl: string;
   servedFromCache?: boolean | null;
   notices?: string[];
+  /** Padrão: `ILOSTAT_REVISION` (vigente, sem nota). */
+  revision?: Revision;
 }
 
 /**
- * Bloco canônico v1.1 para uma resposta do ILOSTAT. `retrieval` é o que o
+ * `revision` do contrato (v1.3), decisão do dono de 08/10/2026: `current` em toda
+ * resposta — o ILOSTAT serve só a release vigente e pode revisá-la depois. `final`
+ * não se usa, nem quando o OBS_STATUS da OIT marca o valor: isso exigiria prova
+ * valor a valor (contrato §3) e é item futuro; o OBS_STATUS segue em `notices`,
+ * verbatim. Enquanto o servidor emitir 1.2 a lib descarta a chave do fio; o
+ * canônico já a carrega.
+ */
+export const ILOSTAT_REVISION: Revision = { status: "current", note: null };
+
+/**
+ * A mesma decisão, para respostas que trazem VALORES (`ilo_get_data`), com a nota
+ * que o servidor já publica na descrição da tool e nas instructions
+ * (`src/tools/data.ts`, `src/config.ts`), em versão curta. Catálogo, estrutura e
+ * codelists não levam a nota: ela fala de valores.
+ */
+export const ILOSTAT_VALUES_REVISION: Revision = {
+  status: "current",
+  note:
+    "Current ILOSTAT release, dated by data_vintage (the dataflow LAST_UPDATE): the ILO revises " +
+    "published figures and re-estimates modelled series (_2 ids) at each release, past years included.",
+};
+
+/**
+ * Bloco canônico para uma resposta do ILOSTAT. `retrieval` é o que o
  * coletor da chamada mediu (idas, tentativas, anomalias — `upstream.ts`);
  * `null` quando nada foi à origem (catálogo, acerto de KV) ou fora de um
  * coletor. `retrieved_at` continua sendo o instante da extração original,
@@ -62,6 +87,7 @@ export function ilostatProvenance(input: IlostatProvenanceInput): CanonicalProve
     ...(input.notices?.length ? { notices: input.notices } : {}),
     served_from_cache: input.servedFromCache ?? null,
     retrieval: currentRetrieval(),
+    revision: input.revision ?? ILOSTAT_REVISION,
   });
 }
 

@@ -1,8 +1,8 @@
 {
   "$comentario": "Impressão digital da superfície (@sbissoli/mcp-surface). Não editar à mão: `npm run surface:lock` regrava, e só aceita superfície nova sob versão nova.",
   "declarada": {
-    "versao": "1.5.0",
-    "sha256": "78aa29a87be538a5a8608f50e3eb63b6def2eb0dd71b5e29a40793726e33743f",
+    "versao": "1.6.0",
+    "sha256": "401f62782443cdb69cd8747a3a6521ff20dde4f949607709e6031f09d4ac5372",
     "conteudo": {
       "initialize": {
         "capabilities": {
@@ -196,6 +196,12 @@
                           "null"
                         ]
                       },
+                      "derivation_note": {
+                        "type": "string"
+                      },
+                      "derived": {
+                        "type": "boolean"
+                      },
                       "field_sources": {
                         "items": {
                           "additionalProperties": false,
@@ -252,6 +258,13 @@
                           "string",
                           "null"
                         ]
+                      },
+                      "notices": {
+                        "items": {
+                          "type": "string"
+                        },
+                        "minItems": 1,
+                        "type": "array"
                       },
                       "retrieval": {
                         "anyOf": [
@@ -317,6 +330,30 @@
                       "retrieved_at": {
                         "type": "string"
                       },
+                      "revision": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "note": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "status": {
+                            "enum": [
+                              "current",
+                              "provisional",
+                              "final"
+                            ],
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "status",
+                          "note"
+                        ],
+                        "type": "object"
+                      },
                       "source": {
                         "type": "string"
                       },
@@ -350,7 +387,8 @@
                       "contract_version": {
                         "enum": [
                           "1.1",
-                          "1.2"
+                          "1.2",
+                          "1.3"
                         ],
                         "type": "string"
                       },
@@ -584,6 +622,37 @@
                       "retrieved_at": {
                         "type": "string"
                       },
+                      "revision": {
+                        "anyOf": [
+                          {
+                            "additionalProperties": false,
+                            "properties": {
+                              "note": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              },
+                              "status": {
+                                "enum": [
+                                  "current",
+                                  "provisional",
+                                  "final"
+                                ],
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "status",
+                              "note"
+                            ],
+                            "type": "object"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
                       "served_from_cache": {
                         "type": [
                           "boolean",
@@ -648,7 +717,7 @@
                     "type": "object"
                   }
                 ],
-                "description": "Provenance block (contract v1.1). concise (default): source, source_url, data_vintage, retrieved_at, retrieval, citation, license; detailed: the full canonical block (dataset, dimension_key, notices, served_from_cache, ...). retrieval is the origin diagnostic of this call — requests made to ILOSTAT, attempts including retries, anomalies overcome (timeout, network, rate_limited, http_5xx, http_4xx, malformed_body) and unstable (true when anything had to be retried: treat the figures as obtained with difficulty); null when nothing was fetched from ILOSTAT (catalogue or cached answer)"
+                "description": "Portfolio provenance block. concise (default): source, source_url, data_vintage, retrieved_at, retrieval, citation, license; detailed: the full canonical block (dataset, dimension_key, notices, served_from_cache, ...). retrieval is the origin diagnostic of this call — requests made to ILOSTAT, attempts including retries, anomalies overcome (timeout, network, rate_limited, http_5xx, http_4xx, malformed_body) and unstable (true when anything had to be retried: treat the figures as obtained with difficulty); null when nothing was fetched from ILOSTAT (catalogue or cached answer). Optional keys (field_sources, notices, derived, derivation_note, revision) appear only when there is something to say"
               },
               "text": {
                 "description": "Full readable content of the document (Markdown)",
@@ -815,6 +884,12 @@
                           "null"
                         ]
                       },
+                      "derivation_note": {
+                        "type": "string"
+                      },
+                      "derived": {
+                        "type": "boolean"
+                      },
                       "field_sources": {
                         "items": {
                           "additionalProperties": false,
@@ -871,6 +946,13 @@
                           "string",
                           "null"
                         ]
+                      },
+                      "notices": {
+                        "items": {
+                          "type": "string"
+                        },
+                        "minItems": 1,
+                        "type": "array"
                       },
                       "retrieval": {
                         "anyOf": [
@@ -936,6 +1018,30 @@
                       "retrieved_at": {
                         "type": "string"
                       },
+                      "revision": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "note": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "status": {
+                            "enum": [
+                              "current",
+                              "provisional",
+                              "final"
+                            ],
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "status",
+                          "note"
+                        ],
+                        "type": "object"
+                      },
                       "source": {
                         "type": "string"
                       },
@@ -969,7 +1075,8 @@
                       "contract_version": {
                         "enum": [
                           "1.1",
-                          "1.2"
+                          "1.2",
+                          "1.3"
                         ],
                         "type": "string"
                       },
@@ -1203,6 +1310,37 @@
                       "retrieved_at": {
                         "type": "string"
                       },
+                      "revision": {
+                        "anyOf": [
+                          {
+                            "additionalProperties": false,
+                            "properties": {
+                              "note": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              },
+                              "status": {
+                                "enum": [
+                                  "current",
+                                  "provisional",
+                                  "final"
+                                ],
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "status",
+                              "note"
+                            ],
+                            "type": "object"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
                       "served_from_cache": {
                         "type": [
                           "boolean",
@@ -1267,7 +1405,7 @@
                     "type": "object"
                   }
                 ],
-                "description": "Provenance block (contract v1.1). concise (default): source, source_url, data_vintage, retrieved_at, retrieval, citation, license; detailed: the full canonical block (dataset, dimension_key, notices, served_from_cache, ...). retrieval is the origin diagnostic of this call — requests made to ILOSTAT, attempts including retries, anomalies overcome (timeout, network, rate_limited, http_5xx, http_4xx, malformed_body) and unstable (true when anything had to be retried: treat the figures as obtained with difficulty); null when nothing was fetched from ILOSTAT (catalogue or cached answer)"
+                "description": "Portfolio provenance block. concise (default): source, source_url, data_vintage, retrieved_at, retrieval, citation, license; detailed: the full canonical block (dataset, dimension_key, notices, served_from_cache, ...). retrieval is the origin diagnostic of this call — requests made to ILOSTAT, attempts including retries, anomalies overcome (timeout, network, rate_limited, http_5xx, http_4xx, malformed_body) and unstable (true when anything had to be retried: treat the figures as obtained with difficulty); null when nothing was fetched from ILOSTAT (catalogue or cached answer). Optional keys (field_sources, notices, derived, derivation_note, revision) appear only when there is something to say"
               },
               "rows": {
                 "items": {
@@ -1388,6 +1526,12 @@
                           "null"
                         ]
                       },
+                      "derivation_note": {
+                        "type": "string"
+                      },
+                      "derived": {
+                        "type": "boolean"
+                      },
                       "field_sources": {
                         "items": {
                           "additionalProperties": false,
@@ -1444,6 +1588,13 @@
                           "string",
                           "null"
                         ]
+                      },
+                      "notices": {
+                        "items": {
+                          "type": "string"
+                        },
+                        "minItems": 1,
+                        "type": "array"
                       },
                       "retrieval": {
                         "anyOf": [
@@ -1509,6 +1660,30 @@
                       "retrieved_at": {
                         "type": "string"
                       },
+                      "revision": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "note": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "status": {
+                            "enum": [
+                              "current",
+                              "provisional",
+                              "final"
+                            ],
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "status",
+                          "note"
+                        ],
+                        "type": "object"
+                      },
                       "source": {
                         "type": "string"
                       },
@@ -1542,7 +1717,8 @@
                       "contract_version": {
                         "enum": [
                           "1.1",
-                          "1.2"
+                          "1.2",
+                          "1.3"
                         ],
                         "type": "string"
                       },
@@ -1776,6 +1952,37 @@
                       "retrieved_at": {
                         "type": "string"
                       },
+                      "revision": {
+                        "anyOf": [
+                          {
+                            "additionalProperties": false,
+                            "properties": {
+                              "note": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              },
+                              "status": {
+                                "enum": [
+                                  "current",
+                                  "provisional",
+                                  "final"
+                                ],
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "status",
+                              "note"
+                            ],
+                            "type": "object"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
                       "served_from_cache": {
                         "type": [
                           "boolean",
@@ -1840,7 +2047,7 @@
                     "type": "object"
                   }
                 ],
-                "description": "Provenance block (contract v1.1). concise (default): source, source_url, data_vintage, retrieved_at, retrieval, citation, license; detailed: the full canonical block (dataset, dimension_key, notices, served_from_cache, ...). retrieval is the origin diagnostic of this call — requests made to ILOSTAT, attempts including retries, anomalies overcome (timeout, network, rate_limited, http_5xx, http_4xx, malformed_body) and unstable (true when anything had to be retried: treat the figures as obtained with difficulty); null when nothing was fetched from ILOSTAT (catalogue or cached answer)"
+                "description": "Portfolio provenance block. concise (default): source, source_url, data_vintage, retrieved_at, retrieval, citation, license; detailed: the full canonical block (dataset, dimension_key, notices, served_from_cache, ...). retrieval is the origin diagnostic of this call — requests made to ILOSTAT, attempts including retries, anomalies overcome (timeout, network, rate_limited, http_5xx, http_4xx, malformed_body) and unstable (true when anything had to be retried: treat the figures as obtained with difficulty); null when nothing was fetched from ILOSTAT (catalogue or cached answer). Optional keys (field_sources, notices, derived, derivation_note, revision) appear only when there is something to say"
               },
               "time_dimension": {
                 "type": [
@@ -1963,6 +2170,12 @@
                           "null"
                         ]
                       },
+                      "derivation_note": {
+                        "type": "string"
+                      },
+                      "derived": {
+                        "type": "boolean"
+                      },
                       "field_sources": {
                         "items": {
                           "additionalProperties": false,
@@ -2019,6 +2232,13 @@
                           "string",
                           "null"
                         ]
+                      },
+                      "notices": {
+                        "items": {
+                          "type": "string"
+                        },
+                        "minItems": 1,
+                        "type": "array"
                       },
                       "retrieval": {
                         "anyOf": [
@@ -2084,6 +2304,30 @@
                       "retrieved_at": {
                         "type": "string"
                       },
+                      "revision": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "note": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "status": {
+                            "enum": [
+                              "current",
+                              "provisional",
+                              "final"
+                            ],
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "status",
+                          "note"
+                        ],
+                        "type": "object"
+                      },
                       "source": {
                         "type": "string"
                       },
@@ -2117,7 +2361,8 @@
                       "contract_version": {
                         "enum": [
                           "1.1",
-                          "1.2"
+                          "1.2",
+                          "1.3"
                         ],
                         "type": "string"
                       },
@@ -2351,6 +2596,37 @@
                       "retrieved_at": {
                         "type": "string"
                       },
+                      "revision": {
+                        "anyOf": [
+                          {
+                            "additionalProperties": false,
+                            "properties": {
+                              "note": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              },
+                              "status": {
+                                "enum": [
+                                  "current",
+                                  "provisional",
+                                  "final"
+                                ],
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "status",
+                              "note"
+                            ],
+                            "type": "object"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
                       "served_from_cache": {
                         "type": [
                           "boolean",
@@ -2415,7 +2691,7 @@
                     "type": "object"
                   }
                 ],
-                "description": "Provenance block (contract v1.1). concise (default): source, source_url, data_vintage, retrieved_at, retrieval, citation, license; detailed: the full canonical block (dataset, dimension_key, notices, served_from_cache, ...). retrieval is the origin diagnostic of this call — requests made to ILOSTAT, attempts including retries, anomalies overcome (timeout, network, rate_limited, http_5xx, http_4xx, malformed_body) and unstable (true when anything had to be retried: treat the figures as obtained with difficulty); null when nothing was fetched from ILOSTAT (catalogue or cached answer)"
+                "description": "Portfolio provenance block. concise (default): source, source_url, data_vintage, retrieved_at, retrieval, citation, license; detailed: the full canonical block (dataset, dimension_key, notices, served_from_cache, ...). retrieval is the origin diagnostic of this call — requests made to ILOSTAT, attempts including retries, anomalies overcome (timeout, network, rate_limited, http_5xx, http_4xx, malformed_body) and unstable (true when anything had to be retried: treat the figures as obtained with difficulty); null when nothing was fetched from ILOSTAT (catalogue or cached answer). Optional keys (field_sources, notices, derived, derivation_note, revision) appear only when there is something to say"
               },
               "showing": {
                 "type": "number"
@@ -2565,6 +2841,12 @@
                           "null"
                         ]
                       },
+                      "derivation_note": {
+                        "type": "string"
+                      },
+                      "derived": {
+                        "type": "boolean"
+                      },
                       "field_sources": {
                         "items": {
                           "additionalProperties": false,
@@ -2621,6 +2903,13 @@
                           "string",
                           "null"
                         ]
+                      },
+                      "notices": {
+                        "items": {
+                          "type": "string"
+                        },
+                        "minItems": 1,
+                        "type": "array"
                       },
                       "retrieval": {
                         "anyOf": [
@@ -2686,6 +2975,30 @@
                       "retrieved_at": {
                         "type": "string"
                       },
+                      "revision": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "note": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "status": {
+                            "enum": [
+                              "current",
+                              "provisional",
+                              "final"
+                            ],
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "status",
+                          "note"
+                        ],
+                        "type": "object"
+                      },
                       "source": {
                         "type": "string"
                       },
@@ -2719,7 +3032,8 @@
                       "contract_version": {
                         "enum": [
                           "1.1",
-                          "1.2"
+                          "1.2",
+                          "1.3"
                         ],
                         "type": "string"
                       },
@@ -2953,6 +3267,37 @@
                       "retrieved_at": {
                         "type": "string"
                       },
+                      "revision": {
+                        "anyOf": [
+                          {
+                            "additionalProperties": false,
+                            "properties": {
+                              "note": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              },
+                              "status": {
+                                "enum": [
+                                  "current",
+                                  "provisional",
+                                  "final"
+                                ],
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "status",
+                              "note"
+                            ],
+                            "type": "object"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
                       "served_from_cache": {
                         "type": [
                           "boolean",
@@ -3017,7 +3362,7 @@
                     "type": "object"
                   }
                 ],
-                "description": "Provenance block (contract v1.1). concise (default): source, source_url, data_vintage, retrieved_at, retrieval, citation, license; detailed: the full canonical block (dataset, dimension_key, notices, served_from_cache, ...). retrieval is the origin diagnostic of this call — requests made to ILOSTAT, attempts including retries, anomalies overcome (timeout, network, rate_limited, http_5xx, http_4xx, malformed_body) and unstable (true when anything had to be retried: treat the figures as obtained with difficulty); null when nothing was fetched from ILOSTAT (catalogue or cached answer)"
+                "description": "Portfolio provenance block. concise (default): source, source_url, data_vintage, retrieved_at, retrieval, citation, license; detailed: the full canonical block (dataset, dimension_key, notices, served_from_cache, ...). retrieval is the origin diagnostic of this call — requests made to ILOSTAT, attempts including retries, anomalies overcome (timeout, network, rate_limited, http_5xx, http_4xx, malformed_body) and unstable (true when anything had to be retried: treat the figures as obtained with difficulty); null when nothing was fetched from ILOSTAT (catalogue or cached answer). Optional keys (field_sources, notices, derived, derivation_note, revision) appear only when there is something to say"
               },
               "showing": {
                 "type": "number"
@@ -3092,6 +3437,12 @@
                           "null"
                         ]
                       },
+                      "derivation_note": {
+                        "type": "string"
+                      },
+                      "derived": {
+                        "type": "boolean"
+                      },
                       "field_sources": {
                         "items": {
                           "additionalProperties": false,
@@ -3148,6 +3499,13 @@
                           "string",
                           "null"
                         ]
+                      },
+                      "notices": {
+                        "items": {
+                          "type": "string"
+                        },
+                        "minItems": 1,
+                        "type": "array"
                       },
                       "retrieval": {
                         "anyOf": [
@@ -3213,6 +3571,30 @@
                       "retrieved_at": {
                         "type": "string"
                       },
+                      "revision": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "note": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "status": {
+                            "enum": [
+                              "current",
+                              "provisional",
+                              "final"
+                            ],
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "status",
+                          "note"
+                        ],
+                        "type": "object"
+                      },
                       "source": {
                         "type": "string"
                       },
@@ -3246,7 +3628,8 @@
                       "contract_version": {
                         "enum": [
                           "1.1",
-                          "1.2"
+                          "1.2",
+                          "1.3"
                         ],
                         "type": "string"
                       },
@@ -3480,6 +3863,37 @@
                       "retrieved_at": {
                         "type": "string"
                       },
+                      "revision": {
+                        "anyOf": [
+                          {
+                            "additionalProperties": false,
+                            "properties": {
+                              "note": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              },
+                              "status": {
+                                "enum": [
+                                  "current",
+                                  "provisional",
+                                  "final"
+                                ],
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "status",
+                              "note"
+                            ],
+                            "type": "object"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
                       "served_from_cache": {
                         "type": [
                           "boolean",
@@ -3544,7 +3958,7 @@
                     "type": "object"
                   }
                 ],
-                "description": "Provenance block (contract v1.1). concise (default): source, source_url, data_vintage, retrieved_at, retrieval, citation, license; detailed: the full canonical block (dataset, dimension_key, notices, served_from_cache, ...). retrieval is the origin diagnostic of this call — requests made to ILOSTAT, attempts including retries, anomalies overcome (timeout, network, rate_limited, http_5xx, http_4xx, malformed_body) and unstable (true when anything had to be retried: treat the figures as obtained with difficulty); null when nothing was fetched from ILOSTAT (catalogue or cached answer)"
+                "description": "Portfolio provenance block. concise (default): source, source_url, data_vintage, retrieved_at, retrieval, citation, license; detailed: the full canonical block (dataset, dimension_key, notices, served_from_cache, ...). retrieval is the origin diagnostic of this call — requests made to ILOSTAT, attempts including retries, anomalies overcome (timeout, network, rate_limited, http_5xx, http_4xx, malformed_body) and unstable (true when anything had to be retried: treat the figures as obtained with difficulty); null when nothing was fetched from ILOSTAT (catalogue or cached answer). Optional keys (field_sources, notices, derived, derivation_note, revision) appear only when there is something to say"
               },
               "results": {
                 "description": "Matching documents, in relevance order",

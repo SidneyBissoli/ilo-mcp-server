@@ -24,6 +24,34 @@ do npm. Lacunas registradas:
 - **Datas corrigidas para UTC:** a 1.4.2 e a 1.4.0 estavam com a data local
   (07/10 e 05/10); o npm registra 08/10 e 06/10.
 
+## [1.6.0] — 2026-10-08
+
+Contrato de proveniência: tempo 2 da v1.2 e tempo 1 da v1.3
+(`@sbissoli/mcp-provenance` 0.4.0). O fio das tools não muda além do
+`contract_version`: o ilo não funde sub-fontes, então a 1.2 não acrescenta
+`field_sources` a nenhuma resposta.
+
+### Alterado
+
+- O servidor emite o contrato **1.2** (`contractVersion` no contexto de
+  proveniência): `contract_version` passa a `"1.2"` no modo `detailed`, no `/status`
+  (`provenance_contract`) e no resource `ilostat://reference/provenance`, que ecoam a versão do
+  contexto, nunca um literal.
+- O `outputSchema` das tools passa a **declarar** as chaves opcionais da 1.3
+  (`notices`, `derived`, `derivation_note`, `revision`), pelo esquema importado do
+  pacote. A superfície declarada muda (trava e `server.json` regravados); nenhuma
+  resposta as emite ainda — a 1.3 se liga numa versão posterior, depois de os
+  conectores renovarem o esquema.
+- Os blocos passam a informar a **`revision`** (fica no canônico; sai no fio só com a
+  1.3): `current` em toda resposta, e em `ilo_get_data` com a nota que o servidor já
+  publicava sobre revisões (a OIT revisa números publicados e reestima as séries
+  modeladas, ids `_2`, a cada release). `final` não se usa, nem quando o `OBS_STATUS`
+  marca o valor; o `OBS_STATUS` segue em `notices`, verbatim.
+- Textos que fixavam a versão do contrato ("contract v1.1", "bloco de proveniência
+  v1.0") passam a não citar número: a descrição do bloco no `outputSchema`, o README e o
+  LEIA-ME.
+- Dependências: `@sbissoli/mcp-provenance` ^0.4.0, `@sbissoli/mcp-upstream` ^0.4.2.
+
 ## [1.5.0] — 2026-10-08
 
 O que cada número é, e em que versão. Um leitor do artigo do bcb no dev.to (Daniel

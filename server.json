@@ -17,13 +17,13 @@
     "url": "https://github.com/SidneyBissoli/ilo-mcp-server",
     "source": "github"
   },
-  "version": "1.5.0",
+  "version": "1.6.0",
   "packages": [
     {
       "registryType": "npm",
       "registryBaseUrl": "https://registry.npmjs.org",
       "identifier": "ilo-mcp-server",
-      "version": "1.5.0",
+      "version": "1.6.0",
       "transport": {
         "type": "stdio"
       }
@@ -42,8 +42,8 @@
         "spec": "https://github.com/SidneyBissoli/mcp-br-commons/blob/main/packages/mcp-surface/SPEC.md",
         "endpoint": "https://ilo.sidneybissoli.com/mcp",
         "declared": {
-          "sha256": "78aa29a87be538a5a8608f50e3eb63b6def2eb0dd71b5e29a40793726e33743f",
-          "lockedAt": "1.5.0"
+          "sha256": "401f62782443cdb69cd8747a3a6521ff20dde4f949607709e6031f09d4ac5372",
+          "lockedAt": "1.6.0"
         },
         "anonymous": {
           "sha256": "ade1bd429bdfc63453a924614520010bb782ffd8d24fdd6483aa17d5b36b61a4",

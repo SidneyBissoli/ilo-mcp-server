@@ -199,7 +199,7 @@ selects \`concise\` (default) or \`detailed\`.
 - **retrieved_at** — the real instant the data was extracted from ILOSTAT (UTC). For
   cached structures/codelists it is the instant of the original extraction and
   \`served_from_cache\` is \`true\`. Data (\`ilo_get_data\`) is never cached.
-- **retrieval** (contract v1.1) — the origin diagnostic of this call, measured by the server:
+- **retrieval** (since contract v1.1) — the origin diagnostic of this call, measured by the server:
   \`requests\` (distinct calls made to ILOSTAT), \`attempts\` (including retries),
   \`anomalies\` overcome on the way (\`timeout\`, \`network\`, \`rate_limited\`, \`http_5xx\`,
   \`http_4xx\`, \`malformed_body\`, each with a count) and \`unstable\` — \`true\` when anything

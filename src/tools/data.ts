@@ -1,7 +1,7 @@
 /**
  * ilo_get_data — a tool central: dados estatísticos de um dataflow, com recorte
  * obrigatório (teto de 30 áreas, decisão do decisor 07/08/2026) e bloco de
- * proveniência v1.1 com a chave de dimensões da consulta.
+ * proveniência com a chave de dimensões da consulta.
  *
  * Consulta típica = 1 chamada REST (a estrutura, fonte do data_vintage, vem do
  * cache KV). Dados nunca são cacheados no MVP.
@@ -11,7 +11,7 @@ import type { McpServer } from "@modelcontextprotocol/server";
 import { z } from "zod";
 import { buildDataKey } from "../ilostat/key.js";
 import type { ObservationRow } from "../ilostat/parser.js";
-import { ilostatProvenance, provenance } from "../ilostat/provenance.js";
+import { ILOSTAT_VALUES_REVISION, ilostatProvenance, provenance } from "../ilostat/provenance.js";
 import { fetchData, getDataflowStructure } from "../ilostat/sdmx.js";
 import type { Env } from "../types.js";
 import type { RecordUsage } from "../usage-core.js";
@@ -111,6 +111,7 @@ export function getDataHandler(env: Env) {
         sourceUrl,
         servedFromCache: false,
         notices,
+        revision: ILOSTAT_VALUES_REVISION,
       });
       const r = provenance.result(data, p, { mode: args.provenance_mode ?? "concise" });
       return { ...r, structuredContent: { ...r.structuredContent, ...data } };

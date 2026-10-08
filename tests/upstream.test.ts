@@ -270,7 +270,7 @@ describe("retrieval medido pelo servidor inteiro", () => {
       expect(r.isError).toBeFalsy();
       const sc = r.structuredContent as Record<string, unknown>;
       expect(sc.rows_count).toBe(2);
-      expect((sc.provenance as Record<string, unknown>).contract_version).toBe("1.1");
+      expect((sc.provenance as Record<string, unknown>).contract_version).toBe("1.2");
       expect(retrievalOf(r)).toEqual({
         requests: 2,
         attempts: 3,

@@ -1,6 +1,6 @@
 /**
  * Peças compartilhadas pelas tools: o parâmetro de modo de proveniência
- * (decisão por-servidor do contrato v1.1 — exposto na descrição da tool, nunca
+ * (decisão por-servidor do contrato de proveniência — exposto na descrição da tool, nunca
  * no texto ao leitor) e o trecho de outputSchema do envelope.
  */
 
@@ -16,7 +16,7 @@ export const PROVENANCE_MODE_SCHEMA = z
   );
 
 /**
- * Campos do envelope de proveniência presentes em toda resposta (contrato v1.1).
+ * Campos do envelope de proveniência presentes em toda resposta.
  *
  * A forma do bloco é a que o pacote PUBLICA (`ConciseBlockSchema` /
  * `DetailedBlockSchema`, em zod — o SDK converte), não uma transcrição: até a
@@ -33,13 +33,15 @@ export function provenanceOutputShape() {
     provenance: z
       .union([ConciseBlockSchema, DetailedBlockSchema])
       .describe(
-        "Provenance block (contract v1.1). concise (default): source, source_url, data_vintage, " +
+        "Portfolio provenance block. concise (default): source, source_url, data_vintage, " +
           "retrieved_at, retrieval, citation, license; detailed: the full canonical block (dataset, " +
           "dimension_key, notices, served_from_cache, ...). retrieval is the origin diagnostic of " +
           "this call — requests made to ILOSTAT, attempts including retries, anomalies overcome " +
           "(timeout, network, rate_limited, http_5xx, http_4xx, malformed_body) and unstable " +
           "(true when anything had to be retried: treat the figures as obtained with difficulty); " +
-          "null when nothing was fetched from ILOSTAT (catalogue or cached answer)",
+          "null when nothing was fetched from ILOSTAT (catalogue or cached answer). Optional keys " +
+          "(field_sources, notices, derived, derivation_note, revision) appear only when there is " +
+          "something to say",
       ),
     attribution: z.array(z.string()),
   };

@@ -57,7 +57,7 @@ O `package.json` é minificado, numa linha só. Manter assim ao editar.
 |:--|:--|
 | `src/index.ts` | Entrada do Worker: rotas públicas (landing, `/health`, `/status`, `/metrics`, server card) → Bearer opcional → rate limit → `createMcpHandler` (factory cria um `McpServer` por request) |
 | `src/cli.ts` | Entrada stdio: o mesmo servidor, sem bindings — cache SDMX em `Map` com TTL, catálogo em memória, sem uso/rate limit/auth; logs em stderr |
-| `src/server.ts` | `buildServer`: anotações obrigatórias, envelope de proveniência v1.1 em todo retorno, instrumentação de uso fora do caminho crítico |
+| `src/server.ts` | `buildServer`: anotações obrigatórias, envelope de proveniência em todo retorno, instrumentação de uso fora do caminho crítico |
 | `src/config.ts` | Identidade e tunáveis; o site é declarado em `server.json`, `package.json` e `serverInfo.websiteUrl` e preso por `tests/serverinfo-sync.test.ts` |
 | `src/tools/` | Um módulo por grupo (`catalog`, `data`, `metadata`, `deep-research`) + `shared`, `errors` |
 | `src/resources.ts`, `src/prompts.ts` | Documentação de referência e workflows, offline e sem estado |

@@ -186,7 +186,7 @@ repositório constrói este runtime (usado pelo registro Glama).
 Fluxo típico: `ilo_search_indicators` → `ilo_get_indicator_metadata` / `ilo_list_dimension_values`
 para descobrir os códigos válidos de filtro → `ilo_get_data` com filtros de país e período.
 
-Toda resposta carrega o **bloco de proveniência v1.0**
+Toda resposta carrega o **bloco de proveniência** do portfólio
 ([`@sbissoli/mcp-provenance`](https://www.npmjs.com/package/@sbissoli/mcp-provenance), modos
 `concise`/`detailed` via parâmetro `provenance_mode`) em três canais: `structuredContent`,
 `_meta` com namespace (`com.sidneybissoli.ilostat/*`) e rodapé de texto.

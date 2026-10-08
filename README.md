@@ -190,7 +190,7 @@ this runtime (used by the Glama registry).
 Typical flow: `ilo_search_indicators` → `ilo_get_indicator_metadata` / `ilo_list_dimension_values`
 to discover valid filter codes → `ilo_get_data` with country and period filters.
 
-Every response carries the **provenance block v1.1**
+Every response carries the portfolio **provenance block**
 ([`@sbissoli/mcp-provenance`](https://www.npmjs.com/package/@sbissoli/mcp-provenance), modes
 `concise`/`detailed` via the `provenance_mode` parameter) on three channels:
 `structuredContent`, namespaced `_meta` (`com.sidneybissoli.ilostat/*`) and a text footer.
