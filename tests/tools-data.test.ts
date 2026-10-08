@@ -107,7 +107,7 @@ describe("getDataHandler", () => {
     expect(calls.some((u) => u.includes("format="))).toBe(false);
 
     const p = sc.provenance as Record<string, unknown>;
-    expect(p.contract_version).toBe("1.1");
+    expect(p.contract_version).toBe("1.2");
     // Handler chamado direto, fora do coletor que `withUsage` abre: "não medido".
     // A contagem real está em tests/upstream.test.ts, pelo servidor inteiro.
     expect(p.retrieval).toBeNull();
@@ -126,7 +126,7 @@ describe("getDataHandler", () => {
     expect((p.license as Record<string, unknown>).id).toBe("CC-BY-4.0");
   });
 
-  it("modo concise (default): bloco com exatamente 7 chaves em ordem fixa (v1.1: retrieval depois de retrieved_at)", async () => {
+  it("modo concise (default): bloco com exatamente 7 chaves em ordem fixa (retrieval depois de retrieved_at; o ilo não funde sub-fontes, então a 1.2 não acrescenta field_sources)", async () => {
     stubFetch();
     const r = (await getDataHandler(ENV)({
       dataflow: "DF_UNE_DEAP_SEX_AGE_RT",

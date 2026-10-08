@@ -13,7 +13,7 @@ export const SERVER_CONFIG = {
   /** Nome curto do servidor (handshake MCP, /status, landing). */
   name: "ilo-mcp-server",
   /** Versão do servidor — manter em sincronia com package.json. */
-  version: "1.5.0",
+  version: "1.6.0",
   /** Título de exibição (clientes MCP mostram ao usuário). */
   title: "ILO Labour Statistics (ILOSTAT)",
   /**
@@ -79,11 +79,20 @@ export const SERVER_CONFIG = {
   ] as string[],
 } as const;
 
-/** Contexto de proveniência do servidor: namespace reverse-DNS próprio, inglês, UTC. */
+/**
+ * Contexto de proveniência do servidor: namespace reverse-DNS próprio, inglês, UTC.
+ *
+ * `contractVersion` "1.2" (08/10/2026, tempo 2 da 1.2 / tempo 1 da 1.3 do contrato):
+ * o ilo não funde sub-fontes, então o fio não muda em nenhum byte além de
+ * `contract_version` no `detailed`. A 1.3 se liga numa sessão posterior, depois de os
+ * conectores renovarem o `outputSchema` (contrato §8). Quem mostra a versão ao cliente
+ * (resource guide, `/status`) lê `provenance.contractVersion`, nunca um literal.
+ */
 export const PROVENANCE_OPTIONS: ProvenanceContextOptions = {
   metaNamespace: "com.sidneybissoli.ilostat",
   locale: "en",
   timezone: "utc",
+  contractVersion: "1.2",
 };
 
 /**
