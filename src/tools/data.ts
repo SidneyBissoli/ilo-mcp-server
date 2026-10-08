@@ -131,7 +131,11 @@ export function registerDataTools(server: McpServer, env: Env, record: RecordUsa
         "Unfiltered dimensions return all their categories. Does not aggregate, convert or " +
         "otherwise transform values (raw ILOSTAT data only): read each value with the unit and " +
         "multiplier the ILO states in its row attributes (UNIT_MEASURE, UNIT_MULT — e.g. " +
-        "UNIT_MULT 3 = thousands). Does not search indicators (use ilo_search_indicators).",
+        "UNIT_MULT 3 = thousands). Read TIME_PERIOD with the FREQ column (annual, quarterly or monthly) and " +
+        "OBS_STATUS when present (break in series, estimated or provisional value). Values are the current " +
+        "release, dated by data_vintage (the dataflow LAST_UPDATE): the ILO revises published figures and " +
+        "re-estimates modelled series (_2 ids) at each release, past years included. Does not search " +
+        "indicators (use ilo_search_indicators).",
       inputSchema: z.object({
         dataflow: z.string().min(1).describe('Dataflow id from ilo_search_indicators (e.g. "DF_UNE_DEAP_SEX_AGE_RT")'),
         // REF_AREA é exigência ESTRUTURAL, e não só de prosa, desde 11/09/2026.

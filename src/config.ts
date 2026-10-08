@@ -13,7 +13,7 @@ export const SERVER_CONFIG = {
   /** Nome curto do servidor (handshake MCP, /status, landing). */
   name: "ilo-mcp-server",
   /** Versão do servidor — manter em sincronia com package.json. */
-  version: "1.4.2",
+  version: "1.5.0",
   /** Título de exibição (clientes MCP mostram ao usuário). */
   title: "ILO Labour Statistics (ILOSTAT)",
   /**
@@ -59,7 +59,11 @@ export const SERVER_CONFIG = {
     "filter codes. Resources ilostat://guide (code conventions, limits) and " +
     "ilostat://reference/key-dataflows (verified dataflow ids by topic) save discovery calls; " +
     "prompts ilo_country_labour_profile, ilo_compare_countries and ilo_indicator_trend are " +
-    "ready-made workflows. search and fetch implement the ChatGPT Deep Research contract over " +
+    "ready-made workflows. Each observation is read with its FREQ (TIME_PERIOD is a year, quarter or month " +
+    "accordingly) and its OBS_STATUS attribute when present (break in series, estimated or provisional " +
+    "value); every value is the one in the dataflow release dated in data_vintage (LAST_UPDATE): the ILO " +
+    "revises published figures, and modelled estimates (dataflow ids with _2) are re-estimated at each " +
+    "release, past years included - this server returns only the current release. search and fetch implement the ChatGPT Deep Research contract over " +
     "the dataflow catalogue. Do not use this server for non-labour statistics (education, " +
     "health, trade) or for data not published by the ILO.",
   /**
