@@ -4,7 +4,8 @@
  * - O servidor emite 1.2 (`contractVersion` no contexto), e quem mostra a versão ao
  *   cliente (`/status`, resource de proveniência) ecoa o CONTEXTO — não um literal nem
  *   o padrão da lib (`CONTRACT_VERSION`, que segue 1.1).
- * - O ilo não funde sub-fontes: com 1.2 nenhuma resposta leva `field_sources`.
+ * - Desde a 1.6.1, `ilo_get_data` e `ilo_list_dimension_values` juntam duas leituras e
+ *   levam `field_sources` (o resto do fio 1.2 é o da 1.1).
  * - `revision` (decisão do dono: `current` em todo o portfólio fora o sih; `final`
  *   ninguém usa) já está no canônico; o fio 1.2 não a carrega.
  * - O `outputSchema` LISTADO já aceita um bloco 1.3 completo (`notices`, `derived`,
@@ -139,29 +140,31 @@ describe("versão do contrato", () => {
   });
 });
 
-describe("1.2 no fio: nada além da versão muda", () => {
-  it("sem fusão de sub-fontes → sem field_sources, no concise e no detailed", async () => {
+describe("1.2 no fio: além da versão, só field_sources", () => {
+  it("ilo_get_data junta estrutura + dados (desde a 1.6.1) → field_sources com as duas leituras", async () => {
     const concise = await getDataWithCanonical("concise");
-    expect(concise.r.structuredContent.provenance).not.toHaveProperty("field_sources");
-    expect(concise.canonical.field_sources ?? null).toBeNull();
-    // O detailed é o canônico inteiro: a chave sai como `null` (já saía na 1.1).
-    const detailed = await getDataWithCanonical("detailed");
-    expect((detailed.r.structuredContent.provenance as unknown as Record<string, unknown>).field_sources).toBeNull();
+    const fs = (concise.r.structuredContent.provenance as unknown as Record<string, unknown>).field_sources;
+    expect(fs).toHaveLength(2);
+    expect(concise.canonical.field_sources).toHaveLength(2);
+    // Cenário completo (estrutura do KV de ontem): tests/retrieved-at-mais-antigo.test.ts.
   });
 
-  it("a resposta 1.2 é byte a byte a 1.1, fora o contract_version (concise, detailed e rodapé)", async () => {
+  it("fora field_sources e o contract_version, a resposta 1.2 é byte a byte a 1.1 (concise, detailed e rodapé)", async () => {
     const ctx11 = createProvenanceContext({ ...PROVENANCE_OPTIONS, contractVersion: "1.1" });
+    const semFieldSources = (b: unknown) => {
+      const { field_sources: _f, contract_version: _c, ...resto } = b as Record<string, unknown>;
+      return resto;
+    };
     for (const mode of ["concise", "detailed"] as const) {
       const { r, canonical } = await getDataWithCanonical(mode);
       const { contract_version: _v, ...input } = canonical;
       const p11 = ctx11.build(input as Parameters<typeof ctx11.build>[0]);
       const r11 = ctx11.result({}, p11, { mode });
       const r12 = provenance.result({}, canonical, { mode });
-      expect(r12.structuredContent.provenance).toEqual(
-        mode === "detailed"
-          ? { ...(r11.structuredContent.provenance as unknown as Record<string, unknown>), contract_version: "1.2" }
-          : r11.structuredContent.provenance,
+      expect(semFieldSources(r12.structuredContent.provenance)).toEqual(
+        semFieldSources(r11.structuredContent.provenance),
       );
+      // O rodapé não mostra field_sources: texto idêntico.
       expect(JSON.stringify(r12.content)).toBe(JSON.stringify(r11.content));
       expect(r.structuredContent.provenance).toEqual(r12.structuredContent.provenance);
     }

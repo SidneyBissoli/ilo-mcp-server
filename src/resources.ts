@@ -198,7 +198,11 @@ selects \`concise\` (default) or \`detailed\`.
   ISO 8601. Cite it as the "as of" date of the figures.
 - **retrieved_at** — the real instant the data was extracted from ILOSTAT (UTC). For
   cached structures/codelists it is the instant of the original extraction and
-  \`served_from_cache\` is \`true\`. Data (\`ilo_get_data\`) is never cached.
+  \`served_from_cache\` is \`true\`. Data (\`ilo_get_data\`) is never cached. When an answer
+  joins two reads made at different moments — \`ilo_get_data\` (the dataflow structure,
+  cached up to 24 h, plus the data fetched now) and \`ilo_list_dimension_values\`
+  (structure plus codelist) — \`retrieved_at\` is the OLDEST of them and
+  \`field_sources\` says which part of the answer came from which read, and when.
 - **retrieval** (since contract v1.1) — the origin diagnostic of this call, measured by the server:
   \`requests\` (distinct calls made to ILOSTAT), \`attempts\` (including retries),
   \`anomalies\` overcome on the way (\`timeout\`, \`network\`, \`rate_limited\`, \`http_5xx\`,
