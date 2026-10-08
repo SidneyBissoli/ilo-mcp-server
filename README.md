@@ -260,6 +260,20 @@ the test suite, so the documentation cannot point at an id the search would not 
   e.g. "Break in series"), verbatim and with counts. Technical per-observation attributes
   (`DECIMALS` etc.) stay on the rows (`rows[].attributes`).
 
+### Surface fingerprint, checkable from the registry
+
+Every release publishes, in its [MCP Registry](https://registry.modelcontextprotocol.io) entry,
+the sha256 of the surface this version serves (`initialize`, tools, resources, prompts) and which
+methods answer without a credential. A surface change without a version bump fails the build;
+the fingerprint in the registry lets a client check the same thing on its own side. Canonical
+form and procedure: [SPEC.md of `@sbissoli/mcp-surface`](https://github.com/SidneyBissoli/mcp-br-commons/blob/main/packages/mcp-surface/SPEC.md).
+To check it yourself (Node 18+, no dependencies):
+
+```sh
+curl -sO https://raw.githubusercontent.com/SidneyBissoli/mcp-br-commons/main/packages/mcp-surface/exemplos/verify.mjs
+node verify.mjs io.github.SidneyBissoli/ilo-mcp-server
+```
+
 ## Data license and attribution
 
 - ILOSTAT data and metadata: **CC BY 4.0** (since 2023-05-03; license verified 2026-08-04).

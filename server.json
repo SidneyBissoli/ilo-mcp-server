@@ -8,20 +8,22 @@
     {
       "src": "https://ilo.sidneybissoli.com/icon.png",
       "mimeType": "image/png",
-      "sizes": ["512x512"]
+      "sizes": [
+        "512x512"
+      ]
     }
   ],
   "repository": {
     "url": "https://github.com/SidneyBissoli/ilo-mcp-server",
     "source": "github"
   },
-  "version": "1.4.1",
+  "version": "1.4.2",
   "packages": [
     {
       "registryType": "npm",
       "registryBaseUrl": "https://registry.npmjs.org",
       "identifier": "ilo-mcp-server",
-      "version": "1.4.1",
+      "version": "1.4.2",
       "transport": {
         "type": "stdio"
       }
@@ -32,5 +34,36 @@
       "type": "streamable-http",
       "url": "https://ilo.sidneybissoli.com/mcp"
     }
-  ]
+  ],
+  "_meta": {
+    "io.modelcontextprotocol.registry/publisher-provided": {
+      "io.github.sidneybissoli/mcp-surface": {
+        "form": "mcp-surface/1",
+        "spec": "https://github.com/SidneyBissoli/mcp-br-commons/blob/main/packages/mcp-surface/SPEC.md",
+        "endpoint": "https://ilo.sidneybissoli.com/mcp",
+        "declared": {
+          "sha256": "1e9f95bd3482d293676f00bbc0795f447da7c255eb00368991c37bd6941589f1",
+          "lockedAt": "1.4.0"
+        },
+        "anonymous": {
+          "sha256": "ade1bd429bdfc63453a924614520010bb782ffd8d24fdd6483aa17d5b36b61a4",
+          "answers": {
+            "initialize": true,
+            "ping": true,
+            "tools/list": true,
+            "resources/list": true,
+            "resources/templates/list": true,
+            "prompts/list": true,
+            "tools/call": true
+          },
+          "call": {
+            "name": "ilo_search_indicators",
+            "arguments": {
+              "query": "unemployment"
+            }
+          }
+        }
+      }
+    }
+  }
 }
