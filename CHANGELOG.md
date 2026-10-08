@@ -24,6 +24,23 @@ do npm. Lacunas registradas:
 - **Datas corrigidas para UTC:** a 1.4.2 e a 1.4.0 estavam com a data local
   (07/10 e 05/10); o npm registra 08/10 e 06/10.
 
+## [1.5.0] — 2026-10-08
+
+O que cada número é, e em que versão. Um leitor do artigo do bcb no dev.to (Daniel
+Oliveira, sobre os dados XBRL da SEC) apontou que o período e a versão de cada número
+precisam vir ditos. Medido aqui: o servidor já repassa `FREQ`, `TIME_PERIOD` e o
+`OBS_STATUS` por linha, e o `data_vintage` é o `LAST_UPDATE` do dataflow — mas nada dizia
+que os valores podem mudar entre releases.
+
+### Alterado
+
+- `ilo_get_data` e as `instructions` dizem como ler cada observação (`TIME_PERIOD` com o
+  `FREQ`; `OBS_STATUS` quando presente: quebra de série, valor estimado ou provisório) e
+  que todo valor é o da release datada no `data_vintage`: a OIT revisa números publicados
+  e reestima as séries modeladas (ids com `_2`) a cada release, anos passados inclusive;
+  o servidor só devolve a release vigente.
+- Superfície declarada nova: trava, `server.json` e `lhm.plugin.json` regravados.
+
 ## [1.4.2] — 2026-10-08
 
 A impressão digital da superfície passa a ir **na entrada do MCP Registry**, para o

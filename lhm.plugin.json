@@ -1,7 +1,7 @@
 {
   "identifier": "sidneybissoli-ilo-mcp-server",
   "name": "ILO Labour Statistics (ILOSTAT) MCP Server",
-  "version": "1.4.2",
+  "version": "1.5.0",
   "icon": "📊",
   "description": "ILO labour statistics (ILOSTAT) with full provenance: source URL, data vintage, retrieval timestamp, license and ILO citation on every response. Tools to search indicators, read indicator metadata and dimension codes, and fetch data; reference resources (query guide, key dataflows by topic, provenance contract) and workflow prompts (country profile, compare countries, indicator trend). Hosted on Cloudflare Workers (Streamable HTTP, no auth) or local stdio. Not affiliated with or endorsed by the ILO. MIT licensed.",
   "author": "Sidney da Silva Pereira Bissoli",
@@ -1776,7 +1776,7 @@
     {
       "name": "ilo_get_data",
       "title": "Get ILOSTAT data",
-      "description": "Statistical observations from one ILOSTAT dataflow, filtered by dimension codes (filters, e.g. {\"REF_AREA\": [\"BRA\",\"ARG\"], \"SEX\": \"SEX_T\"}) and period (start_period/end_period, e.g. \"2015\"/\"2024\"). REF_AREA is required, maximum 30 areas per call — for broad panels, split areas into batches and/or paginate by period. Unfiltered dimensions return all their categories. Does not aggregate, convert or otherwise transform values (raw ILOSTAT data only): read each value with the unit and multiplier the ILO states in its row attributes (UNIT_MEASURE, UNIT_MULT — e.g. UNIT_MULT 3 = thousands). Does not search indicators (use ilo_search_indicators).",
+      "description": "Statistical observations from one ILOSTAT dataflow, filtered by dimension codes (filters, e.g. {\"REF_AREA\": [\"BRA\",\"ARG\"], \"SEX\": \"SEX_T\"}) and period (start_period/end_period, e.g. \"2015\"/\"2024\"). REF_AREA is required, maximum 30 areas per call — for broad panels, split areas into batches and/or paginate by period. Unfiltered dimensions return all their categories. Does not aggregate, convert or otherwise transform values (raw ILOSTAT data only): read each value with the unit and multiplier the ILO states in its row attributes (UNIT_MEASURE, UNIT_MULT — e.g. UNIT_MULT 3 = thousands). Read TIME_PERIOD with the FREQ column (annual, quarterly or monthly) and OBS_STATUS when present (break in series, estimated or provisional value). Values are the current release, dated by data_vintage (the dataflow LAST_UPDATE): the ILO revises published figures and re-estimates modelled series (_2 ids) at each release, past years included. Does not search indicators (use ilo_search_indicators).",
       "inputSchema": {
         "type": "object",
         "properties": {

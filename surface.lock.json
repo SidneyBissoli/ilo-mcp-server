@@ -1,8 +1,8 @@
 {
   "$comentario": "Impressão digital da superfície (@sbissoli/mcp-surface). Não editar à mão: `npm run surface:lock` regrava, e só aceita superfície nova sob versão nova.",
   "declarada": {
-    "versao": "1.4.0",
-    "sha256": "1e9f95bd3482d293676f00bbc0795f447da7c255eb00368991c37bd6941589f1",
+    "versao": "1.5.0",
+    "sha256": "78aa29a87be538a5a8608f50e3eb63b6def2eb0dd71b5e29a40793726e33743f",
     "conteudo": {
       "initialize": {
         "capabilities": {
@@ -16,7 +16,7 @@
             "listChanged": true
           }
         },
-        "instructions": "Labour statistics from ILOSTAT (International Labour Organization) via the official SDMX API: unemployment, employment, earnings (wages), working time, informality and related indicators, by country, year and disaggregations such as sex and age. ILOSTAT is worded in British statistical English; ilo_search_indicators resolves everyday and US wording to it (labor→labour, wages/salary→earnings, informality→informal, gender→sex) and reports the translation. Typical flow: ilo_search_indicators to find a dataflow, then ilo_get_data with country and period filters; use ilo_get_indicator_metadata / ilo_list_dimension_values to discover valid filter codes. Resources ilostat://guide (code conventions, limits) and ilostat://reference/key-dataflows (verified dataflow ids by topic) save discovery calls; prompts ilo_country_labour_profile, ilo_compare_countries and ilo_indicator_trend are ready-made workflows. search and fetch implement the ChatGPT Deep Research contract over the dataflow catalogue. Do not use this server for non-labour statistics (education, health, trade) or for data not published by the ILO.",
+        "instructions": "Labour statistics from ILOSTAT (International Labour Organization) via the official SDMX API: unemployment, employment, earnings (wages), working time, informality and related indicators, by country, year and disaggregations such as sex and age. ILOSTAT is worded in British statistical English; ilo_search_indicators resolves everyday and US wording to it (labor→labour, wages/salary→earnings, informality→informal, gender→sex) and reports the translation. Typical flow: ilo_search_indicators to find a dataflow, then ilo_get_data with country and period filters; use ilo_get_indicator_metadata / ilo_list_dimension_values to discover valid filter codes. Resources ilostat://guide (code conventions, limits) and ilostat://reference/key-dataflows (verified dataflow ids by topic) save discovery calls; prompts ilo_country_labour_profile, ilo_compare_countries and ilo_indicator_trend are ready-made workflows. Each observation is read with its FREQ (TIME_PERIOD is a year, quarter or month accordingly) and its OBS_STATUS attribute when present (break in series, estimated or provisional value); every value is the one in the dataflow release dated in data_vintage (LAST_UPDATE): the ILO revises published figures, and modelled estimates (dataflow ids with _2) are re-estimated at each release, past years included - this server returns only the current release. search and fetch implement the ChatGPT Deep Research contract over the dataflow catalogue. Do not use this server for non-labour statistics (education, health, trade) or for data not published by the ILO.",
         "protocolVersion": "2025-06-18",
         "serverInfo": {
           "icons": [
@@ -682,7 +682,7 @@
             "openWorldHint": true,
             "readOnlyHint": true
           },
-          "description": "Statistical observations from one ILOSTAT dataflow, filtered by dimension codes (filters, e.g. {\"REF_AREA\": [\"BRA\",\"ARG\"], \"SEX\": \"SEX_T\"}) and period (start_period/end_period, e.g. \"2015\"/\"2024\"). REF_AREA is required, maximum 30 areas per call — for broad panels, split areas into batches and/or paginate by period. Unfiltered dimensions return all their categories. Does not aggregate, convert or otherwise transform values (raw ILOSTAT data only): read each value with the unit and multiplier the ILO states in its row attributes (UNIT_MEASURE, UNIT_MULT — e.g. UNIT_MULT 3 = thousands). Does not search indicators (use ilo_search_indicators).",
+          "description": "Statistical observations from one ILOSTAT dataflow, filtered by dimension codes (filters, e.g. {\"REF_AREA\": [\"BRA\",\"ARG\"], \"SEX\": \"SEX_T\"}) and period (start_period/end_period, e.g. \"2015\"/\"2024\"). REF_AREA is required, maximum 30 areas per call — for broad panels, split areas into batches and/or paginate by period. Unfiltered dimensions return all their categories. Does not aggregate, convert or otherwise transform values (raw ILOSTAT data only): read each value with the unit and multiplier the ILO states in its row attributes (UNIT_MEASURE, UNIT_MULT — e.g. UNIT_MULT 3 = thousands). Read TIME_PERIOD with the FREQ column (annual, quarterly or monthly) and OBS_STATUS when present (break in series, estimated or provisional value). Values are the current release, dated by data_vintage (the dataflow LAST_UPDATE): the ILO revises published figures and re-estimates modelled series (_2 ids) at each release, past years included. Does not search indicators (use ilo_search_indicators).",
           "inputSchema": {
             "$schema": "https://json-schema.org/draft/2020-12/schema",
             "additionalProperties": false,
