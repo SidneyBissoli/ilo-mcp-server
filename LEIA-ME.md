@@ -246,6 +246,20 @@ suíte de testes — a documentação nunca aponta para um id que a busca não e
   "Break in series"), verbatim e com contagem. Atributos técnicos por observação (`DECIMALS`
   etc.) permanecem nas linhas (`rows[].attributes`).
 
+### Impressão digital da superfície, conferível pelo registro
+
+Cada release publica, na sua entrada do [MCP Registry](https://registry.modelcontextprotocol.io),
+o sha256 da superfície que esta versão serve (`initialize`, tools, resources, prompts) e quais
+métodos respondem sem credencial. Mudar a superfície sem subir a versão reprova o build; a
+impressão digital no registro deixa o cliente conferir o mesmo do lado dele. Forma canônica e
+procedimento: [SPEC.md do `@sbissoli/mcp-surface`](https://github.com/SidneyBissoli/mcp-br-commons/blob/main/packages/mcp-surface/SPEC.md)
+(em inglês). Para conferir por conta própria (Node 18+, sem dependência):
+
+```sh
+curl -sO https://raw.githubusercontent.com/SidneyBissoli/mcp-br-commons/main/packages/mcp-surface/exemplos/verify.mjs
+node verify.mjs io.github.SidneyBissoli/ilo-mcp-server
+```
+
 ## Licença dos dados e atribuição
 
 - Dados e metadados do ILOSTAT: **CC BY 4.0** (desde 03/05/2023; licença verificada em

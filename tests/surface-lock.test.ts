@@ -21,10 +21,12 @@ import {
   CABECALHOS_MCP,
   capturarSuperficie,
   comHost,
+  conferirMetaDoServerJson,
   conferirSecao,
   corpoDoPedido,
   ipDaSonda,
   medirSemToken,
+  modoEscrita,
   sondaSemToken,
 } from "@sbissoli/mcp-surface";
 import { describe, expect, it } from "vitest";
@@ -48,7 +50,8 @@ const envs: Record<string, Env> = {
 // `tools/call` sem binding de catálogo responde na hora com resultado de erro
 // ("binding CATALOG_DB ausente") — não vai à rede do ILOSTAT, e o que se mede é se
 // a borda deixou a chamada chegar à tool, não o que a tool achou.
-const sonda = sondaSemToken({ name: "ilo_search_indicators", arguments: { query: "unemployment" } });
+const chamada = { name: "ilo_search_indicators", arguments: { query: "unemployment" } };
+const sonda = sondaSemToken(chamada);
 
 const medirBorda = () =>
   medirSemToken(Object.keys(envs), ["POST /mcp", `POST ${SELF_ROUTE}`], sonda, (config, rota, pedido) =>
@@ -86,4 +89,16 @@ describe("surface.lock.json", () => {
     const v = conferirSecao(trava, "semToken", m, versao);
     expect(v.ok, v.mensagem).toBe(true);
   }, 60_000);
+
+  // A impressão digital vai ao MCP Registry com a versão (_meta publisher-provided,
+  // SPEC.md do pacote), para o CLIENTE conferir na primeira conexão. Sem este teste,
+  // `surface:lock` regravaria a trava e o server.json seguiria publicando o sha
+  // antigo: o registro mentiria justamente sob a versão nova. A chamada é a mesma
+  // da sonda acima e do `mcp-surface verificar` do deploy-worker.yml.
+  // Fora do modo de escrita: no `surface:lock` este arquivo roda ANTES do
+  // `mcp-surface registro`, que é quem grava o bloco a partir da trava nova.
+  it.skipIf(modoEscrita())("o server.json publica a impressão digital da trava (o que o registro mostra ao cliente)", () => {
+    const v = conferirMetaDoServerJson(`${raiz}server.json`, trava, { chamada });
+    expect(v.ok, v.mensagem).toBe(true);
+  });
 });
