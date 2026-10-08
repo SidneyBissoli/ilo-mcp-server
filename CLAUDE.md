@@ -1,8 +1,9 @@
 # CLAUDE.md
 
 Orientação para o Claude Code neste repositório. O histórico por versão está no
-`CHANGELOG.md` (nasceu na 1.4.0); o anterior, no `ROADMAP.md` (gitignored, cópia em
-`portfolio-monitor/roadmaps-fonte/ilo-tecnico.md`) e nos PRs.
+`CHANGELOG.md`, desde a 0.3.0 (a primeira no npm; o anterior à 1.4.0 foi reconstruído em
+08/10/2026 a partir de tags, releases, commits e datas do npm). O planejamento fica no
+`ROADMAP.md` (gitignored, cópia em `portfolio-monitor/roadmaps-fonte/ilo-tecnico.md`).
 
 ## O que é
 
