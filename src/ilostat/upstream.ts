@@ -62,9 +62,11 @@
  * teste) a ida ganha um descartável — a política vale — e a proveniência sai
  * `retrieval: null` ("não medido"), nunca quebra.
  *
- * `retrieved_at` continua vindo do KV/`nowIso()`, NÃO de `call.retrievedAt()`:
- * o coletor não vê o KV, e o instante relevante de um acerto de cache é o da
- * extração original, guardado junto ao valor.
+ * `retrieved_at` vem do instante que cada leitura devolve (KV no acerto, com o
+ * da extração original; `nowIso()` na ida), e a resposta que junta leituras
+ * leva o MAIS ANTIGO delas (`ilostatProvenance`, com `parts`). Desde a 1.6.1
+ * o acerto de KV também entra no coletor (`recordCache`, em `sdmx.ts`), sem
+ * contar em `retrieval`: antes o coletor não o via.
  */
 
 import {

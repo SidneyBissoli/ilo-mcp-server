@@ -11,6 +11,7 @@
  *    ao valor cacheado.
  */
 
+import { currentCall } from "@sbissoli/mcp-upstream/als";
 import { ILOSTAT_LIMITS } from "../config.js";
 import type { Env } from "../types.js";
 import { IlostatUserError } from "./key.js";
@@ -109,10 +110,15 @@ export function codelistUrl(ref: CodelistRef): string {
  * `?references=all` alimenta também o cache por-codelist.
  */
 export async function getDataflowStructure(env: Env, dataflowId: string): Promise<StructureWithOrigin> {
-  const hit = await kvGet<DataflowStructure>(env, structureKvKey(dataflowId));
-  if (hit) return { structure: hit.value, retrievedAt: hit.retrievedAt, servedFromCache: true };
-
   const url = structureUrl(dataflowId);
+  const hit = await kvGet<DataflowStructure>(env, structureKvKey(dataflowId));
+  if (hit) {
+    // O coletor só via as idas à rede; o acerto entra com o instante original
+    // (não conta em `retrieval`, que é só ida à origem).
+    currentCall()?.recordCache(url, hit.retrievedAt);
+    return { structure: hit.value, retrievedAt: hit.retrievedAt, servedFromCache: true };
+  }
+
   let msg: unknown;
   try {
     msg = await fetchJson(url, STRUCTURE_JSON, `structure of ${dataflowId}`);
@@ -151,10 +157,13 @@ export interface CodelistWithOrigin {
 
 /** Codelist por referência (KV, TTL 7 dias; compartilhada entre dataflows). */
 export async function getCodelist(env: Env, ref: CodelistRef): Promise<CodelistWithOrigin> {
-  const hit = await kvGet<Codelist>(env, codelistKvKey(ref));
-  if (hit) return { codelist: hit.value, retrievedAt: hit.retrievedAt, servedFromCache: true };
-
   const url = codelistUrl(ref);
+  const hit = await kvGet<Codelist>(env, codelistKvKey(ref));
+  if (hit) {
+    currentCall()?.recordCache(url, hit.retrievedAt);
+    return { codelist: hit.value, retrievedAt: hit.retrievedAt, servedFromCache: true };
+  }
+
   const msg = await fetchJson(url, STRUCTURE_JSON, `codelist ${ref.id}`);
   const retrievedAt = nowIso();
   const codelist = parseCodelistMessage(msg)[0];

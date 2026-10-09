@@ -12,7 +12,7 @@ import { z } from "zod";
 import { buildDataKey } from "../ilostat/key.js";
 import type { ObservationRow } from "../ilostat/parser.js";
 import { ILOSTAT_VALUES_REVISION, ilostatProvenance, provenance } from "../ilostat/provenance.js";
-import { fetchData, getDataflowStructure } from "../ilostat/sdmx.js";
+import { fetchData, getDataflowStructure, structureUrl } from "../ilostat/sdmx.js";
 import type { Env } from "../types.js";
 import type { RecordUsage } from "../usage-core.js";
 import { withUsage } from "../usage-wrap.js";
@@ -70,7 +70,8 @@ export function getDataHandler(env: Env) {
       last_n_observations?: number | undefined;
       provenance_mode?: "concise" | "detailed" | undefined;
     }) => {
-      const { structure } = await getDataflowStructure(env, args.dataflow);
+      const estrutura = await getDataflowStructure(env, args.dataflow);
+      const { structure } = estrutura;
       const { key, effectiveFilters } = buildDataKey(structure, args.filters ?? {});
       const { parsed, retrievedAt, sourceUrl } = await fetchData(structure, key, {
         startPeriod: args.start_period,
@@ -109,7 +110,27 @@ export function getDataHandler(env: Env) {
         dataVintage: structure.dataVintage,
         retrievedAt,
         sourceUrl,
-        servedFromCache: false,
+        // Duas leituras: a estrutura (KV, até 24 h) dá o dataflow, o data_vintage
+        // e a ordem da chave; os dados são buscados agora. A parte dos dados não
+        // tem vintage próprio: a OIT pode ter atualizado o dataflow depois de a
+        // estrutura entrar no cache, então repetir o da estrutura seria afirmar.
+        parts: [
+          {
+            fields: ["dataflow"],
+            sourceUrl: structureUrl(structure.id),
+            retrievedAt: estrutura.retrievedAt,
+            servedFromCache: estrutura.servedFromCache,
+            datasetId: structure.id,
+            dataVintage: structure.dataVintage,
+          },
+          {
+            fields: ["columns", "rows_count", "rows"],
+            sourceUrl,
+            retrievedAt,
+            servedFromCache: false,
+            datasetId: structure.id,
+          },
+        ],
         notices,
         revision: ILOSTAT_VALUES_REVISION,
       });

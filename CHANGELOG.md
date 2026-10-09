@@ -24,6 +24,28 @@ do npm. Lacunas registradas:
 - **Datas corrigidas para UTC:** a 1.4.2 e a 1.4.0 estavam com a data local
   (07/10 e 05/10); o npm registra 08/10 e 06/10.
 
+## [1.6.1] — 2026-10-08
+
+Conserto de proveniência: a data de extração não pode ser mais nova que a parte mais
+antiga da resposta (contrato §3). A superfície (`tools/list`) não muda.
+
+### Corrigido
+
+- **`ilo_get_data` dizia "extraído agora" sobre uma parte de até 24 h atrás.** A resposta
+  junta duas leituras: a estrutura do dataflow (cache KV, 24 h), de onde saem o
+  dataflow e o `data_vintage`, e os dados, buscados agora. O bloco levava só o instante
+  dos dados e `served_from_cache: false`. Medido em produção em 08/10/2026: o bloco ficou
+  10 s mais novo que a estrutura que deu o vintage; com o cache, até 24 h. Agora o
+  `retrieved_at` é o mais antigo das duas, e `field_sources` diz de quando é cada uma — a
+  parte dos dados sem vintage próprio, porque a OIT pode ter atualizado o dataflow depois
+  de a estrutura entrar no cache.
+- **`ilo_list_dimension_values`, o mesmo com estrutura × codelist** (cache de 7 dias):
+  topo = a mais antiga, `served_from_cache` só quando as duas vieram do cache.
+- O acerto de KV passa a entrar no coletor da chamada (`recordCache`) com o instante da
+  extração original; não conta em `retrieval`, que é só ida à origem.
+- A citação continua datada pelo acesso ao endereço dos dados, o que de fato foi acessado.
+- O resource `ilostat://reference/provenance` explica o caso das duas leituras.
+
 ## [1.6.0] — 2026-10-08
 
 Contrato de proveniência: tempo 2 da v1.2 e tempo 1 da v1.3

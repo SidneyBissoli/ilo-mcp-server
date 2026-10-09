@@ -61,7 +61,8 @@ export function listDimensionValuesHandler(env: Env) {
       offset?: number | undefined;
       provenance_mode?: "concise" | "detailed" | undefined;
     }) => {
-      const { structure } = await getDataflowStructure(env, args.dataflow);
+      const estrutura = await getDataflowStructure(env, args.dataflow);
+      const { structure } = estrutura;
       if (args.dimension === structure.timeDimension) {
         throw new IlostatUserError(
           `${args.dimension} is the time dimension — it has no codelist. ` +
@@ -114,6 +115,24 @@ export function listDimensionValuesHandler(env: Env) {
         retrievedAt,
         sourceUrl: codelistUrl(dim.codelist),
         servedFromCache,
+        // A estrutura (KV, 24 h) valida a dimensão e acha a codelist (KV, 7 dias);
+        // as duas podem ter sido extraídas em momentos distintos.
+        parts: [
+          {
+            fields: ["dataflow", "dimension"],
+            sourceUrl: structureUrl(structure.id),
+            retrievedAt: estrutura.retrievedAt,
+            servedFromCache: estrutura.servedFromCache,
+            datasetId: structure.id,
+          },
+          {
+            fields: ["codelist", "total_codes", "showing", "offset", "values", "has_more"],
+            sourceUrl: codelistUrl(dim.codelist),
+            retrievedAt,
+            servedFromCache,
+            datasetId: codelist.id,
+          },
+        ],
       });
       const r = provenance.result(data, p, { mode: args.provenance_mode ?? "concise" });
       return { ...r, structuredContent: { ...r.structuredContent, ...data } };

@@ -103,7 +103,11 @@ describe("getDataHandler", () => {
     const expectedUrl =
       "https://sdmx.ilo.org/rest/data/ILO,DF_UNE_DEAP_SEX_AGE_RT,1.0/BRA.A.SEX_T" +
       "?startPeriod=2023&endPeriod=2024";
-    expect(sc.attribution).toEqual([expectedUrl]);
+    // A atribuição lista toda origem da resposta: os dados e a estrutura (field_sources).
+    expect(sc.attribution).toEqual([
+      expectedUrl,
+      "https://sdmx.ilo.org/rest/dataflow/ILO/DF_UNE_DEAP_SEX_AGE_RT/latest?references=all",
+    ]);
     expect(calls.some((u) => u.includes("format="))).toBe(false);
 
     const p = sc.provenance as Record<string, unknown>;
@@ -126,7 +130,7 @@ describe("getDataHandler", () => {
     expect((p.license as Record<string, unknown>).id).toBe("CC-BY-4.0");
   });
 
-  it("modo concise (default): bloco com exatamente 7 chaves em ordem fixa (retrieval depois de retrieved_at; o ilo não funde sub-fontes, então a 1.2 não acrescenta field_sources)", async () => {
+  it("modo concise (default): as 7 chaves em ordem fixa e, como a resposta junta estrutura + dados, field_sources (1.2) por último", async () => {
     stubFetch();
     const r = (await getDataHandler(ENV)({
       dataflow: "DF_UNE_DEAP_SEX_AGE_RT",
@@ -140,6 +144,7 @@ describe("getDataHandler", () => {
       "retrieval",
       "citation",
       "license",
+      "field_sources",
     ]);
   });
 
