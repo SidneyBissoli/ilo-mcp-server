@@ -39,9 +39,9 @@ export function timePeriodLabel(
  * Atributos que viram aviso: OBS_STATUS (o canal de status/disclaimer do SDMX —
  * ex.: "Break in series") e, desde 04/10/2026, a unidade e a escala
  * (UNIT_MEASURE, UNIT_MULT — ex.: "Thousands"). O número da linha só se lê
- * certo com a escala. A escala viaja SEMPRE nas linhas; `notices` só aparece no
- * modo `detailed` da proveniência (o `concise` não a projeta — contrato do
- * `@sbissoli/mcp-provenance`), onde resume a escala da resposta inteira.
+ * certo com a escala. A escala viaja SEMPRE nas linhas; `notices` resume a da
+ * resposta inteira nos dois modos da proveniência (no `concise` desde o contrato
+ * 1.3, 15/10/2026) e, por isso, também no rodapé de texto ("Notices from the source").
  * Atributos técnicos (DECIMALS, SOURCE etc.) ficam só nas linhas.
  */
 export const NOTICE_ATTRIBUTES = ["OBS_STATUS", "UNIT_MEASURE", "UNIT_MULT"] as const;

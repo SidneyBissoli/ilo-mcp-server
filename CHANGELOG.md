@@ -24,6 +24,26 @@ do npm. Lacunas registradas:
 - **Datas corrigidas para UTC:** a 1.4.2 e a 1.4.0 estavam com a data local
   (07/10 e 05/10); o npm registra 08/10 e 06/10.
 
+## [1.6.4] — 2026-10-15
+
+Tempo 2 do contrato de proveniência 1.3: o que a 1.6.0 passou a ACEITAR no esquema passa a
+SAIR nas respostas, sete dias depois, como manda o rollout em dois tempos. A superfície
+(`tools/list`) não muda (`surface.lock.json` idêntico).
+
+### Alterado
+- **O servidor emite o contrato 1.3.** O bloco `concise` leva `revision` em toda resposta
+  (`current`: o ILOSTAT serve só a release vigente e pode revisá-la; nas respostas com
+  valores, a nota de que a OIT reestima as séries modeladas, ids `_2`, a cada release) e
+  `notices` quando o dado tem aviso — em `ilo_get_data`, a contagem de cada OBS_STATUS,
+  UNIT_MEASURE e UNIT_MULT das linhas, que agora também sai no rodapé de texto ("Notices from
+  the source: …"). Sem aviso, `notices` fica ausente, não vazio. `derived` nunca sai: o
+  servidor não calcula valores.
+
+### Documentação
+- O guia de proveniência (resource), o de convenções e o README/LEIA-ME diziam que `notices`
+  reproduz só o OBS_STATUS, "verbatim": inclui unidade e escala, e são contagens. O guia e o
+  README/LEIA-ME passam a descrever `revision`.
+
 ## [1.6.3] — 2026-10-15
 
 A superfície (`tools/list`) não muda.

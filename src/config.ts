@@ -13,7 +13,7 @@ export const SERVER_CONFIG = {
   /** Nome curto do servidor (handshake MCP, /status, landing). */
   name: "ilo-mcp-server",
   /** Versão do servidor — manter em sincronia com package.json. */
-  version: "1.6.3",
+  version: "1.6.4",
   /** Título de exibição (clientes MCP mostram ao usuário). */
   title: "ILO Labour Statistics (ILOSTAT)",
   /**
@@ -82,18 +82,20 @@ export const SERVER_CONFIG = {
 /**
  * Contexto de proveniência do servidor: namespace reverse-DNS próprio, inglês, UTC.
  *
- * `contractVersion` "1.2" (08/10/2026, tempo 2 da 1.2 / tempo 1 da 1.3 do contrato):
- * na 1.6.0 o fio não mudou em nenhum byte além de `contract_version` no `detailed`;
- * desde a 1.6.1, `ilo_get_data` e `ilo_list_dimension_values` levam `field_sources`
- * (juntam duas leituras). A 1.3 se liga numa sessão posterior, depois de os
- * conectores renovarem o `outputSchema` (contrato §8). Quem mostra a versão ao cliente
- * (resource guide, `/status`) lê `provenance.contractVersion`, nunca um literal.
+ * `contractVersion` "1.3" desde o tempo 2 dela (15/10/2026; o schema já a aceitava
+ * desde 08/10): o `concise` passa a levar `revision` sempre (`current`, a OIT
+ * revisa e só serve a release vigente), `notices` quando há aviso do dado — em
+ * `ilo_get_data`, as contagens de OBS_STATUS, UNIT_MEASURE e UNIT_MULT (unidade e
+ * escala são parte do número) — e nunca `derived`. Sem aviso, `notices` fica
+ * ausente, não vazio. Da 1.2 segue o `field_sources` em `ilo_get_data` e
+ * `ilo_list_dimension_values` (juntam duas leituras). Quem mostra a versão ao
+ * cliente (resource guide, `/status`) lê `provenance.contractVersion`, nunca um literal.
  */
 export const PROVENANCE_OPTIONS: ProvenanceContextOptions = {
   metaNamespace: "com.sidneybissoli.ilostat",
   locale: "en",
   timezone: "utc",
-  contractVersion: "1.2",
+  contractVersion: "1.3",
 };
 
 /**

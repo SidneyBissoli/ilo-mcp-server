@@ -111,7 +111,7 @@ describe("getDataHandler", () => {
     expect(calls.some((u) => u.includes("format="))).toBe(false);
 
     const p = sc.provenance as Record<string, unknown>;
-    expect(p.contract_version).toBe("1.2");
+    expect(p.contract_version).toBe("1.3");
     // Handler chamado direto, fora do coletor que `withUsage` abre: "não medido".
     // A contagem real está em tests/upstream.test.ts, pelo servidor inteiro.
     expect(p.retrieval).toBeNull();
@@ -126,11 +126,12 @@ describe("getDataHandler", () => {
     expect(p.derived).toBe(false);
     expect(p.served_from_cache).toBe(false);
     expect(p.notices).toEqual(["OBS_STATUS B (Break in series): 1 observation(s)"]);
+    expect((p.revision as Record<string, unknown>).status).toBe("current");
     expect(String(p.citation)).toMatch(/^International Labour Organization, ILOSTAT, /);
     expect((p.license as Record<string, unknown>).id).toBe("CC-BY-4.0");
   });
 
-  it("modo concise (default): as 7 chaves em ordem fixa e, como a resposta junta estrutura + dados, field_sources (1.2) por último", async () => {
+  it("modo concise (default): as 7 chaves em ordem fixa, field_sources (1.2, estrutura + dados) e, da 1.3, notices (há OBS_STATUS) e revision", async () => {
     stubFetch();
     const r = (await getDataHandler(ENV)({
       dataflow: "DF_UNE_DEAP_SEX_AGE_RT",
@@ -145,6 +146,8 @@ describe("getDataHandler", () => {
       "citation",
       "license",
       "field_sources",
+      "notices",
+      "revision",
     ]);
   });
 

@@ -257,10 +257,17 @@ the test suite, so the documentation cannot point at an id the search would not 
 
 - **`derived`** — `true` only for real transformation (aggregation, server-computed rate,
   interpolation, harmonisation), always with a `derivation_note`; unit conversion and rounding
-  do not count. This server does not transform values, so `derived` is always `false`.
-- **`notices`** — reproduces the values of `OBS_STATUS` (the SDMX status/disclaimer channel,
-  e.g. "Break in series"), verbatim and with counts. Technical per-observation attributes
-  (`DECIMALS` etc.) stay on the rows (`rows[].attributes`).
+  do not count. This server does not transform values, so `derived` is always `false` (and
+  absent from the concise block).
+- **`notices`** (`ilo_get_data`) — each distinct value of `OBS_STATUS` (the SDMX
+  status/disclaimer channel, e.g. "Break in series"), `UNIT_MEASURE` and `UNIT_MULT` (e.g.
+  "Thousands": the unit and scale are part of the number) found in the rows, with the number
+  of observations carrying it. Repeated in the text footer; absent when there is nothing to
+  say. Technical per-observation attributes (`DECIMALS` etc.) stay on the rows
+  (`rows[].attributes`).
+- **`revision`** (since contract 1.3, server 1.6.4) — always `current`: ILOSTAT serves only its
+  current release and may revise it later; on data answers the note says the ILO re-estimates
+  modelled series (`_2` ids) at each release, past years included.
 
 ### Surface fingerprint, checkable from the registry
 
