@@ -79,6 +79,8 @@ side-by-side examples and the measured numbers in
 | [sdmx1](https://pypi.org/project/sdmx1/) 2.27.0 / [pandaSDMX](https://pypi.org/project/pandasdmx/) 1.10.0 (Python) | Generic SDMX clients; ILO is one of ~36 sources they know | Your pipeline is Python and you want SDMX objects, or the same code across several SDMX agencies |
 | [DBnomics](https://db.nomics.world/ILO) (API, `dbnomics` for Python, [rdbnomics](https://cran.r-project.org/package=rdbnomics) 0.6.4 for R) | Aggregator that republishes 1,071 ILO datasets next to other providers, one API for all | You want ILO series alongside IMF, OECD, Eurostat in a single interface |
 | [ILOSTAT SDMX REST API](https://ilostat.ilo.org/resources/sdmx-tools/) | The source itself, which this server calls | You are building your own client and want full control |
+| [cyanheads/ilostat-mcp-server](https://github.com/cyanheads/ilostat-mcp-server) 0.1.2 | Another ILOSTAT MCP server, hosted or local: tells survey values from ILO modelled estimates row by row, takes up to 300 areas per call and stages large results as dataframes you query with SQL | You need reported vs modelled on every row, or many countries and SQL over a large pull |
+| [Pipeworx mcp-ilostat](https://github.com/pipeworx-io/mcp-ilostat) 0.1.4 | The ILOSTAT pack of the Pipeworx gateway: positional SDMX keys, answers without source, licence or value status | You already work through the Pipeworx gateway and want ILOSTAT next to its other sources |
 
 **Do not use this server when** you need a whole dataset rather than an answer (Rilostat's bulk
 download is the right tool), when the question is not labour statistics published by the ILO

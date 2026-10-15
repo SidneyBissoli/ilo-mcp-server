@@ -24,6 +24,27 @@ do npm. Lacunas registradas:
 - **Datas corrigidas para UTC:** a 1.4.2 e a 1.4.0 estavam com a data local
   (07/10 e 05/10); o npm registra 08/10 e 06/10.
 
+## [1.6.2] — 2026-10-15
+
+Só documentação: código e superfície (`tools/list`) não mudam. A versão sobe para o
+README novo chegar à página do npm.
+
+### Adicionado
+- **Comparativo com os outros dois servidores MCP do ILOSTAT** em
+  `docs/alternatives.md` (seção "Other ILOSTAT MCP servers") e duas linhas novas na tabela
+  de alternativas do README e do LEIA-ME: cyanheads/ilostat-mcp-server 0.1.2 e Pipeworx
+  mcp-ilostat 0.1.4. Medido em 14/10/2026 nos três endpoints hospedados, como um cliente MCP:
+  `tools/list` (6 tools/47,5 KB aqui, 8/80,2 KB no cyanheads, 44/119,5 KB no gateway
+  Pipeworx), a mesma pergunta (desemprego no Brasil 2015–2024: os mesmos dez valores nos
+  três; 14,7 KB aqui, 5,3 KB no cyanheads, 2,5 KB no Pipeworx depois de 55,7 KB de
+  estrutura para montar a chave) e o vocabulário da pergunta (`wages`, `informality`,
+  `labor force` e `gender pay gap` dão zero no Pipeworx; `informality` dá zero no
+  cyanheads). Diz também onde os outros são melhores: o cyanheads separa valor medido de
+  estimativa modelada linha a linha, aceita 300 áreas e tem SQL sobre resultados grandes.
+  Segunda ação GEO aprovada pelo dono em 05/10 (`geo:ilo-mcp-server`).
+- Dependências desde a 1.6.1: grupo minor-and-patch (#51) e `@sbissoli/mcp-surface` ^0.6.0
+  (#50).
+
 ## [1.6.1] — 2026-10-08
 
 Conserto de proveniência: a data de extração não pode ser mais nova que a parte mais
