@@ -183,6 +183,16 @@ describe("retryUpstream — o que repete e o que não", () => {
     expect(retryUpstream(ctx({ kind: "malformed_body", status: 200 }))).toBe(false);
   });
 
+  it("403 com a página HTML do IIS repete; 403 que não é página HTML não", () => {
+    // O corpo medido em 15/10/2026 (smoke do deploy da 1.6.2), começo literal.
+    const iis = '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">';
+    expect(retryUpstream(ctx({ kind: "http_4xx", status: 403, body: iis }))).toBe(true);
+    expect(retryUpstream(ctx({ kind: "http_4xx", status: 403, body: "<html><body>Forbidden</body></html>" }))).toBe(true);
+    expect(retryUpstream(ctx({ kind: "http_4xx", status: 403, body: '{"errors":["forbidden"]}' }))).toBe(false);
+    expect(retryUpstream(ctx({ kind: "http_4xx", status: 403, body: undefined }))).toBe(false);
+    expect(retryUpstream(ctx({ kind: "http_4xx", status: 401, body: iis }))).toBe(false);
+  });
+
   it("o teto por tentativa fica acima do corte do gateway da OIT (61 s medidos para o 504)", () => {
     expect(UPSTREAM_POLICY.timeoutMs).toBeGreaterThan(61_000);
     expect(UPSTREAM_POLICY.budgetMs).toBeGreaterThan(UPSTREAM_POLICY.timeoutMs);
@@ -256,6 +266,31 @@ describe("translateUpstreamError — do erro do pacote ao erro que o servidor l�
 // ---------------------------------------------------------------------------
 
 describe("retrieval medido pelo servidor inteiro", () => {
+  it("ilo_get_indicator_metadata: 403 HTML de um servidor do pool superado → resposta, anomalia http_4xx, unstable", async () => {
+    const iis = '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">\n<html><head><title>403 - Forbidden</title></head></html>';
+    const { fn } = stubFetch({
+      "/dataflow/": (_u, n) =>
+        n === 1 ? new Response(iis, { status: 403, headers: { "Content-Type": "text/html" } }) : json(structureMessage()),
+    });
+    const client = await conectar(envMemoria());
+    try {
+      const r = await client.callTool({
+        name: "ilo_get_indicator_metadata",
+        arguments: { dataflow: FLOW, provenance_mode: "detailed" },
+      });
+      expect(r.isError).toBeFalsy();
+      expect(retrievalOf(r)).toEqual({
+        requests: 1,
+        attempts: 2,
+        anomalies: [{ kind: "http_4xx", count: 1 }],
+        unstable: true,
+      });
+      expect(fn).toHaveBeenCalledTimes(2);
+    } finally {
+      await client.close();
+    }
+  });
+
   it("ilo_get_data: 503 superado → estrutura + dados = 2 idas, 3 tentativas, anomalia http_5xx, unstable", async () => {
     const { fn } = stubFetch({
       "/dataflow/": () => json(structureMessage()),
