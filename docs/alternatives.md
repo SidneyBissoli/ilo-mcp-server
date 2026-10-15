@@ -8,7 +8,9 @@ document says, with measured numbers, **where each one serves** — and when to 
 more than one.
 
 One line: Rilostat and the SDMX clients hand you the **dataset**; `ilo-mcp-server`
-answers **one question** inside the assistant, with provenance attached.
+answers **one question** inside the assistant, with provenance attached. Two other
+**ILOSTAT MCP servers** answer in the assistant too — cyanheads' and Pipeworx's — and
+[they are compared below](#other-ilostat-mcp-servers), on the same question.
 
 Every number below was measured on 2026-09-13 and can be re-measured with the
 commands in [How to check the numbers](#how-to-check-the-numbers).
@@ -118,6 +120,78 @@ never published.
 | ILO datasets republished by DBnomics | 1,071 |
 | Tools / resources / prompts here | 6 / 3 / 3 |
 
+## Other ILOSTAT MCP servers
+
+Two other MCP servers put ILOSTAT in the assistant. Both are recent, both are open source,
+and both have a public hosted endpoint:
+
+- [**cyanheads/ilostat-mcp-server**][cy] (`@cyanheads/ilostat-mcp-server` 0.1.2, Apache-2.0),
+  hosted at `https://ilostat.caseyjhand.com/mcp`;
+- [**Pipeworx mcp-ilostat**][pw] (`@pipeworx/mcp-ilostat` 0.1.4, MIT), a pack of the
+  Pipeworx gateway, hosted at `https://gateway.pipeworx.io/ilostat/mcp`.
+
+Everything below was measured on 2026-10-14 against the three hosted endpoints, as an MCP
+client sees them (`initialize` → `tools/list` → `tools/call`), and read in each project's
+source.
+
+| | **ilo-mcp-server** (this) | cyanheads | Pipeworx |
+| --- | --- | --- | --- |
+| ILO API read | SDMX REST (`sdmx.ilo.org`) | ILOSTAT data API (`rplumber.ilo.org`) + SDMX | SDMX REST (`sdmx.ilo.org`) |
+| Runs as | hosted (Cloudflare) or stdio | hosted, stdio, Docker, `.mcpb` | gateway, or stdio |
+| `tools/list` on the hosted endpoint | 6 tools, 47.5 KB | 8 tools, 80.2 KB | 44 tools, 119.5 KB — 3 for ILOSTAT plus the gateway's own (`ask_pipeworx`, `remember`, Polymarket…) |
+| How you filter | named dimensions → codes (`{"SEX": ["SEX_T"]}`) | named filters (`ref_areas`, `sex`, `classif1`) | a **positional** SDMX key (`"BRA.A..SEX_T.AGE_YTHADULT_YGE15"`), built from `dataflow_structure` — 55.7 KB for one dataflow |
+| Areas per call | up to 30 | up to 300 | no cap; omitting the key asks for every series |
+| Reported × modelled × projection, per value | no — only the ILO's `OBS_STATUS`; "modelled" is in the dataflow name | **yes**, on every row, with counts | no |
+| Large results | one capped answer | **staged as DuckDB dataframes, queried with SQL** | a truncation flag |
+| What travels with the numbers | provenance block: `source_url` that replays the query, `data_vintage`, real `retrieved_at`, licence, ILO citation — on three channels | attribution line (CC BY 4.0), dataset update date, legend of sources and status flags | dimension labels; no source, licence or status |
+| Your word vs the ILO's | translated, and said so (`vocabulary_notes`) | `labour`/`labor` folded | matched literally |
+| ChatGPT Deep Research (`search`/`fetch`) | yes | no | no |
+
+### The same question, three ways
+
+"What has happened to unemployment in Brazil since 2015?" — dataflow
+`UNE_2EAP_SEX_AGE_RT` (ILO modelled estimates, Nov. 2025), both sexes, 15+, 2015–2024. **All
+three returned the same ten values**, from 8.538 in 2015 to 13.697 in 2020 and 6.801 in 2024.
+
+| | calls | answer | time |
+| --- | --- | ---: | ---: |
+| **ilo-mcp-server** | `ilo_get_data` | 14.7 KB | 1.1 s (10.3 s with a cold cache) |
+| cyanheads | `ilostat_query_indicator` | 5.3 KB | 3.3 s |
+| Pipeworx | `dataflow_structure` (to learn the key order) + `get_data` | 55.7 KB + 2.5 KB | 0.3 s + 0.3 s |
+
+Our answer is the largest, and the difference is the provenance block and the column
+labels. Pipeworx's is the smallest and carries the numbers and the dimension names only:
+nothing says where they came from, under which licence, or that they are modelled. cyanheads'
+says, on each row, that these are **modelled estimates**, not survey values — something this
+server leaves to the dataflow name.
+
+### Asking in your own words
+
+The search tool of each, with the everyday or US word. The catalogues differ (dataflows here
+and at Pipeworx, indicators at cyanheads), so read zero against non-zero, not one count
+against another.
+
+| you ask | ilo-mcp-server | cyanheads | Pipeworx |
+| --- | ---: | ---: | ---: |
+| `wages` | 110 | 197 | **0** |
+| `informality` | 133 | **0** | **0** |
+| `labor force` | 122 | 479 | **0** |
+| `gender pay gap` | 1 — `DF_EAR_GGAP_OCU_RT`, *Gender wage gap by occupation* | 1 — SDG 8.5.1, *Average hourly earnings by sex and occupation* | **0** |
+
+Pipeworx's zeros are vocabulary, not a broken search: `labour force`, `earnings` and
+`informal` do return dataflows there. This is the defect this server had until 0.6.0.
+
+### Which one to use
+
+- **cyanheads** when you need to tell survey values from ILO modelled estimates row by row,
+  more than 30 countries in one call, or SQL over a large pull. Those are real advantages, and
+  this server does not have them.
+- **Pipeworx** when you already work through the Pipeworx gateway and want ILOSTAT next to
+  its other sources, and are fine building SDMX keys by position.
+- **This server** when the answer has to be auditable — the source URL that replays the
+  query, the vintage and the real retrieval instant in every answer — when users ask in
+  everyday English, or when the client is ChatGPT's Deep Research.
+
 ## What this server does not do
 
 - **It does not hand you the dataset.** One `ilo_get_data` call is one REST query, capped
@@ -171,6 +245,15 @@ Desemprego no Brasil: 8,5% em 2015, 13,7% em 2020, 6,8% em 2024 (safra de 02/12/
 Para a base inteira, o caminho é o Rilostat; para microdado, nenhum dos dois — o ILOSTAT
 publica agregados.
 
+Há outros dois **servidores MCP do ILOSTAT**, comparados acima com a mesma pergunta (medição
+de 14/10/2026). O [cyanheads][cy] separa, linha a linha, valor de pesquisa de estimativa
+modelada da OIT, aceita até 300 países por chamada e guarda resultados grandes em tabelas
+consultáveis por SQL — vantagens reais, que este servidor não tem. O do [Pipeworx][pw] é um
+pacote do gateway deles: a resposta é a menor das três, mas não diz fonte, licença nem se o
+número é modelado, a chave SDMX é montada por posição, e a palavra do dia a dia (`wages`,
+`informality`, `labor force`) devolve zero. Este servidor é o que leva a proveniência
+completa em cada resposta e traduz a palavra do usuário para a da OIT.
+
 [ri]: https://ilostat.github.io/Rilostat/
 [s1]: https://pypi.org/project/sdmx1/
 [ps]: https://pypi.org/project/pandasdmx/
@@ -179,3 +262,5 @@ publica agregados.
 [api]: https://ilostat.ilo.org/resources/sdmx-tools/
 [np]: https://www.npmjs.com/package/ilo-mcp-server
 [mr]: https://registry.modelcontextprotocol.io/v0.1/servers/io.github.SidneyBissoli%2Filo-mcp-server/versions
+[cy]: https://github.com/cyanheads/ilostat-mcp-server
+[pw]: https://github.com/pipeworx-io/mcp-ilostat

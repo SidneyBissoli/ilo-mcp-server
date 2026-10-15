@@ -76,6 +76,8 @@ os números medidos em
 | [sdmx1](https://pypi.org/project/sdmx1/) 2.27.0 / [pandaSDMX](https://pypi.org/project/pandasdmx/) 1.10.0 (Python) | Clientes SDMX genéricos; a OIT é uma das ~36 fontes que eles conhecem | Seu pipeline é Python e você quer objetos SDMX, ou o mesmo código para várias agências |
 | [DBnomics](https://db.nomics.world/ILO) (API, `dbnomics` no Python, [rdbnomics](https://cran.r-project.org/package=rdbnomics) 0.6.4 no R) | Agregador que republica 1.071 bases da OIT ao lado de outros provedores, numa API só | Você quer séries da OIT junto com FMI, OCDE e Eurostat na mesma interface |
 | [API SDMX REST do ILOSTAT](https://ilostat.ilo.org/resources/sdmx-tools/) | A própria fonte, que este servidor consulta | Você está construindo o seu próprio cliente |
+| [cyanheads/ilostat-mcp-server](https://github.com/cyanheads/ilostat-mcp-server) 0.1.2 | Outro servidor MCP do ILOSTAT, hospedado ou local: separa, linha a linha, valor de pesquisa de estimativa modelada da OIT, aceita até 300 países por chamada e guarda resultados grandes em tabelas consultáveis por SQL | Você precisa distinguir valor medido de estimativa modelada linha a linha, ou de muitos países e SQL sobre uma extração grande |
+| [Pipeworx mcp-ilostat](https://github.com/pipeworx-io/mcp-ilostat) 0.1.4 | Pacote ILOSTAT do gateway Pipeworx: chave SDMX montada por posição, resposta sem fonte, licença nem status do valor | Você já usa o gateway Pipeworx e quer o ILOSTAT ao lado das outras fontes dele |
 
 **Não use este servidor quando** precisar da base inteira em vez de uma resposta (o download em
 lote do Rilostat é a ferramenta certa), quando a pergunta não for de estatística do trabalho
