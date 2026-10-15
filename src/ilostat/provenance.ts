@@ -77,8 +77,7 @@ function oldest(isos: string[]): string {
  * resposta — o ILOSTAT serve só a release vigente e pode revisá-la depois. `final`
  * não se usa, nem quando o OBS_STATUS da OIT marca o valor: isso exigiria prova
  * valor a valor (contrato §3) e é item futuro; o OBS_STATUS segue em `notices`,
- * verbatim. Enquanto o servidor emitir 1.2 a lib descarta a chave do fio; o
- * canônico já a carrega.
+ * com contagem. Sai no `concise` de toda resposta desde a 1.3 no fio (15/10/2026).
  */
 export const ILOSTAT_REVISION: Revision = { status: "current", note: null };
 

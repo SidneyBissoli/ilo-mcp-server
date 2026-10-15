@@ -243,10 +243,16 @@ suíte de testes — a documentação nunca aponta para um id que a busca não e
 - **`derived`** — `true` só para transformação real (agregação, taxa calculada pelo servidor,
   interpolação, harmonização), sempre com `derivation_note`; conversão de unidade e
   arredondamento não contam. Este servidor não transforma valores, então `derived` é sempre
-  `false`.
-- **`notices`** — reproduz os valores de `OBS_STATUS` (canal de status/ressalva do SDMX, ex.:
-  "Break in series"), verbatim e com contagem. Atributos técnicos por observação (`DECIMALS`
-  etc.) permanecem nas linhas (`rows[].attributes`).
+  `false` (e ausente do bloco conciso).
+- **`notices`** (`ilo_get_data`) — cada valor distinto de `OBS_STATUS` (canal de
+  status/ressalva do SDMX, ex.: "Break in series"), `UNIT_MEASURE` e `UNIT_MULT` (ex.:
+  "Thousands": unidade e escala são parte do número) encontrado nas linhas, com o número de
+  observações que o trazem. Repetido no rodapé de texto; ausente quando não há o que dizer.
+  Atributos técnicos por observação (`DECIMALS` etc.) permanecem nas linhas
+  (`rows[].attributes`).
+- **`revision`** (desde o contrato 1.3, servidor 1.6.4) — sempre `current`: o ILOSTAT serve só
+  a release vigente e pode revisá-la depois; nas respostas com dados, a nota diz que a OIT
+  reestima as séries modeladas (ids `_2`) a cada release, anos passados inclusive.
 
 ### Impressão digital da superfície, conferível pelo registro
 

@@ -147,8 +147,9 @@ Research contract; for data, use the \`ilo_*\` tools above.
   call — batch areas and/or paginate by period for wide panels.
 - Unfiltered dimensions return all their categories; filter \`SEX\`/\`AGE\` to keep results small.
 - Values are raw ILOSTAT observations — no aggregation, conversion or interpolation.
-- \`OBS_STATUS\` notices (e.g. "Break in series") are reproduced verbatim in provenance
-  \`notices\`; mention them when reporting trends.
+- Provenance \`notices\` count the observations carrying each \`OBS_STATUS\` (e.g. "Break in
+  series"), \`UNIT_MEASURE\` and \`UNIT_MULT\` (e.g. "Thousands") value — the unit and scale
+  are part of the number; mention status notices when reporting trends.
 - Empty result ≠ error: the series may not cover that area/year — check codes and period.
 - Reported (non-modelled) series have gaps; for cross-country comparisons with equal
   coverage prefer the modelled-estimates dataflow of the same indicator.
@@ -215,7 +216,15 @@ selects \`concise\` (default) or \`detailed\`.
   including the period, so the selection can be quoted or re-run.
 - **derived** — always \`false\` here: this server never transforms values (no aggregation,
   conversion or interpolation). Rounding is not a derivation.
-- **notices** — verbatim \`OBS_STATUS\` values with counts (e.g. "Break in series").
+- **notices** (\`ilo_get_data\`, only when there is something to say) — each distinct
+  \`OBS_STATUS\` (e.g. "Break in series"), \`UNIT_MEASURE\` and \`UNIT_MULT\` (e.g. "Thousands")
+  value found in the rows, with the number of observations carrying it, as in
+  "UNIT_MULT 3 (Thousands): 2 observation(s)". Also repeated in the text footer.
+- **revision** (since contract v1.3) — the revision status of the figures: always
+  \`current\` here, because ILOSTAT serves only its current release and may revise it later;
+  on data answers the \`note\` says the ILO revises published figures and re-estimates
+  modelled series (\`_2\` ids) at each release, past years included. Pair it with
+  \`data_vintage\` when comparing with a figure published earlier.
 - **license** — ILOSTAT data and metadata are **CC BY 4.0**.
 - **citation** — ready-to-paste ILO attribution string; **attribution** repeats it as a list.
 

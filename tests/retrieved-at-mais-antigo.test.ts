@@ -159,12 +159,14 @@ describe("ilo_get_data: estrutura do KV de ontem + dados agora", () => {
     expect(Date.parse(String(dados!.retrieved_at))).toBeGreaterThan(Date.parse(ONTEM));
   });
 
-  it("o concise leva field_sources (contrato 1.2) e o topo segue sendo o mais antigo", async () => {
+  it("o concise leva field_sources (contrato 1.2, segue na 1.3) e o topo segue sendo o mais antigo", async () => {
     stubFetch();
     const { env } = await kvComEstruturaDeOntem();
     const r = (await getDataHandler(env)(ARGS)) as unknown as { structuredContent: { provenance: Bloco } };
     const p = r.structuredContent.provenance;
-    expect(Object.keys(p).at(-1)).toBe("field_sources");
+    // Na 1.3 a revision fecha o concise; field_sources segue logo depois das chaves fixas.
+    expect(Object.keys(p)).toContain("field_sources");
+    expect(Object.keys(p).at(-1)).toBe("revision");
     for (const f of p.field_sources!) {
       expect(Date.parse(p.retrieved_at)).toBeLessThanOrEqual(Date.parse(String(f.retrieved_at)));
     }

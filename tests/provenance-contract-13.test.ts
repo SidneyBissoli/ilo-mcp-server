@@ -1,22 +1,22 @@
 /**
- * Contrato de proveniência: tempo 2 da 1.2 e tempo 1 da 1.3 (08/10/2026).
+ * Contrato de proveniência 1.3 no fio (tempo 2, 15/10/2026).
  *
- * - O servidor emite 1.2 (`contractVersion` no contexto), e quem mostra a versão ao
+ * - O servidor emite 1.3 (`contractVersion` no contexto), e quem mostra a versão ao
  *   cliente (`/status`, resource de proveniência) ecoa o CONTEXTO — não um literal nem
  *   o padrão da lib (`CONTRACT_VERSION`, que segue 1.1).
- * - Desde a 1.6.1, `ilo_get_data` e `ilo_list_dimension_values` juntam duas leituras e
- *   levam `field_sources` (o resto do fio 1.2 é o da 1.1).
- * - `revision` (decisão do dono: `current` em todo o portfólio fora o sih; `final`
- *   ninguém usa) já está no canônico; o fio 1.2 não a carrega.
- * - O `outputSchema` LISTADO já aceita um bloco 1.3 completo (`notices`, `derived`,
- *   `derivation_note`, `revision`): é o que deixa ligar a 1.3 depois sem quebrar
- *   conector nenhum (contrato §8).
+ * - O `concise` leva `revision` em toda resposta (`current`; `final` ninguém usa) e
+ *   `notices` só quando há aviso do dado: em `ilo_get_data`, as contagens de
+ *   OBS_STATUS, UNIT_MEASURE e UNIT_MULT (unidade e escala são parte do número).
+ *   Sem aviso, `notices` fica ausente — não vazio — e o rodapé não ganha linha.
+ *   `derived` nunca sai: o servidor não calcula valores.
+ * - Da 1.2 segue o `field_sources` em `ilo_get_data` (estrutura + dados).
+ * - O `outputSchema` LISTADO aceita o que sai, e um bloco 1.3 com as quatro chaves.
  */
 
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
+  CONCISE_BLOCK_JSON_SCHEMA,
   CONTRACT_VERSION,
-  createProvenanceContext,
   type CanonicalProvenance,
 } from "@sbissoli/mcp-provenance";
 import { CfWorkerJsonSchemaValidator } from "@modelcontextprotocol/server/validators/cf-worker";
@@ -67,7 +67,8 @@ function structureMessage() {
   };
 }
 
-function dataMessage() {
+/** `comAviso`: a 1ª observação marcada com OBS_STATUS B; sem ele, nenhum atributo de aviso. */
+function dataMessage(comAviso: boolean) {
   return {
     data: {
       structure: {
@@ -79,22 +80,24 @@ function dataMessage() {
           ],
           observation: [{ id: "TIME_PERIOD", values: [{ id: "2023" }, { id: "2024" }] }],
         },
-        attributes: {
-          observation: [{ id: "OBS_STATUS", values: [{ id: "B", name: "Break in series" }] }],
-        },
+        attributes: comAviso
+          ? { observation: [{ id: "OBS_STATUS", values: [{ id: "B", name: "Break in series" }] }] }
+          : {},
       },
-      dataSets: [{ series: { "0:0": { observations: { "0": [7.9, 0], "1": [6.6] } } } }],
+      dataSets: [
+        { series: { "0:0": { observations: comAviso ? { "0": [7.9, 0], "1": [6.6] } : { "0": [7.9], "1": [6.6] } } } },
+      ],
     },
   };
 }
 
-function stubFetch() {
+function stubFetch(comAviso: boolean) {
   vi.stubGlobal(
     "fetch",
     vi.fn(async (input: RequestInfo | URL) => {
       const url = String(input);
       if (url.includes("/dataflow/")) return new Response(JSON.stringify(structureMessage()), { status: 200 });
-      if (url.includes("/data/")) return new Response(JSON.stringify(dataMessage()), { status: 200 });
+      if (url.includes("/data/")) return new Response(JSON.stringify(dataMessage(comAviso)), { status: 200 });
       throw new Error(`fetch inesperado: ${url}`);
     }),
   );
@@ -106,76 +109,92 @@ afterEach(() => {
 });
 
 const ARGS = { dataflow: "DF_UNE_DEAP_SEX_AGE_RT", filters: { REF_AREA: "BRA", SEX: "SEX_T" } };
+const AVISO_B = "OBS_STATUS B (Break in series): 1 observation(s)";
+
+type Resposta = { structuredContent: Record<string, unknown>; content: Array<{ type: string; text?: string }> };
 
 /** Roda `ilo_get_data` e devolve a resposta e o bloco CANÔNICO que o handler montou. */
-async function getDataWithCanonical(mode: "concise" | "detailed") {
-  stubFetch();
+async function getDataWithCanonical(mode: "concise" | "detailed", comAviso = true) {
+  stubFetch(comAviso);
   const spy = vi.spyOn(provenance, "result");
-  const r = (await getDataHandler(ENV)({ ...ARGS, provenance_mode: mode })) as {
-    structuredContent: Record<string, unknown>;
-  };
+  const r = (await getDataHandler(ENV)({ ...ARGS, provenance_mode: mode })) as Resposta;
   expect(spy).toHaveBeenCalledTimes(1);
   const canonical = spy.mock.calls[0]![1] as CanonicalProvenance;
   spy.mockRestore();
   return { r, canonical };
 }
 
+const bloco = (r: Resposta) => r.structuredContent.provenance as unknown as Record<string, unknown>;
+const texto = (r: Resposta) => r.content.map((c) => c.text ?? "").join("\n");
+
 describe("versão do contrato", () => {
-  it("o contexto emite 1.2, e não o padrão da lib", () => {
-    expect(PROVENANCE_OPTIONS.contractVersion).toBe("1.2");
-    expect(provenance.contractVersion).toBe("1.2");
+  it("o contexto emite 1.3, e não o padrão da lib", () => {
+    expect(PROVENANCE_OPTIONS.contractVersion).toBe("1.3");
+    expect(provenance.contractVersion).toBe("1.3");
     expect(CONTRACT_VERSION).toBe("1.1"); // o padrão da lib; o eco NÃO pode vir dele
   });
 
   it("/status e o resource de proveniência ecoam a versão do CONTEXTO", () => {
-    expect(buildStatus({}).provenance_contract).toBe("1.2");
+    expect(buildStatus({}).provenance_contract).toBe("1.3");
     const md = provenanceMarkdown();
-    expect(md).toContain("contract v1.2");
+    expect(md).toContain("contract v1.3");
     expect(md).not.toContain(`contract v${CONTRACT_VERSION},`);
+    // O guia descreve o que a 1.3 põe no fio.
+    expect(md).toContain("**revision** (since contract v1.3)");
+    expect(md).toContain("UNIT_MULT 3 (Thousands): 2 observation(s)");
   });
 
-  it("o bloco detailed diz 1.2", async () => {
+  it("o bloco detailed diz 1.3", async () => {
     const { r } = await getDataWithCanonical("detailed");
-    expect((r.structuredContent.provenance as unknown as Record<string, unknown>).contract_version).toBe("1.2");
+    expect(bloco(r).contract_version).toBe("1.3");
   });
 });
 
-describe("1.2 no fio: além da versão, só field_sources", () => {
-  it("ilo_get_data junta estrutura + dados (desde a 1.6.1) → field_sources com as duas leituras", async () => {
-    const concise = await getDataWithCanonical("concise");
-    const fs = (concise.r.structuredContent.provenance as unknown as Record<string, unknown>).field_sources;
-    expect(fs).toHaveLength(2);
-    expect(concise.canonical.field_sources).toHaveLength(2);
-    // Cenário completo (estrutura do KV de ontem): tests/retrieved-at-mais-antigo.test.ts.
+describe("1.3 no fio: revision sempre, notices só com aviso, derived nunca", () => {
+  it("concise com aviso: as chaves do schema, field_sources (1.2), notices e revision — nessa ordem", async () => {
+    const { r } = await getDataWithCanonical("concise");
+    const b = bloco(r);
+    expect(Object.keys(b)).toEqual([
+      ...CONCISE_BLOCK_JSON_SCHEMA.required,
+      "field_sources",
+      "notices",
+      "revision",
+    ]);
+    expect(b.notices).toEqual([AVISO_B]);
+    expect(b.revision).toEqual(ILOSTAT_VALUES_REVISION);
+    expect(b).not.toHaveProperty("derived");
+    expect(b).not.toHaveProperty("derivation_note");
   });
 
-  it("fora field_sources e o contract_version, a resposta 1.2 é byte a byte a 1.1 (concise, detailed e rodapé)", async () => {
-    const ctx11 = createProvenanceContext({ ...PROVENANCE_OPTIONS, contractVersion: "1.1" });
-    const semFieldSources = (b: unknown) => {
-      const { field_sources: _f, contract_version: _c, ...resto } = b as Record<string, unknown>;
-      return resto;
-    };
+  it("o aviso do dado vai também ao rodapé de texto", async () => {
+    const { r } = await getDataWithCanonical("concise");
+    expect(texto(r)).toContain(`Notices from the source: ${AVISO_B}`);
+  });
+
+  it("caso comum, sem aviso: notices AUSENTE (não vazio) e nenhuma linha nova no rodapé", async () => {
     for (const mode of ["concise", "detailed"] as const) {
-      const { r, canonical } = await getDataWithCanonical(mode);
-      const { contract_version: _v, ...input } = canonical;
-      const p11 = ctx11.build(input as Parameters<typeof ctx11.build>[0]);
-      const r11 = ctx11.result({}, p11, { mode });
-      const r12 = provenance.result({}, canonical, { mode });
-      expect(semFieldSources(r12.structuredContent.provenance)).toEqual(
-        semFieldSources(r11.structuredContent.provenance),
-      );
-      // O rodapé não mostra field_sources: texto idêntico.
-      expect(JSON.stringify(r12.content)).toBe(JSON.stringify(r11.content));
-      expect(r.structuredContent.provenance).toEqual(r12.structuredContent.provenance);
+      const { r } = await getDataWithCanonical(mode, false);
+      // O detailed mostra toda chave (lista vazia); o concise só o que há a dizer.
+      if (mode === "concise") expect(bloco(r)).not.toHaveProperty("notices");
+      else expect(bloco(r).notices).toEqual([]);
+      expect(bloco(r).revision, mode).toEqual(ILOSTAT_VALUES_REVISION);
+      expect(texto(r), mode).not.toContain("Notices from the source");
+      expect(texto(r), mode).not.toContain("Preliminary data");
+      expect(texto(r), mode).not.toContain("Values computed by the server");
     }
   });
 
-  it("revision fica fora do fio enquanto o servidor emite 1.2", async () => {
-    const concise = await getDataWithCanonical("concise");
-    expect(concise.r.structuredContent.provenance).not.toHaveProperty("revision");
-    const detailed = await getDataWithCanonical("detailed");
-    expect(detailed.r.structuredContent.provenance).not.toHaveProperty("revision");
-    expect(JSON.stringify(detailed.r)).not.toContain("re-estimates modelled series");
+  it("detailed: a mesma revision e os mesmos notices", async () => {
+    const { r } = await getDataWithCanonical("detailed");
+    expect(bloco(r).revision).toEqual(ILOSTAT_VALUES_REVISION);
+    expect(bloco(r).notices).toEqual([AVISO_B]);
+  });
+
+  it("ilo_get_data junta estrutura + dados → field_sources com as duas leituras", async () => {
+    const { r, canonical } = await getDataWithCanonical("concise");
+    expect(bloco(r).field_sources).toHaveLength(2);
+    expect(canonical.field_sources).toHaveLength(2);
+    // Cenário completo (estrutura do KV de ontem): tests/retrieved-at-mais-antigo.test.ts.
   });
 });
 
@@ -200,15 +219,8 @@ describe("revision no canônico (decisão do dono: current; final não se usa)",
   });
 });
 
-describe("tempo 1 da 1.3: o outputSchema listado aceita um bloco 1.3", () => {
+describe("o outputSchema listado aceita o que sai na 1.3", () => {
   const validador = new CfWorkerJsonSchemaValidator();
-  const ctx13 = createProvenanceContext({ ...PROVENANCE_OPTIONS, contractVersion: "1.3" });
-
-  /** O mesmo canônico, reconstruído por um contexto 1.3 (o bloco leva a versão consigo). */
-  function as13(canonical: CanonicalProvenance, extra: Record<string, unknown> = {}): CanonicalProvenance {
-    const { contract_version: _v, ...input } = canonical;
-    return ctx13.build({ ...input, ...extra } as Parameters<typeof ctx13.build>[0]);
-  }
 
   async function listedSchema(tool: string): Promise<Record<string, unknown>> {
     const client = await conectarComoCliente(buildServer({}));
@@ -222,31 +234,29 @@ describe("tempo 1 da 1.3: o outputSchema listado aceita um bloco 1.3", () => {
     }
   }
 
-  it("a resposta real de ilo_get_data, re-renderizada em 1.3 (concise e detailed), passa", async () => {
+  it("a resposta real de ilo_get_data (concise e detailed, com e sem aviso) passa", async () => {
     const schema = await listedSchema("ilo_get_data");
     for (const mode of ["concise", "detailed"] as const) {
-      const { r, canonical } = await getDataWithCanonical(mode);
-      const r13 = ctx13.result({}, as13(canonical), { mode });
-      const prov = r13.structuredContent.provenance as unknown as Record<string, unknown>;
-      // O que a 1.3 vai pôr no fio do ilo: os avisos do OBS_STATUS e a revisão.
-      expect(prov.notices).toEqual(["OBS_STATUS B (Break in series): 1 observation(s)"]);
-      expect(prov.revision).toEqual(ILOSTAT_VALUES_REVISION);
-      const sc = { ...r.structuredContent, ...r13.structuredContent };
-      const v = validador.getValidator(schema as never)(sc);
-      expect(v.valid, `${mode}: ${v.errorMessage ?? ""}`).toBe(true);
+      for (const comAviso of [true, false]) {
+        const { r } = await getDataWithCanonical(mode, comAviso);
+        const v = validador.getValidator(schema as never)(r.structuredContent);
+        expect(v.valid, `${mode}/${comAviso}: ${v.errorMessage ?? ""}`).toBe(true);
+      }
     }
   });
 
   it("um concise 1.3 com as QUATRO chaves passa (derived + derivation_note + notices + revision)", async () => {
     const schema = await listedSchema("ilo_get_data");
     const { r, canonical } = await getDataWithCanonical("concise");
-    const full = as13(canonical, {
+    const { contract_version: _v, ...input } = canonical;
+    const full = provenance.build({
+      ...input,
       derived: true,
       derivation_note: "test-only: computed by the server",
-      notices: ["OBS_STATUS B (Break in series): 1 observation(s)"],
+      notices: [AVISO_B],
       revision: { status: "provisional", note: "test-only" },
-    });
-    const r13 = ctx13.result({}, full, { mode: "concise" });
+    } as Parameters<typeof provenance.build>[0]);
+    const r13 = provenance.result({}, full, { mode: "concise" });
     const prov = r13.structuredContent.provenance as unknown as Record<string, unknown>;
     for (const k of ["notices", "derived", "derivation_note", "revision"]) expect(prov).toHaveProperty(k);
     const v = validador.getValidator(schema as never)({ ...r.structuredContent, ...r13.structuredContent });
