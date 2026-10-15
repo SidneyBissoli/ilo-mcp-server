@@ -24,6 +24,21 @@ do npm. Lacunas registradas:
 - **Datas corrigidas para UTC:** a 1.4.2 e a 1.4.0 estavam com a data local
   (07/10 e 05/10); o npm registra 08/10 e 06/10.
 
+## [1.6.3] — 2026-10-15
+
+A superfície (`tools/list`) não muda.
+
+### Corrigido
+- **403 com página HTML da OIT agora é repetido.** No smoke do deploy da 1.6.2 (15/10/2026),
+  `ilo_get_indicator_metadata` recebeu 403 da API SDMX numa estrutura de dataflow, e a mesma
+  chamada passou 1 s depois; direto, a OIT respondia 200. A página é a de erro do IIS, e a OIT
+  serve a API por um balanceador atrás da Cloudflare: um servidor do pool recusa e o próximo
+  responde. Antes, o 403 caía como 4xx comum — uma tentativa só, e o usuário recebia o erro que
+  a segunda tentativa teria evitado. Agora repete com a política de sempre (até 3 tentativas,
+  1 s → 4 s) e entra no `retrieval` como anomalia `http_4xx` superada. Só a página HTML
+  repete: um 403 da própria API (SDMX/JSON) seria recusa de verdade. Raro em produção: na
+  telemetria de 60 dias há quatro falhas da classe `fonte`, todas do dono ou do CI.
+
 ## [1.6.2] — 2026-10-15
 
 Só documentação: código e superfície (`tools/list`) não mudam. A versão sobe para o

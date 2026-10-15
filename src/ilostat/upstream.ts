@@ -41,6 +41,14 @@
  *  - 404 não repete (o pacote já não repete): para dados é "sem observações"
  *    (linhas vazias), para estrutura é dataflow inexistente — quem decide é
  *    `sdmx.ts`, por `upstreamNotFound`;
+ *  - **403 com página HTML REPETE** (os outros 4xx não): medido em 15/10/2026, o
+ *    smoke do deploy recebeu 403 numa estrutura de dataflow, e a mesma chamada
+ *    passou 1 s depois; direto, a OIT respondia 200. A página é a de erro do IIS
+ *    (`<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"…`), e a OIT serve
+ *    a API por um balanceador (cookie `frontier-backend-https`) atrás da
+ *    Cloudflare: um servidor do pool recusou, e a tentativa seguinte cai em
+ *    outro. Só a página HTML repete — um 403 da API em si (SDMX/JSON) seria
+ *    recusa de verdade, e nunca foi medido;
  *  - **200 que não é JSON NÃO repete**: nunca medido na OIT. O pacote
  *    repetiria por padrão porque o bcb mediu HTML-em-200 transitório na origem
  *    DELE; aqui é paridade com o que este servidor sempre fez (o `res.json()`
@@ -146,7 +154,14 @@ export function retryUpstream(ctx: RetryContext): boolean {
   if (ctx.status === 504) return false;
   // 200 que não é JSON: nunca medido na OIT — paridade (ver cabeçalho).
   if (ctx.kind === "malformed_body") return false;
+  // Página de erro de um servidor do pool da OIT — o próximo responde (ver cabeçalho).
+  if (ctx.status === 403) return paginaHtml(ctx.body);
   return defaultRetryOn(ctx);
+}
+
+/** Corpo que é página HTML, não resposta da API. */
+function paginaHtml(body: string | undefined): boolean {
+  return /^\s*<(!doctype html|html)/i.test(body ?? "");
 }
 
 /**
