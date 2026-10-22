@@ -61,6 +61,10 @@ Só teste de CI e dependência: servidor, superfície e respostas não mudam.
   `--sonda` (sai 0 se as sondas servem, 2 se não): o que se lê num deploy vermelho.
   Mesmos 14 checks de antes. Provas: `--sonda` 0 com as duas servindo;
   `SMOKE_SONDA_SDMX_ESTRUTURA=http://127.0.0.1:9/nada` → 2; produção 14 de 14, saída 0.
+  **Mesma noite, `@sbissoli/mcp-live-source` ^0.3.1 (pedido do dono):** o pacote passa a
+  ler 4xx COM PÁGINA HTML como fonte fora — se os três servidores do pool estiverem na
+  página de erro, a sonda diz "FORA (respondeu HTTP 403 com página HTML …)" e a tool que
+  falhou vira aviso, não vermelho; a repetição 3× continua, para não avisar à toa.
 
 ## [1.6.4] — 2026-10-15
 
