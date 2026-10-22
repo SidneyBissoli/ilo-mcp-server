@@ -36,11 +36,11 @@
  * tentativa diria "de pé" em 60% das vezes que a fonte estivesse fora — e
  * pintaria de vermelho. Por isso a sonda espelha a política do servidor
  * (`fetchDaSonda`): página HTML com 403 repete, até 3 tentativas, e a ÚLTIMA
- * resposta vai ao classificador sem retoque. Ressalva: se os TRÊS servidores do
- * pool estiverem na página de erro, a sonda diz "de pé, mas recusou o pedido
- * mínimo (HTTP 403)" e a tool que falhou sai vermelha — ler esse 403 no log é
- * ler "pool inteiro em página de erro"; tratar 4xx-HTML como queda é decisão do
- * pacote, não deste script.
+ * resposta vai ao classificador sem retoque. E desde o `@sbissoli/mcp-live-source`
+ * 0.3.1 (mesma noite, pedido do dono) o pacote lê 4xx COM PÁGINA HTML como fonte
+ * fora: se os TRÊS servidores do pool estiverem na página de erro, a sonda diz
+ * "FORA (respondeu HTTP 403 com página HTML …)" e a tool que falhou vira AVISO,
+ * não vermelho. 4xx sem página (JSON, vazio) continua "de pé".
  */
 
 import { readdirSync, readFileSync } from "node:fs";
