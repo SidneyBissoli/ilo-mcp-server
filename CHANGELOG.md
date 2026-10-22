@@ -24,6 +24,22 @@ do npm. Lacunas registradas:
 - **Datas corrigidas para UTC:** a 1.4.2 e a 1.4.0 estavam com a data local
   (07/10 e 05/10); o npm registra 08/10 e 06/10.
 
+## [Não publicado]
+
+Só teste de CI e dependência: servidor, superfície e respostas não mudam.
+
+### Alterado
+- **Contrato semanal dos dataflows curados: fonte fora ≠ deriva.** O teste
+  `tests/key-dataflows-contract.integration.test.ts` passa a rodar em `aoVivo` do
+  `@sbissoli/mcp-live-source/vitest` (0.2.0, dev), com a rede pelo `@sbissoli/mcp-upstream`
+  (^0.5.1, antes ^0.4.2 — a 0.5.x só acrescenta `entregaDaOrigem`): SDMX fora (timeout,
+  rede, 429, 5xx) depois de 3 idas = teste **pulado** e anotado como `Fonte indisponível` —
+  job verde, o painel do portfólio conta as noites —; só a asserção (dataflow sumiu ou foi
+  renomeado) é deriva, vermelho rotulado `Deriva de formato`. Antes, o HTTP 500
+  determinístico do `allstubs` (27/09–04/10/2026) ficava vermelho igual a deriva (item
+  `mcp:fonte-indisponivel-nao-e-deriva`). Página HTML com 200 é ambígua (repete; se
+  persistir, `Ambíguo`). Rodada local: 1 de 1 em 48 s.
+
 ## [1.6.4] — 2026-10-15
 
 Tempo 2 do contrato de proveniência 1.3: o que a 1.6.0 passou a ACEITAR no esquema passa a
