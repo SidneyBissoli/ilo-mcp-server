@@ -39,6 +39,28 @@ Só teste de CI e dependência: servidor, superfície e respostas não mudam.
   determinístico do `allstubs` (27/09–04/10/2026) ficava vermelho igual a deriva (item
   `mcp:fonte-indisponivel-nao-e-deriva`). Página HTML com 200 é ambígua (repete; se
   persistir, `Ambíguo`). Rodada local: 1 de 1 em 48 s.
+- **Smoke pós-deploy: fonte fora ≠ deploy quebrado.** `scripts/smoke-mcp.mjs` decidia
+  por REGEX sobre o texto da tool (`/50\d|timeout|tempo limite|gateway/`): `isError` com
+  texto fora dela era vermelho, e o painel abria "Deploy FALHOU" para deploy que não falhou
+  (medido no portfólio em 22/10/2026: o bcb reprovou duas reexecuções com o SGS em 502 e o
+  ibge ficou vermelho com o IBGE recusando conexões de parte das nuvens; a classe do erro da
+  origem não viaja no fio). Agora o roteiro corre no `criarSmoke` do
+  `@sbissoli/mcp-live-source` (^0.3.0, dev, antes ^0.2.0): tool com `isError` inesperado →
+  sonda direta na fonte que a verificação nomeia → fonte fora = `::warning title=Fonte
+  indisponível`, saída 0; fonte servindo = vermelho com o texto da tool. Verificação que
+  lança (asserção, HTTP, JSON-RPC) é defeito do deploy e não sonda; erro pedagógico (sem
+  `REF_AREA`, >30 áreas, id desconhecido no `fetch`) é `esperaErro`. Duas sondas, um host
+  e dois backends: `sdmx-estrutura` (`/dataflow/ILO/DF_UNE_2EAP_SEX_AGE_RT/latest`, aceita
+  se `data.dataflows[0].id` é o dataflow) e `sdmx-dados` (uma série × uma observação,
+  `lastNObservations=1`, aceita se `data.dataSets[0].series` tem chave; prazo de 30 s —
+  medida entre 2 e 15 s). `ilo_search_indicators` e `search` leem o catálogo D1
+  (`sondas: []`: falha ali é nossa); as dependentes da busca saem "não medidas" se ela
+  falhar. Medido no mesmo dia: o pool da OIT tem três servidores e dois deles respondiam
+  403 com a página HTML do IIS (~60% dos pedidos), que o classificador lê como "de pé" —
+  a sonda repete esse 403 até 3 vezes, como o servidor (`retryUpstream`). Novo
+  `--sonda` (sai 0 se as sondas servem, 2 se não): o que se lê num deploy vermelho.
+  Mesmos 14 checks de antes. Provas: `--sonda` 0 com as duas servindo;
+  `SMOKE_SONDA_SDMX_ESTRUTURA=http://127.0.0.1:9/nada` → 2; produção 14 de 14, saída 0.
 
 ## [1.6.4] — 2026-10-15
 
