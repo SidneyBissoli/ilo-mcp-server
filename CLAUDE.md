@@ -37,8 +37,17 @@ npm run manifest:lhm   # regenera lhm.plugin.json (LobeHub)
 npm run eval           # eval com MODELO REAL — CUSTA DINHEIRO (ver abaixo)
 
 node scripts/smoke-mcp.mjs [base-url]       # smoke do endpoint em produção
+node scripts/smoke-mcp.mjs --sonda          # só pergunta à API SDMX da OIT se ela está servindo (sai 0/2) — ler um deploy vermelho com isto
 node scripts/dump-surface.mjs --stdio       # dump da superfície (baselines/)
 ```
+
+O smoke roda sobre o `criarSmoke` do `@sbissoli/mcp-live-source` (dev): tool que
+responde `isError` inesperado dispara uma sonda direta na fonte que a verificação nomeia
+(`sondas: ["sdmx-estrutura"]` / `["sdmx-dados"]`; catálogo D1 = `sondas: []`, falha é
+nossa); fonte fora = `::warning title=Fonte indisponível`, saída 0 (o passo do deploy
+fica verde); fonte servindo = vermelho com o texto da tool. Verificação que lança
+(asserção, HTTP, JSON-RPC) é defeito do deploy e nunca sonda. A sonda repete o 403 com
+página HTML do pool da OIT, como o servidor (cabeçalho do script).
 
 `npm run eval` (`evals/run.ts`) cobra a API da Anthropic à parte de qualquer
 assinatura: nunca rodar com `ANTHROPIC_API_KEY` sem decisão explícita do dono; sem a
