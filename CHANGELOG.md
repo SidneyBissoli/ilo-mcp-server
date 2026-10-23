@@ -65,6 +65,10 @@ Só teste de CI e dependência: servidor, superfície e respostas não mudam.
   ler 4xx COM PÁGINA HTML como fonte fora — se os três servidores do pool estiverem na
   página de erro, a sonda diz "FORA (respondeu HTTP 403 com página HTML …)" e a tool que
   falhou vira aviso, não vermelho; a repetição 3× continua, para não avisar à toa.
+  **E `^0.4.0` (23/10/2026, decisão do dono):** tool que falhou com a fonte DE PÉ é chamada
+  de novo uma vez antes de ser julgada — passou na 2ª = soluço da origem (aviso); falhou de
+  novo = vermelho. Medido no bcb: a sonda mínima respondia do cache enquanto pedidos pesados
+  caíam por timeout. Só o lock muda aqui.
 
 ## [1.6.4] — 2026-10-15
 
