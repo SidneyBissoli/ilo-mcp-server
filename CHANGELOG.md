@@ -26,7 +26,9 @@ do npm. Lacunas registradas:
 
 ## [Não publicado]
 
-## [1.6.5] — 2026-10-27
+## [1.7.0] — 2026-10-27
+
+Renumerada de 1.6.5 (nunca publicada) para 1.7.0: a superfície publicada mudou (descrições no `outputSchema`), e pela convenção do repositório isso é versão minor.
 
 Só descrições no `outputSchema` das tools: a superfície (`tools/list`) muda em texto, e
 campos, tipos e respostas não mudam. Leva também o que estava em [Não publicado] (teste de CI
