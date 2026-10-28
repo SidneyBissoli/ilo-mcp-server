@@ -155,12 +155,20 @@ export function registerMetadataTools(server: McpServer, env: Env, record: Recor
         provenance_mode: PROVENANCE_MODE_SCHEMA,
       }).strict(),
       outputSchema: z.looseObject({
-        id: z.string(),
-        version: z.string(),
-        name: z.string().nullable(),
-        data_vintage: z.string().nullable(),
-        dimensions: z.array(z.object({ id: z.string(), codelist: z.string().nullable() })),
-        time_dimension: z.string().nullable(),
+        id: z.string().describe("Dataflow id"),
+        version: z.string().describe("Dataflow version at the ILO"),
+        name: z.string().nullable().describe("Dataflow name; null when the ILO gives none"),
+        data_vintage: z
+          .string()
+          .nullable()
+          .describe("Last update of the dataflow at the ILO (LAST_UPDATE, yyyy-MM-dd); null when absent"),
+        dimensions: z
+          .array(z.object({ id: z.string(), codelist: z.string().nullable() }))
+          .describe("Dimensions in SDMX key order, each with its codelist id; filter ilo_get_data by these ids"),
+        time_dimension: z
+          .string()
+          .nullable()
+          .describe("Id of the time dimension (filtered via start_period/end_period); null when absent"),
         ...provenanceOutputShape(),
       }),
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true },
@@ -190,15 +198,17 @@ export function registerMetadataTools(server: McpServer, env: Env, record: Recor
         provenance_mode: PROVENANCE_MODE_SCHEMA,
       }).strict(),
       outputSchema: z.looseObject({
-        dataflow: z.string(),
-        dimension: z.string(),
-        codelist: z.string(),
-        total_codes: z.number(),
-        showing: z.number(),
-        offset: z.number(),
-        values: z.array(z.object({ id: z.string(), name: z.string().nullable() })),
-        has_more: z.boolean(),
-        next_offset: z.number().optional(),
+        dataflow: z.string().describe("Dataflow id the dimension belongs to"),
+        dimension: z.string().describe("Dimension id"),
+        codelist: z.string().describe("Id of the codelist that enumerates the dimension (shared across dataflows)"),
+        total_codes: z.number().describe("Codes matching the search filter (or all codes), across every page"),
+        showing: z.number().describe("Codes returned in this page"),
+        offset: z.number().describe("Codes skipped before this page"),
+        values: z
+          .array(z.object({ id: z.string(), name: z.string().nullable() }))
+          .describe("Valid codes: id is the value for ilo_get_data filters, name is the ILO label"),
+        has_more: z.boolean().describe("True when more codes remain after this page"),
+        next_offset: z.number().optional().describe("Offset for the next page; present only when has_more is true"),
         ...provenanceOutputShape(),
       }),
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true },

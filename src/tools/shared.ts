@@ -43,6 +43,8 @@ export function provenanceOutputShape() {
           "(field_sources, notices, derived, derivation_note, revision) appear only when there is " +
           "something to say",
       ),
-    attribution: z.array(z.string()),
+    attribution: z
+      .array(z.string())
+      .describe("Source URLs the figures came from (the provenance source_url of each block), for linking the citation"),
   };
 }

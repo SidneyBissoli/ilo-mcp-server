@@ -1,7 +1,7 @@
 {
   "identifier": "sidneybissoli-ilo-mcp-server",
   "name": "ILO Labour Statistics (ILOSTAT) MCP Server",
-  "version": "1.6.4",
+  "version": "1.6.5",
   "icon": "📊",
   "description": "ILO labour statistics (ILOSTAT) with full provenance: source URL, data vintage, retrieval timestamp, license and ILO citation on every response. Tools to search indicators, read indicator metadata and dimension codes, and fetch data; reference resources (query guide, key dataflows by topic, provenance contract) and workflow prompts (country profile, compare countries, indicator trend). Hosted on Cloudflare Workers (Streamable HTTP, no auth) or local stdio. Not affiliated with or endorsed by the ILO. MIT licensed.",
   "author": "Sidney da Silva Pereira Bissoli",
@@ -66,13 +66,16 @@
         "type": "object",
         "properties": {
           "total_matches": {
-            "type": "number"
+            "type": "number",
+            "description": "Dataflows matching all terms, across every page"
           },
           "showing": {
-            "type": "number"
+            "type": "number",
+            "description": "Dataflows returned in this page"
           },
           "offset": {
-            "type": "number"
+            "type": "number",
+            "description": "Results skipped before this page"
           },
           "indicators": {
             "type": "array",
@@ -95,21 +98,26 @@
                 "version"
               ],
               "additionalProperties": false
-            }
+            },
+            "description": "Matching dataflows, highest ILO relevance weight first; use id with ilo_get_data"
           },
           "has_more": {
-            "type": "boolean"
+            "type": "boolean",
+            "description": "True when more matches remain after this page"
           },
           "next_offset": {
+            "description": "Offset for the next page; present only when has_more is true",
             "type": "number"
           },
           "vocabulary_notes": {
+            "description": "Translations applied from everyday or US wording to ILO terms (e.g. labor → labour)",
             "type": "array",
             "items": {
               "type": "string"
             }
           },
           "hint": {
+            "description": "What to do next: how to narrow or page, or why nothing matched",
             "type": "string"
           },
           "provenance": {
@@ -653,7 +661,8 @@
             "type": "array",
             "items": {
               "type": "string"
-            }
+            },
+            "description": "Source URLs the figures came from (the provenance source_url of each block), for linking the citation"
           }
         },
         "required": [
@@ -706,18 +715,22 @@
         "type": "object",
         "properties": {
           "id": {
-            "type": "string"
+            "type": "string",
+            "description": "Dataflow id"
           },
           "version": {
-            "type": "string"
+            "type": "string",
+            "description": "Dataflow version at the ILO"
           },
           "name": {
+            "description": "Dataflow name; null when the ILO gives none",
             "type": [
               "string",
               "null"
             ]
           },
           "data_vintage": {
+            "description": "Last update of the dataflow at the ILO (LAST_UPDATE, yyyy-MM-dd); null when absent",
             "type": [
               "string",
               "null"
@@ -743,9 +756,11 @@
                 "codelist"
               ],
               "additionalProperties": false
-            }
+            },
+            "description": "Dimensions in SDMX key order, each with its codelist id; filter ilo_get_data by these ids"
           },
           "time_dimension": {
+            "description": "Id of the time dimension (filtered via start_period/end_period); null when absent",
             "type": [
               "string",
               "null"
@@ -1292,7 +1307,8 @@
             "type": "array",
             "items": {
               "type": "string"
-            }
+            },
+            "description": "Source URLs the figures came from (the provenance source_url of each block), for linking the citation"
           }
         },
         "required": [
@@ -1369,22 +1385,28 @@
         "type": "object",
         "properties": {
           "dataflow": {
-            "type": "string"
+            "type": "string",
+            "description": "Dataflow id the dimension belongs to"
           },
           "dimension": {
-            "type": "string"
+            "type": "string",
+            "description": "Dimension id"
           },
           "codelist": {
-            "type": "string"
+            "type": "string",
+            "description": "Id of the codelist that enumerates the dimension (shared across dataflows)"
           },
           "total_codes": {
-            "type": "number"
+            "type": "number",
+            "description": "Codes matching the search filter (or all codes), across every page"
           },
           "showing": {
-            "type": "number"
+            "type": "number",
+            "description": "Codes returned in this page"
           },
           "offset": {
-            "type": "number"
+            "type": "number",
+            "description": "Codes skipped before this page"
           },
           "values": {
             "type": "array",
@@ -1406,12 +1428,15 @@
                 "name"
               ],
               "additionalProperties": false
-            }
+            },
+            "description": "Valid codes: id is the value for ilo_get_data filters, name is the ILO label"
           },
           "has_more": {
-            "type": "boolean"
+            "type": "boolean",
+            "description": "True when more codes remain after this page"
           },
           "next_offset": {
+            "description": "Offset for the next page; present only when has_more is true",
             "type": "number"
           },
           "provenance": {
@@ -1955,7 +1980,8 @@
             "type": "array",
             "items": {
               "type": "string"
-            }
+            },
+            "description": "Source URLs the figures came from (the provenance source_url of each block), for linking the citation"
           }
         },
         "required": [
@@ -2069,12 +2095,15 @@
             "type": "object",
             "properties": {
               "id": {
-                "type": "string"
+                "type": "string",
+                "description": "Dataflow id"
               },
               "version": {
-                "type": "string"
+                "type": "string",
+                "description": "Dataflow version at the ILO"
               },
               "name": {
+                "description": "Dataflow name; null when the ILO gives none",
                 "type": [
                   "string",
                   "null"
@@ -2086,16 +2115,19 @@
               "version",
               "name"
             ],
-            "additionalProperties": false
+            "additionalProperties": false,
+            "description": "The dataflow the observations come from"
           },
           "columns": {
             "type": "array",
             "items": {
               "type": "string"
-            }
+            },
+            "description": "Dimension ids of each row, in SDMX order, followed by value"
           },
           "rows_count": {
-            "type": "number"
+            "type": "number",
+            "description": "Number of observations returned"
           },
           "rows": {
             "type": "array",
@@ -2105,7 +2137,8 @@
                 "type": "string"
               },
               "additionalProperties": {}
-            }
+            },
+            "description": "Raw ILOSTAT observations: one code per dimension, value (untransformed; read with UNIT_MULT) and, when present, attributes such as OBS_STATUS, UNIT_MEASURE and UNIT_MULT"
           },
           "provenance": {
             "anyOf": [
@@ -2648,7 +2681,8 @@
             "type": "array",
             "items": {
               "type": "string"
-            }
+            },
+            "description": "Source URLs the figures came from (the provenance source_url of each block), for linking the citation"
           }
         },
         "required": [
@@ -3259,7 +3293,8 @@
             "type": "array",
             "items": {
               "type": "string"
-            }
+            },
+            "description": "Source URLs the figures came from (the provenance source_url of each block), for linking the citation"
           }
         },
         "required": [
@@ -3864,7 +3899,8 @@
             "type": "array",
             "items": {
               "type": "string"
-            }
+            },
+            "description": "Source URLs the figures came from (the provenance source_url of each block), for linking the citation"
           }
         },
         "required": [

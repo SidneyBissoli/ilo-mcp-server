@@ -194,10 +194,21 @@ export function registerDataTools(server: McpServer, env: Env, record: RecordUsa
         provenance_mode: PROVENANCE_MODE_SCHEMA,
       }).strict(),
       outputSchema: z.looseObject({
-        dataflow: z.object({ id: z.string(), version: z.string(), name: z.string().nullable() }),
-        columns: z.array(z.string()),
-        rows_count: z.number(),
-        rows: z.array(z.record(z.string(), z.unknown())),
+        dataflow: z
+          .object({
+            id: z.string().describe("Dataflow id"),
+            version: z.string().describe("Dataflow version at the ILO"),
+            name: z.string().nullable().describe("Dataflow name; null when the ILO gives none"),
+          })
+          .describe("The dataflow the observations come from"),
+        columns: z.array(z.string()).describe("Dimension ids of each row, in SDMX order, followed by value"),
+        rows_count: z.number().describe("Number of observations returned"),
+        rows: z
+          .array(z.record(z.string(), z.unknown()))
+          .describe(
+            "Raw ILOSTAT observations: one code per dimension, value (untransformed; read with UNIT_MULT) " +
+              "and, when present, attributes such as OBS_STATUS, UNIT_MEASURE and UNIT_MULT",
+          ),
         ...provenanceOutputShape(),
       }),
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true },
