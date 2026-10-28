@@ -226,7 +226,9 @@ selects \`concise\` (default) or \`detailed\`.
   modelled series (\`_2\` ids) at each release, past years included. Pair it with
   \`data_vintage\` when comparing with a figure published earlier.
 - **license** — ILOSTAT data and metadata are **CC BY 4.0**.
-- **citation** — ready-to-paste ILO attribution string; **attribution** repeats it as a list.
+- **citation** — ready-to-paste ILO attribution string. **attribution** (a sibling of
+  \`provenance\`, not inside it) is the list of the distinct \`source_url\` values of the
+  provenance blocks, for linking the citation — not a copy of it.
 
 ## How to cite
 
