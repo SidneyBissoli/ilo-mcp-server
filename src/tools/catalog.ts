@@ -90,14 +90,19 @@ export function registerCatalogTools(server: McpServer, env: Env, record: Record
         provenance_mode: PROVENANCE_MODE_SCHEMA,
       }).strict(),
       outputSchema: z.looseObject({
-        total_matches: z.number(),
-        showing: z.number(),
-        offset: z.number(),
-        indicators: z.array(z.object({ id: z.string(), name: z.string(), version: z.string() })),
-        has_more: z.boolean(),
-        next_offset: z.number().optional(),
-        vocabulary_notes: z.array(z.string()).optional(),
-        hint: z.string().optional(),
+        total_matches: z.number().describe("Dataflows matching all terms, across every page"),
+        showing: z.number().describe("Dataflows returned in this page"),
+        offset: z.number().describe("Results skipped before this page"),
+        indicators: z
+          .array(z.object({ id: z.string(), name: z.string(), version: z.string() }))
+          .describe("Matching dataflows, highest ILO relevance weight first; use id with ilo_get_data"),
+        has_more: z.boolean().describe("True when more matches remain after this page"),
+        next_offset: z.number().optional().describe("Offset for the next page; present only when has_more is true"),
+        vocabulary_notes: z
+          .array(z.string())
+          .optional()
+          .describe("Translations applied from everyday or US wording to ILO terms (e.g. labor → labour)"),
+        hint: z.string().optional().describe("What to do next: how to narrow or page, or why nothing matched"),
         ...provenanceOutputShape(),
       }),
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },

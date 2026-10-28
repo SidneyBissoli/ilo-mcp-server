@@ -26,7 +26,22 @@ do npm. Lacunas registradas:
 
 ## [Não publicado]
 
-Só teste de CI e dependência: servidor, superfície e respostas não mudam.
+## [1.6.5] — 2026-10-27
+
+Só descrições no `outputSchema` das tools: a superfície (`tools/list`) muda em texto, e
+campos, tipos e respostas não mudam. Leva também o que estava em [Não publicado] (teste de CI
+e dependência, sem efeito no servidor).
+
+### Corrigido
+- **Toda propriedade de topo do `outputSchema` tem descrição.** O `mcpscore` 1.29 trouxe a
+  regra `tools_output_properties_documented` (LOW, 1 ponto), e a produção caiu nela com 36
+  propriedades sem `description`: paginação e listas de `ilo_search_indicators` e
+  `ilo_list_dimension_values`, os campos da estrutura em `ilo_get_indicator_metadata`,
+  `dataflow` (e seus `id`/`version`/`name`), `columns`, `rows_count` e `rows` em
+  `ilo_get_data`, e o `attribution` do envelope de proveniência nas seis tools. O
+  `attribution` é descrito uma vez só, em `provenanceOutputShape()`, como o que é: a lista
+  canônica das `source_url` dos blocos de proveniência, não um texto de crédito. stdio: a
+  regra passa (129/131; a outra falha, `protocol_version_latest`, é do stdio e anterior).
 
 ### Alterado
 - **Contrato semanal dos dataflows curados: fonte fora ≠ deriva.** O teste

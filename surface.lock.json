@@ -1,8 +1,8 @@
 {
   "$comentario": "Impressão digital da superfície (@sbissoli/mcp-surface). Não editar à mão: `npm run surface:lock` regrava, e só aceita superfície nova sob versão nova.",
   "declarada": {
-    "versao": "1.6.0",
-    "sha256": "401f62782443cdb69cd8747a3a6521ff20dde4f949607709e6031f09d4ac5372",
+    "versao": "1.6.5",
+    "sha256": "77f8270bb9373d9bada90b1aee552b3613403ca8b518dcf7f681d30ba833658f",
     "conteudo": {
       "initialize": {
         "capabilities": {
@@ -164,6 +164,7 @@
             "additionalProperties": false,
             "properties": {
               "attribution": {
+                "description": "Source URLs the figures came from (the provenance source_url of each block), for linking the citation",
                 "items": {
                   "type": "string"
                 },
@@ -836,12 +837,14 @@
             "additionalProperties": {},
             "properties": {
               "attribution": {
+                "description": "Source URLs the figures came from (the provenance source_url of each block), for linking the citation",
                 "items": {
                   "type": "string"
                 },
                 "type": "array"
               },
               "columns": {
+                "description": "Dimension ids of each row, in SDMX order, followed by value",
                 "items": {
                   "type": "string"
                 },
@@ -849,17 +852,21 @@
               },
               "dataflow": {
                 "additionalProperties": false,
+                "description": "The dataflow the observations come from",
                 "properties": {
                   "id": {
+                    "description": "Dataflow id",
                     "type": "string"
                   },
                   "name": {
+                    "description": "Dataflow name; null when the ILO gives none",
                     "type": [
                       "string",
                       "null"
                     ]
                   },
                   "version": {
+                    "description": "Dataflow version at the ILO",
                     "type": "string"
                   }
                 },
@@ -1408,6 +1415,7 @@
                 "description": "Portfolio provenance block. concise (default): source, source_url, data_vintage, retrieved_at, retrieval, citation, license; detailed: the full canonical block (dataset, dimension_key, notices, served_from_cache, ...). retrieval is the origin diagnostic of this call — requests made to ILOSTAT, attempts including retries, anomalies overcome (timeout, network, rate_limited, http_5xx, http_4xx, malformed_body) and unstable (true when anything had to be retried: treat the figures as obtained with difficulty); null when nothing was fetched from ILOSTAT (catalogue or cached answer). Optional keys (field_sources, notices, derived, derivation_note, revision) appear only when there is something to say"
               },
               "rows": {
+                "description": "Raw ILOSTAT observations: one code per dimension, value (untransformed; read with UNIT_MULT) and, when present, attributes such as OBS_STATUS, UNIT_MEASURE and UNIT_MULT",
                 "items": {
                   "additionalProperties": {},
                   "propertyNames": {
@@ -1418,6 +1426,7 @@
                 "type": "array"
               },
               "rows_count": {
+                "description": "Number of observations returned",
                 "type": "number"
               }
             },
@@ -1470,18 +1479,21 @@
             "additionalProperties": {},
             "properties": {
               "attribution": {
+                "description": "Source URLs the figures came from (the provenance source_url of each block), for linking the citation",
                 "items": {
                   "type": "string"
                 },
                 "type": "array"
               },
               "data_vintage": {
+                "description": "Last update of the dataflow at the ILO (LAST_UPDATE, yyyy-MM-dd); null when absent",
                 "type": [
                   "string",
                   "null"
                 ]
               },
               "dimensions": {
+                "description": "Dimensions in SDMX key order, each with its codelist id; filter ilo_get_data by these ids",
                 "items": {
                   "additionalProperties": false,
                   "properties": {
@@ -1504,9 +1516,11 @@
                 "type": "array"
               },
               "id": {
+                "description": "Dataflow id",
                 "type": "string"
               },
               "name": {
+                "description": "Dataflow name; null when the ILO gives none",
                 "type": [
                   "string",
                   "null"
@@ -2050,12 +2064,14 @@
                 "description": "Portfolio provenance block. concise (default): source, source_url, data_vintage, retrieved_at, retrieval, citation, license; detailed: the full canonical block (dataset, dimension_key, notices, served_from_cache, ...). retrieval is the origin diagnostic of this call — requests made to ILOSTAT, attempts including retries, anomalies overcome (timeout, network, rate_limited, http_5xx, http_4xx, malformed_body) and unstable (true when anything had to be retried: treat the figures as obtained with difficulty); null when nothing was fetched from ILOSTAT (catalogue or cached answer). Optional keys (field_sources, notices, derived, derivation_note, revision) appear only when there is something to say"
               },
               "time_dimension": {
+                "description": "Id of the time dimension (filtered via start_period/end_period); null when absent",
                 "type": [
                   "string",
                   "null"
                 ]
               },
               "version": {
+                "description": "Dataflow version at the ILO",
                 "type": "string"
               }
             },
@@ -2133,27 +2149,34 @@
             "additionalProperties": {},
             "properties": {
               "attribution": {
+                "description": "Source URLs the figures came from (the provenance source_url of each block), for linking the citation",
                 "items": {
                   "type": "string"
                 },
                 "type": "array"
               },
               "codelist": {
+                "description": "Id of the codelist that enumerates the dimension (shared across dataflows)",
                 "type": "string"
               },
               "dataflow": {
+                "description": "Dataflow id the dimension belongs to",
                 "type": "string"
               },
               "dimension": {
+                "description": "Dimension id",
                 "type": "string"
               },
               "has_more": {
+                "description": "True when more codes remain after this page",
                 "type": "boolean"
               },
               "next_offset": {
+                "description": "Offset for the next page; present only when has_more is true",
                 "type": "number"
               },
               "offset": {
+                "description": "Codes skipped before this page",
                 "type": "number"
               },
               "provenance": {
@@ -2694,12 +2717,15 @@
                 "description": "Portfolio provenance block. concise (default): source, source_url, data_vintage, retrieved_at, retrieval, citation, license; detailed: the full canonical block (dataset, dimension_key, notices, served_from_cache, ...). retrieval is the origin diagnostic of this call — requests made to ILOSTAT, attempts including retries, anomalies overcome (timeout, network, rate_limited, http_5xx, http_4xx, malformed_body) and unstable (true when anything had to be retried: treat the figures as obtained with difficulty); null when nothing was fetched from ILOSTAT (catalogue or cached answer). Optional keys (field_sources, notices, derived, derivation_note, revision) appear only when there is something to say"
               },
               "showing": {
+                "description": "Codes returned in this page",
                 "type": "number"
               },
               "total_codes": {
+                "description": "Codes matching the search filter (or all codes), across every page",
                 "type": "number"
               },
               "values": {
+                "description": "Valid codes: id is the value for ilo_get_data filters, name is the ILO label",
                 "items": {
                   "additionalProperties": false,
                   "properties": {
@@ -2787,18 +2813,22 @@
             "additionalProperties": {},
             "properties": {
               "attribution": {
+                "description": "Source URLs the figures came from (the provenance source_url of each block), for linking the citation",
                 "items": {
                   "type": "string"
                 },
                 "type": "array"
               },
               "has_more": {
+                "description": "True when more matches remain after this page",
                 "type": "boolean"
               },
               "hint": {
+                "description": "What to do next: how to narrow or page, or why nothing matched",
                 "type": "string"
               },
               "indicators": {
+                "description": "Matching dataflows, highest ILO relevance weight first; use id with ilo_get_data",
                 "items": {
                   "additionalProperties": false,
                   "properties": {
@@ -2822,9 +2852,11 @@
                 "type": "array"
               },
               "next_offset": {
+                "description": "Offset for the next page; present only when has_more is true",
                 "type": "number"
               },
               "offset": {
+                "description": "Results skipped before this page",
                 "type": "number"
               },
               "provenance": {
@@ -3365,12 +3397,15 @@
                 "description": "Portfolio provenance block. concise (default): source, source_url, data_vintage, retrieved_at, retrieval, citation, license; detailed: the full canonical block (dataset, dimension_key, notices, served_from_cache, ...). retrieval is the origin diagnostic of this call — requests made to ILOSTAT, attempts including retries, anomalies overcome (timeout, network, rate_limited, http_5xx, http_4xx, malformed_body) and unstable (true when anything had to be retried: treat the figures as obtained with difficulty); null when nothing was fetched from ILOSTAT (catalogue or cached answer). Optional keys (field_sources, notices, derived, derivation_note, revision) appear only when there is something to say"
               },
               "showing": {
+                "description": "Dataflows returned in this page",
                 "type": "number"
               },
               "total_matches": {
+                "description": "Dataflows matching all terms, across every page",
                 "type": "number"
               },
               "vocabulary_notes": {
+                "description": "Translations applied from everyday or US wording to ILO terms (e.g. labor → labour)",
                 "items": {
                   "type": "string"
                 },
@@ -3418,6 +3453,7 @@
             "additionalProperties": false,
             "properties": {
               "attribution": {
+                "description": "Source URLs the figures came from (the provenance source_url of each block), for linking the citation",
                 "items": {
                   "type": "string"
                 },
