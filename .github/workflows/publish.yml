@@ -37,6 +37,12 @@ on:
     tags: ["v*"]
   workflow_dispatch:
 
+# Menor privilégio por padrão (actions/missing-workflow-permissions): o `build`
+# só lê. Os jobs de publicação declaram as próprias permissões (`id-token: write`),
+# e a declaração do job substitui esta.
+permissions:
+  contents: read
+
 jobs:
   build:
     runs-on: ubuntu-latest

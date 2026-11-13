@@ -5,6 +5,11 @@ on:
     branches: [main]
   pull_request:
 
+# Menor privilégio: o job só lê o repositório. Sem este bloco o token herda o
+# padrão do repositório, e o code scanning acusa (actions/missing-workflow-permissions).
+permissions:
+  contents: read
+
 jobs:
   test:
     runs-on: ubuntu-latest
