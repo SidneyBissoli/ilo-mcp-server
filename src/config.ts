@@ -134,6 +134,12 @@ export const ILOSTAT_LIMITS = {
  */
 export const LANDING = {
   lang: "en" as "pt-BR" | "en",
+  /**
+   * `<title>` e `og:title` da landing: o nome do produto (`SERVER_CONFIG.title`,
+   * que não muda) mais o que ele entrega, em 50-60 caracteres. O Bing Webmaster
+   * acusou título curto no portfólio em 18/11/2026 ("ILO Labour Statistics (ILOSTAT)", 31).
+   */
+  pageTitle: "ILO Labour Statistics (ILOSTAT) — MCP server for AI",
   resumo:
     "MCP server for ILOSTAT, the International Labour Organization statistical " +
     "database: 1,200+ indicator dataflows, by country, year, sex and age.",
